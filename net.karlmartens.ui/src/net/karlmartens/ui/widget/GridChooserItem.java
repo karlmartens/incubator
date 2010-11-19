@@ -248,12 +248,37 @@ public final class GridChooserItem extends Item {
 			for (GridChooserItem item : _parent.getItems()) {
 				final int candidate = item._selectionOrder;
 				if (candidate >= selectionOrder) {
-					selectionOrder = candidate +1;
+					selectionOrder = candidate+1;
 				}
 			}
 			_selectionOrder = selectionOrder;
 		}
 		_parent.redraw();
+	}
+	
+	void setSelectionOrder(int order, boolean allowDeselect) {
+		final int targetOrder = Math.min(a, b)Math.max(allowDeselect ? -1 : 0, order);
+		final int originalOrder = _selectionOrder;
+		final int diff = targetOrder - originalOrder;
+		if (diff == 0)
+			return;
+
+		final int correction = diff < 0 ? 1 : -1;
+		final int upper = Math.max(0, Math.max(originalOrder, targetOrder));
+		final int lower = Math.max(0, Math.min(originalOrder, targetOrder));
+		for (GridChooserItem item : _parent.getItems()) {
+			final int candidate = item.getSelectionOrder();
+			if (candidate >= lower && candidate <= upper) {
+				item._selectionOrder = candidate+correction;
+			}
+		}
+		
+		_selectionOrder = targetOrder;
+		_parent.redraw();
+	}
+	
+	public void setSelectionOrder(int order) {
+		setSelectionOrder(order, true);
 	}
 	
 	public Color getBackground() {

@@ -210,12 +210,12 @@ public final class GridChooser extends Composite {
 		_right.setEnabled(!_available.getSelection().isEmpty());
 	}
 
-	@SuppressWarnings("unchecked")
 	private void updateSelection(TableViewer viewer, boolean selected) {
 		final Table table = viewer.getTable();
 		final int originalLastItemIndex = table.getItemCount() - 1;
 		final int[] originalIndicies = table.getSelectionIndices();
 		
+		@SuppressWarnings("unchecked")
 		final List<GridChooserItem> selection = ((StructuredSelection)viewer.getSelection()).toList();
 		for (GridChooserItem item : selection) {
 			item.setSelected(selected);
@@ -240,6 +240,14 @@ public final class GridChooser extends Composite {
 		table.setSelection(newIndicies);
 		
 		updateButtons();
+	}
+	
+	private void updateSelection(TableViewer viewer, int movement) {
+		@SuppressWarnings("unchecked")
+		final List<GridChooserItem> selection = ((StructuredSelection)viewer.getSelection()).toList();
+		for (GridChooserItem item : selection) {
+			item.setSelectionOrder(item.getSelectionOrder() + movement, false);
+		}
 	}
 	
 	private DisposeListener _disposeListener = new DisposeListener() {
@@ -292,15 +300,25 @@ public final class GridChooser extends Composite {
 		}
 		
 		private void handle(SelectionEvent e) {
-			if (!_left.equals(e.widget) && !_right.equals(e.widget))
-				return;
-			
 			if (_left.equals(e.widget)) {
 				updateSelection(_selected, false);
 				return;
 			} 
 				
-			updateSelection(_available, true);
+			if (_right.equals(e.widget)) {
+				updateSelection(_available, true);
+				return;
+			}
+			
+			if (_up.equals(e.widget)) {
+				updateSelection(_selected, -1);
+				return;
+			}
+			
+			if (_down.equals(e.widget)) {
+				updateSelection(_selected, 1);
+				return;
+			}
 		}
 	};
 	
