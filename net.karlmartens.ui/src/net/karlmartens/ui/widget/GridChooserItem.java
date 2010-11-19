@@ -17,7 +17,7 @@ public final class GridChooserItem extends Item {
 	private Font _font;
 	private Font[] _cellFonts;
 	private String[] _strings;
-	private boolean _isSelected = false;
+	private int _selectionOrder = -1;
 
 	public GridChooserItem(GridChooser parent, int style) {
 		super(parent, style);
@@ -239,9 +239,20 @@ public final class GridChooserItem extends Item {
 
 	public void setSelected(boolean selected) {
 		checkWidget();
-		if (selected == _isSelected) return;
+		if (selected && _selectionOrder >= 0) return;
 		
-		_isSelected = selected;
+		if (!selected) {
+			_selectionOrder = -1;
+		} else {
+			int selectionOrder = 0;
+			for (GridChooserItem item : _parent.getItems()) {
+				final int candidate = item._selectionOrder;
+				if (candidate >= selectionOrder) {
+					selectionOrder = candidate +1;
+				}
+			}
+			_selectionOrder = selectionOrder;
+		}
 		_parent.redraw();
 	}
 	
@@ -318,7 +329,11 @@ public final class GridChooserItem extends Item {
 	}
 
 	public boolean isSelected() {
-		return _isSelected;
+		return _selectionOrder >= 0;
+	}
+
+	public int getSelectionOrder() {
+		return _selectionOrder;
 	}
 	
 	void release() {

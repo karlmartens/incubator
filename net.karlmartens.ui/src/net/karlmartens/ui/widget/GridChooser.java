@@ -1,32 +1,53 @@
 package net.karlmartens.ui.widget;
 
+import static net.karlmartens.ui.Images.ARROW_DOWN;
+import static net.karlmartens.ui.Images.ARROW_LEFT;
+import static net.karlmartens.ui.Images.ARROW_RIGHT;
+import static net.karlmartens.ui.Images.ARROW_UP;
+
+import java.util.List;
+
+import net.karlmartens.ui.viewer.ItemViewerComparator;
+
 import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ITableColorProvider;
 import org.eclipse.jface.viewers.ITableFontProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
+import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.TableItem;
 
 public final class GridChooser extends Composite {
 
 	private final TableViewer _available;
 	private final TableViewer _selected;
+	private final Button _left;
+	private final Button _right;
+	private final Button _up;
+	private final Button _down;
 	
+	private Image[] _images;
 	private int _columnCount;
 	private int _itemCount;
 	private GridChooserColumn[] _columns;
@@ -41,6 +62,13 @@ public final class GridChooser extends Composite {
 		_itemCount = 0;
 		_items = new GridChooserItem[0];
 		
+		_images = new Image[] {
+				ARROW_LEFT.createImage(),
+				ARROW_RIGHT.createImage(),
+				ARROW_UP.createImage(),
+				ARROW_DOWN.createImage()
+		};
+		
 		setLayout(new FormLayout());
 		
 		final int style = SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER;
@@ -48,25 +76,42 @@ public final class GridChooser extends Composite {
 		_available.setContentProvider(ArrayContentProvider.getInstance());
 		_available.setLabelProvider(new TableLabelProviderImpl());
 		_available.addFilter(new ItemSelectionFilter(false));
+		_available.addSelectionChangedListener(_selectionChangedListener);
+		_available.setComparator(new ItemViewerComparator());
+		
+		final Composite centerPart = new Composite(this, SWT.NONE);
+		centerPart.setLayout(new RowLayout(SWT.VERTICAL));
+		
+		_left = createButton(centerPart, _images[0], _changeSelectionListener);
+		_right = createButton(centerPart, _images[1], _changeSelectionListener);
+		_up = createButton(centerPart, _images[2], _changeSelectionListener);
+		_down = createButton(centerPart, _images[3], _changeSelectionListener);
 		
 		_selected = new TableViewer(this, style);
 		_selected.setContentProvider(ArrayContentProvider.getInstance());
 		_selected.setLabelProvider(new TableLabelProviderImpl());
 		_selected.addFilter(new ItemSelectionFilter(true));
+		_selected.addSelectionChangedListener(_selectionChangedListener);
+		_selected.setComparator(new SelectionOrderViewerComparator());
 		
 		final FormData availableFormData = new FormData();
 		availableFormData.top = new FormAttachment(0, 100, 10);
 		availableFormData.bottom = new FormAttachment(100, 100, -10);
 		availableFormData.left = new FormAttachment(0, 100, 10);
-		availableFormData.right = new FormAttachment(50, 100, -10);
+		availableFormData.right = new FormAttachment(centerPart, -10);
+		
+		final FormData centerFormData = new FormData();
+		centerFormData.top = new FormAttachment(_available.getControl(), 0, SWT.CENTER);
+		centerFormData.left = new FormAttachment(50, 100, -10);
 		
 		final FormData selectedFormData = new FormData();
-		selectedFormData.top = new FormAttachment(0, 100, 10);
-		selectedFormData.bottom = new FormAttachment(100, 100, -10);
-		selectedFormData.left = new FormAttachment(_available.getControl(), 10);
+		selectedFormData.top = new FormAttachment(_available.getControl(), 0, SWT.TOP);
+		selectedFormData.bottom = new FormAttachment(_available.getControl(), 0, SWT.BOTTOM);
+		selectedFormData.left = new FormAttachment(centerPart, 10);
 		selectedFormData.right = new FormAttachment(100, 100, -10);
 		
 		_available.getControl().setLayoutData(availableFormData);
+		centerPart.setLayoutData(centerFormData);
 		_selected.getControl().setLayoutData(selectedFormData);
 		
 		addDisposeListener(_disposeListener);
@@ -107,6 +152,7 @@ public final class GridChooser extends Composite {
 			SWT.error(SWT.ERROR_INVALID_RANGE);
 		
 		if (index == _columns.length) {
+			
 			final GridChooserColumn[] newColumns = new GridChooserColumn[_columns.length + 4];
 			System.arraycopy(_columns, 0, newColumns, 0, _columns.length);
 			_columns = newColumns;
@@ -139,20 +185,122 @@ public final class GridChooser extends Composite {
 		_selected.setInput(getItems());
 	}
 	
+	private Button createButton(Composite parent, Image image, SelectionListener listener) {
+		final Button button = new Button(parent, SWT.PUSH);
+		button.setImage(image);
+		button.setEnabled(false);
+		button.addSelectionListener(listener);
+		return button;
+	}
+	
+	private void updateButtons() {
+		final Table selected = _selected.getTable();
+		final int itemCount = selected.getItemCount();
+		boolean firstSelected = false;
+		boolean lastSelected = false;
+		for (int idx : selected.getSelectionIndices()) {
+			firstSelected |= idx == 0;
+			lastSelected |= idx == (itemCount - 1);
+		}
+		
+		final boolean hasSelection = !_selected.getSelection().isEmpty(); 
+		_left.setEnabled(hasSelection);
+		_up.setEnabled(hasSelection && !firstSelected);
+		_down.setEnabled(hasSelection && !lastSelected);
+		_right.setEnabled(!_available.getSelection().isEmpty());
+	}
+
+	@SuppressWarnings("unchecked")
+	private void updateSelection(TableViewer viewer, boolean selected) {
+		final Table table = viewer.getTable();
+		final int originalLastItemIndex = table.getItemCount() - 1;
+		final int[] originalIndicies = table.getSelectionIndices();
+		
+		final List<GridChooserItem> selection = ((StructuredSelection)viewer.getSelection()).toList();
+		for (GridChooserItem item : selection) {
+			item.setSelected(selected);
+		}
+		
+		final int newItemCount = table.getItemCount();
+		if (newItemCount <= 0)
+			return;
+
+		int i=0;
+		for (int j=0; j<originalIndicies.length; j++) {
+			final int index = originalIndicies[j];
+			if (index == originalLastItemIndex) {
+				originalIndicies[i++] = newItemCount - 1;
+			} else if (index < newItemCount) {
+				i++;
+			}
+		}
+		
+		final int[] newIndicies = new int[i];
+		System.arraycopy(originalIndicies, 0, newIndicies, 0, i);
+		table.setSelection(newIndicies);
+		
+		updateButtons();
+	}
+	
 	private DisposeListener _disposeListener = new DisposeListener() {
 		@Override
 		public void widgetDisposed(DisposeEvent e) {
 			for (GridChooserItem item : _items) {
+				if (item == null)
+					continue;
+				
 				item.release();
 			}
 			_items = new GridChooserItem[0];
 			_itemCount = 0;
 			
 			for (GridChooserColumn column : _columns) {
+				if (column == null)
+					continue;
+				
 				column.release();
 			}
 			_columns = new GridChooserColumn[0];
 			_columnCount = 0;
+			
+			for (Image image : _images) {
+				if (image == null)
+					continue;
+				
+				image.dispose();
+			}
+			_images = new Image[0];
+		}
+	};
+	
+	private ISelectionChangedListener _selectionChangedListener = new ISelectionChangedListener() {
+		@Override
+		public void selectionChanged(SelectionChangedEvent event) {
+			updateButtons();
+		}
+	}; 
+	
+	private SelectionListener _changeSelectionListener = new SelectionListener() {
+		@Override
+		public void widgetSelected(SelectionEvent e) {
+			handle(e);
+		}
+		
+		@Override
+		public void widgetDefaultSelected(SelectionEvent e) {
+			handle(e);
+		}
+		
+		private void handle(SelectionEvent e) {
+			if (!_left.equals(e.widget) && !_right.equals(e.widget))
+				return;
+			
+			if (_left.equals(e.widget)) {
+				updateSelection(_selected, false);
+				return;
+			} 
+				
+			updateSelection(_available, true);
 		}
 	};
 	
@@ -205,6 +353,7 @@ public final class GridChooser extends Composite {
 		
 	}
 
+	
 	private static class ItemSelectionFilter extends ViewerFilter {
 		
 		private final boolean _selected;
@@ -223,5 +372,18 @@ public final class GridChooser extends Composite {
 			return false;
 		}
 		
+	}
+
+	private static class SelectionOrderViewerComparator extends ViewerComparator {
+		@Override
+		public int compare(Viewer viewer, Object e1, Object e2) {
+			if (e1 instanceof GridChooserItem && e2 instanceof GridChooserItem) {
+				final Integer i1 = Integer.valueOf(((GridChooserItem)e1).getSelectionOrder());
+				final Integer i2 = Integer.valueOf(((GridChooserItem)e2).getSelectionOrder());
+				return i1.compareTo(i2);
+			}
+			
+			return super.compare(viewer, e1, e2);
+		}
 	}
 }

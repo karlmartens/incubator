@@ -27,8 +27,25 @@ public final class test {
 		gc2.setWidth(100);
 		
 		GridChooserItem gcItem1 = new GridChooserItem(chooser, SWT.NONE);
-		gcItem1.setText(new String[] {"1", "2", "3"});
-		gcItem1.setSelected(true);
+		gcItem1.setText(new String[] {"Andrew", "2", "3"});
+
+		GridChooserItem gcItem2 = new GridChooserItem(chooser, SWT.NONE);
+		gcItem2.setText(new String[] {"Bill", "2", "3"});
+
+		GridChooserItem gcItem3 = new GridChooserItem(chooser, SWT.NONE);
+		gcItem3.setText(new String[] {"C", "2", "3"});
+
+		GridChooserItem gcItem4 = new GridChooserItem(chooser, SWT.NONE);
+		gcItem4.setText(new String[] {"bob", "2", "3"});
+		
+		GridChooserItem gcItem5 = new GridChooserItem(chooser, SWT.NONE);
+		gcItem5.setText(new String[] {"1", "2", "3"});
+		
+		GridChooserItem gcItem6 = new GridChooserItem(chooser, SWT.NONE);
+		gcItem6.setText(new String[] {"11", "2", "3"});
+		
+		GridChooserItem gcItem7 = new GridChooserItem(chooser, SWT.NONE);
+		gcItem7.setText(new String[] {"2", "2", "3"});
 		
 		shell.open();
 		
