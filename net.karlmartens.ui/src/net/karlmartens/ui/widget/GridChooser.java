@@ -9,6 +9,8 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
@@ -66,6 +68,8 @@ public final class GridChooser extends Composite {
 		
 		_available.getControl().setLayoutData(availableFormData);
 		_selected.getControl().setLayoutData(selectedFormData);
+		
+		addDisposeListener(_disposeListener);
 	}
 
 	public void setHeaderVisible(boolean show) {
@@ -135,6 +139,22 @@ public final class GridChooser extends Composite {
 		_selected.setInput(getItems());
 	}
 	
+	private DisposeListener _disposeListener = new DisposeListener() {
+		@Override
+		public void widgetDisposed(DisposeEvent e) {
+			for (GridChooserItem item : _items) {
+				item.release();
+			}
+			_items = new GridChooserItem[0];
+			_itemCount = 0;
+			
+			for (GridChooserColumn column : _columns) {
+				column.release();
+			}
+			_columns = new GridChooserColumn[0];
+			_columnCount = 0;
+		}
+	};
 	
 	private static class TableLabelProviderImpl extends LabelProvider implements ITableLabelProvider, ITableColorProvider, ITableFontProvider {
 

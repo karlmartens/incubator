@@ -8,8 +8,7 @@ import org.eclipse.swt.widgets.Item;
 
 public final class GridChooserItem extends Item {
 
-	private final GridChooser _parent;
-
+	private GridChooser _parent;
 	private Image[] _images;
 	private Color _background;
 	private Color[] _cellBackgrounds;
@@ -320,5 +319,16 @@ public final class GridChooserItem extends Item {
 
 	public boolean isSelected() {
 		return _isSelected;
+	}
+	
+	void release() {
+		_parent = null;
+		_font = null;
+		_cellFonts = null;
+		_background = null;
+		_cellBackgrounds = null;
+		_foreground = null;
+		_cellForegrounds = null;
+		_strings = null;
 	}
 }
