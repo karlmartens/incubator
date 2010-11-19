@@ -8,9 +8,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.TableItem;
 
 public final class test {
 
@@ -31,21 +28,7 @@ public final class test {
 		
 		GridChooserItem gcItem1 = new GridChooserItem(chooser, SWT.NONE);
 		gcItem1.setText(new String[] {"1", "2", "3"});
-		
-		
-		Table t = new Table(shell, SWT.BORDER);
-		t.setHeaderVisible(true);
-		
-		TableColumn c = new TableColumn(t, SWT.NONE);
-		c.setText("Test");
-		c.setWidth(100);
-
-		TableColumn c2 = new TableColumn(t, SWT.NONE);
-		c2.setText("Test2");
-		c2.setWidth(100);
-		
-		TableItem item = new TableItem(t, SWT.NONE);
-		item.setText(new String[] {"1", "2", "3"});
+		gcItem1.setSelected(true);
 		
 		shell.open();
 		
