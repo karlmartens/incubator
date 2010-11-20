@@ -1,7 +1,7 @@
 package net.karlmartens.accounting;
 
 
-public interface AccountDetail {
+public interface AccountDetail extends Account {
 
 	// Marker interface
 	
