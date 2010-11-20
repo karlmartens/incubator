@@ -257,7 +257,9 @@ public final class GridChooserItem extends Item {
 	}
 	
 	void setSelectionOrder(int order, boolean allowDeselect) {
-		final int targetOrder = Math.min(a, b)Math.max(allowDeselect ? -1 : 0, order);
+		final int maxIndex = _parent.getSelectionCount() - 1;
+		final int minIndex = allowDeselect ? -1 : 0;
+		final int targetOrder = Math.max(minIndex, Math.min(maxIndex, order)); 
 		final int originalOrder = _selectionOrder;
 		final int diff = targetOrder - originalOrder;
 		if (diff == 0)

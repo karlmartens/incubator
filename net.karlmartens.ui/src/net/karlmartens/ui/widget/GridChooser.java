@@ -5,6 +5,7 @@ import static net.karlmartens.ui.Images.ARROW_LEFT;
 import static net.karlmartens.ui.Images.ARROW_RIGHT;
 import static net.karlmartens.ui.Images.ARROW_UP;
 
+import java.util.Collections;
 import java.util.List;
 
 import net.karlmartens.ui.viewer.ItemViewerComparator;
@@ -140,10 +141,30 @@ public final class GridChooser extends Composite {
 		return items; 
 	}
 	
+	public GridChooserItem[] getSelection() {
+		final GridChooserItem[] selected = new GridChooserItem[_itemCount];
+		int i=0;
+		for (int j=0; j<_itemCount;j++) {
+			final GridChooserItem item = _items[j];
+			if (!item.isSelected())
+				continue;
+			selected[i++] = item;
+		}
+		
+		final GridChooserItem[] result = new GridChooserItem[i];
+		System.arraycopy(selected, 0, result, 0, i);
+		return result;
+	}
+	
+	public int getSelectionCount() {
+		return getSelection().length;
+	}
+	
 	@Override
 	public void redraw() {
 		_available.refresh();
 		_selected.refresh();
+		updateButtons();
 		super.redraw();
 	}
 
@@ -238,13 +259,16 @@ public final class GridChooser extends Composite {
 		final int[] newIndicies = new int[i];
 		System.arraycopy(originalIndicies, 0, newIndicies, 0, i);
 		table.setSelection(newIndicies);
-		
-		updateButtons();
+		redraw();
 	}
 	
 	private void updateSelection(TableViewer viewer, int movement) {
 		@SuppressWarnings("unchecked")
 		final List<GridChooserItem> selection = ((StructuredSelection)viewer.getSelection()).toList();
+		if (movement > 0) {
+			Collections.reverse(selection);
+		}
+		
 		for (GridChooserItem item : selection) {
 			item.setSelectionOrder(item.getSelectionOrder() + movement, false);
 		}
