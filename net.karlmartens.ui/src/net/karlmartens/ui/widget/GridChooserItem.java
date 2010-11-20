@@ -1,58 +1,374 @@
 package net.karlmartens.ui.widget;
 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Item;
-import org.eclipse.swt.widgets.TableItem;
 
 public final class GridChooserItem extends Item {
 
-	private TableItem _deselectedWidget;
-	private TableItem _selectedWidget;
-	private boolean selected = false;
+	private GridChooser _parent;
+	private Image[] _images;
+	private Color _background;
+	private Color[] _cellBackgrounds;
+	private Color _foreground;
+	private Color[] _cellForegrounds;
+	private Font _font;
+	private Font[] _cellFonts;
+	private String[] _strings;
+	private int _selectionOrder = -1;
 
 	public GridChooserItem(GridChooser parent, int style) {
 		super(parent, style);
+		_parent = parent;
 		parent.createItem(this, parent.getItemCount());
-	}
-
-	void registerSelectedWidget(TableItem widget) {
-		_selectedWidget = widget;
-	}
-	
-	void registerUnselectedWidget(TableItem widget) {
-		_deselectedWidget = widget;
 	}
 	
 	@Override
 	public void setImage(Image image) {
-		_selectedWidget.setImage(image);
-		_deselectedWidget.setImage(image);
+		checkWidget();
+		setImage(0, image);
+	}
+	
+	public void setImage(Image[] images) {
+		checkWidget();
+		if (images == null)
+			SWT.error(SWT.ERROR_NULL_ARGUMENT);
+		
+		for (int i=0; i<images.length; i++) {
+			final Image image = images[i];
+			if (image == null)
+				continue;
+			setImage(i, image);
+		}
+	}
+	
+	public void setImage(int index, Image image) {
+		checkWidget();
+		if (image == null)
+			SWT.error(SWT.ERROR_NULL_ARGUMENT);
+		
+		if (index == 0) {
+			if (image.equals(getImage()))
+				return;
+			
+			super.setImage(image);
+		}
+		
+		final int count = Math.max(1, _parent.getColumnCount());
+		if (index < 0 || index >= count)
+			return;
+		
+		if (_images == null && index != 0) {
+			_images = new Image[count];
+			_images[0] = super.getImage();
+		}
+		
+		if (_images != null) {
+			if (image.equals(_images[index]))
+				return;
+			_images[index] = image;
+		}
+		
+		_parent.redraw();
+	}
+	
+	public void setBackground(Color color) {
+		checkWidget();
+		if (color != null && color.isDisposed())
+			SWT.error(SWT.ERROR_INVALID_ARGUMENT);
+		
+		if (color == _background)
+			return;
+		
+		if (color != null && color.equals(_background))
+			return;
+		
+		_background = color;
+		_parent.redraw();
+	}
+	
+	public void setBackground(int index, Color color) {
+		checkWidget();
+		if (color != null && color.isDisposed())
+			SWT.error(SWT.ERROR_INVALID_ARGUMENT);
+
+		final int count = Math.max (1, _parent.getColumnCount ());
+		if (index < 0 || index >= count) 
+			return;
+		
+		if (_cellBackgrounds == null) {
+			_cellBackgrounds = new Color[count];
+		}
+		
+		if (_cellBackgrounds[index] == color)
+			return;
+		
+		if (color != null && color.equals(_cellBackgrounds[index]))
+			return;
+		
+		_cellBackgrounds[index] = color;
+		_parent.redraw();
+	}
+	
+	public void setForeground(Color color) {
+		checkWidget();
+		if (color != null && color.isDisposed())
+			SWT.error(SWT.ERROR_INVALID_ARGUMENT);
+		
+		if (color == _foreground)
+			return;
+		
+		if (color != null && color.equals(_foreground))
+			return;
+		
+		_foreground = color;
+		_parent.redraw();
+	}
+	
+	public void setForeground(int index, Color color) {
+		checkWidget();
+		if (color != null && color.isDisposed())
+			SWT.error(SWT.ERROR_INVALID_ARGUMENT);
+
+		final int count = Math.max (1, _parent.getColumnCount ());
+		if (index < 0 || index >= count) 
+			return;
+		
+		if (_cellForegrounds == null) {
+			_cellForegrounds = new Color[count];
+		}
+		
+		if (_cellForegrounds[index] == color)
+			return;
+		
+		if (color != null && color.equals(_cellForegrounds[index]))
+			return;
+		
+		_cellForegrounds[index] = color;
+		_parent.redraw();
+	}
+
+	public void setFont(Font font) {
+		checkWidget();
+		if (font != null && font.isDisposed())
+			SWT.error(SWT.ERROR_INVALID_ARGUMENT);
+		
+		if (_font == font)
+			return;
+			
+		if (font != null && font.equals(_font))
+			return;
+		
+		_font = font;
+		_parent.redraw();
+	}
+	
+	public void setFont(int index, Font font) {
+		checkWidget();
+		if (font != null && font.isDisposed())
+			SWT.error(SWT.ERROR_INVALID_ARGUMENT);
+
+		final int count = Math.max (1, _parent.getColumnCount ());
+		if (index < 0 || index >= count) 
+			return;
+
+		if (_cellFonts == null)
+			_cellFonts = new Font[count];
+		
+		if (_cellFonts[index] == font)
+			return;
+			
+		if (font != null && font.equals(_cellFonts[index]))
+			return;
+		
+		_cellFonts[index] = font;
+		_parent.redraw();
 	}
 	
 	@Override
-	public void setText(String string) {
-		_selectedWidget.setText(string);
-		_deselectedWidget.setText(string);
+	public void setText(String text) {
+		checkWidget();
+		setText(0, text);
 	}
 	
 	public void setText(String[] strings) {
-		_selectedWidget.setText(strings);
-		_deselectedWidget.setText(strings);
+		checkWidget();
+		if (strings == null)
+			SWT.error(SWT.ERROR_NULL_ARGUMENT);
+		
+		for (int i=0; i<strings.length; i++) {
+			final String text = strings[i];
+			if (text == null)
+				continue;
+			setText(i, text);
+		}
+		_parent.redraw();
 	}
 	
-	@Override
-	public Display getDisplay() {
-		return _deselectedWidget.getDisplay();
+	public void setText(int index, String text) {
+		checkWidget();
+		if (text == null)
+			SWT.error(SWT.ERROR_NULL_ARGUMENT);
+		
+		if (index == 0) {
+			if (text.equals(getText()))
+				return;
+			
+			super.setText(text);
+		}
+		
+		final int count = Math.max(1, _parent.getColumnCount());
+		if (index < 0 || index >= count)
+			return;
+		
+		if (_strings == null && index != 0) {
+			_strings = new String[count];
+			_strings[0] = super.getText();
+		}
+		
+		if (_strings != null) {
+			if (text.equals(_strings[index]))
+				return;
+			_strings[index] = text;
+		}
+		
+		_parent.redraw();
+	}
+
+	public void setSelected(boolean selected) {
+		checkWidget();
+		if (selected && _selectionOrder >= 0) return;
+		
+		if (!selected) {
+			_selectionOrder = -1;
+		} else {
+			int selectionOrder = 0;
+			for (GridChooserItem item : _parent.getItems()) {
+				final int candidate = item._selectionOrder;
+				if (candidate >= selectionOrder) {
+					selectionOrder = candidate+1;
+				}
+			}
+			_selectionOrder = selectionOrder;
+		}
+		_parent.redraw();
 	}
 	
-	@Override
-	public Image getImage() {
-		return _deselectedWidget.getImage();
+	void setSelectionOrder(int order, boolean allowDeselect) {
+		final int targetOrder = Math.min(a, b)Math.max(allowDeselect ? -1 : 0, order);
+		final int originalOrder = _selectionOrder;
+		final int diff = targetOrder - originalOrder;
+		if (diff == 0)
+			return;
+
+		final int correction = diff < 0 ? 1 : -1;
+		final int upper = Math.max(0, Math.max(originalOrder, targetOrder));
+		final int lower = Math.max(0, Math.min(originalOrder, targetOrder));
+		for (GridChooserItem item : _parent.getItems()) {
+			final int candidate = item.getSelectionOrder();
+			if (candidate >= lower && candidate <= upper) {
+				item._selectionOrder = candidate+correction;
+			}
+		}
+		
+		_selectionOrder = targetOrder;
+		_parent.redraw();
 	}
 	
-	@Override
-	public String getText() {
-		return _deselectedWidget.getText();
+	public void setSelectionOrder(int order) {
+		setSelectionOrder(order, true);
+	}
+	
+	public Color getBackground() {
+		checkWidget();
+		if (_background == null)
+			return _parent.getBackground();
+		
+		return _background;
+	}
+
+	public Color getBackground(int index) {
+		checkWidget();
+
+		if (_cellBackgrounds == null || index < 0 || index >= _cellBackgrounds.length 
+				|| _cellBackgrounds[index] == null) 
+			return getBackground();
+		
+		return _cellBackgrounds[index];
+	}
+	
+	public Color getForeground() {
+		checkWidget();
+		if (_foreground == null)
+			return _parent.getForeground();
+		
+		return _foreground;
+	}
+
+	public Color getForeground(int index) {
+		checkWidget();
+
+		if (_cellForegrounds == null || index < 0 || index >= _cellForegrounds.length 
+				|| _cellForegrounds[index] == null) 
+			return getForeground();
+		
+		return _cellForegrounds[index];
+	}
+
+	public Font getFont() {
+		checkWidget();
+		if (_font == null)
+			return _parent.getFont();
+		
+		return _font;
+	}
+	
+	public Font getFont(int index) {
+		checkWidget();
+
+		if (_cellFonts == null || index < 0 || index >= _cellFonts.length 
+				|| _cellFonts[index] == null) 
+			return getFont();
+		
+		return _cellFonts[index];
+	}
+
+	public Image getImage(int index) {
+		checkWidget();
+		if (index == 0) return getImage();
+		if (_images == null || index < 0 || index >= _images.length)
+			return null;
+
+		return _images[index];
+	}
+
+	public String getText(int index) {
+		checkWidget();
+		if (index == 0) return getText();
+		if (_strings == null || index < 0 || index >= _strings.length)
+			return null;
+
+		return _strings[index];
+	}
+
+	public boolean isSelected() {
+		return _selectionOrder >= 0;
+	}
+
+	public int getSelectionOrder() {
+		return _selectionOrder;
+	}
+	
+	void release() {
+		_parent = null;
+		_font = null;
+		_cellFonts = null;
+		_background = null;
+		_cellBackgrounds = null;
+		_foreground = null;
+		_cellForegrounds = null;
+		_strings = null;
 	}
 }

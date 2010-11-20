@@ -51,4 +51,7 @@ public final class GridChooserColumn extends Item {
 		_widgets = widgets;
 	}
 
+	public void release() {
+		_widgets = null;
+	}
 }

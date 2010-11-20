@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Platform
+Bundle-SymbolicName: net.karlmartens.platform
+Bundle-Version: 1.0.0
+Bundle-Activator: net.karlmartens.platform.Activator
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Export-Package: net.karlmartens.platform
