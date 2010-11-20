@@ -10,6 +10,7 @@ import java.util.List;
 
 import net.karlmartens.ui.viewer.ItemViewerComparator;
 
+import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ITableColorProvider;
@@ -23,6 +24,13 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.DragSourceEvent;
+import org.eclipse.swt.dnd.DropTargetAdapter;
+import org.eclipse.swt.dnd.DropTargetEvent;
+import org.eclipse.swt.dnd.TableDragSourceEffect;
+import org.eclipse.swt.dnd.TableDropTargetEffect;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionEvent;
@@ -79,6 +87,8 @@ public final class GridChooser extends Composite {
 		_available.addFilter(new ItemSelectionFilter(false));
 		_available.addSelectionChangedListener(_selectionChangedListener);
 		_available.setComparator(new ItemViewerComparator());
+		new DragSourceListenerImpl(_available);
+		new SelectedDropTargetListener(_available, false);
 		
 		final Composite centerPart = new Composite(this, SWT.NONE);
 		centerPart.setLayout(new RowLayout(SWT.VERTICAL));
@@ -94,6 +104,8 @@ public final class GridChooser extends Composite {
 		_selected.addFilter(new ItemSelectionFilter(true));
 		_selected.addSelectionChangedListener(_selectionChangedListener);
 		_selected.setComparator(new SelectionOrderViewerComparator());
+		new DragSourceListenerImpl(_selected);
+		new SelectedDropTargetListener(_selected, true);
 		
 		final FormData availableFormData = new FormData();
 		availableFormData.top = new FormAttachment(0, 100, 10);
@@ -427,5 +439,75 @@ public final class GridChooser extends Composite {
 			
 			return super.compare(viewer, e1, e2);
 		}
+	}
+	
+	private static class DragSourceListenerImpl extends TableDragSourceEffect {
+		private final TableViewer _viewer;
+
+		public DragSourceListenerImpl(TableViewer viewer) {
+			super(viewer.getTable());
+			_viewer = viewer;
+			_viewer.addDragSupport(DND.DROP_MOVE, new Transfer[] {LocalSelectionTransfer.getTransfer()}, this);
+		}
+		
+		@Override
+		public void dragStart(DragSourceEvent event) {
+			if (_viewer.getSelection().isEmpty())
+				event.doit = false;
+
+			super.dragStart(event);
+		}
+
+		@Override
+		public void dragSetData(DragSourceEvent event) {
+			final LocalSelectionTransfer transfer = LocalSelectionTransfer.getTransfer();
+			if (transfer.isSupportedType(event.dataType)) {
+				transfer.setSelection(_viewer.getSelection());
+			}
+		}
+	}
+	
+	private static class SelectedDropTargetListener extends TableDropTargetEffect {
+		private final boolean _selected;
+		
+		public SelectedDropTargetListener(TableViewer viewer, boolean selected) {
+			super(viewer.getTable());
+			viewer.addDropSupport(DND.DROP_MOVE, new Transfer[] {LocalSelectionTransfer.getTransfer()}, this);
+			_selected = selected;
+		}
+		
+		@Override
+		public void dragEnter(DropTargetEvent event) {
+			checkOperation(event);			
+			super.dragEnter(event);
+		}
+		
+		@Override
+		public void dragOperationChanged(DropTargetEvent event) {
+			checkOperation(event);
+			super.dragOperationChanged(event);
+		}
+		
+		private void checkOperation(DropTargetEvent event) {
+			if (event.detail == DND.DROP_DEFAULT) {
+				if ((event.operations & DND.DROP_MOVE) != 0) {
+					event.detail = DND.DROP_MOVE;
+				} else {
+					event.detail = DND.DROP_NONE;
+				}
+			}
+		}
+
+		@Override
+		public void drop(DropTargetEvent event) {
+			final LocalSelectionTransfer transfer = LocalSelectionTransfer.getTransfer();
+			if (transfer.isSupportedType(event.currentDataType)) {
+				final Object[] selected = ((StructuredSelection)transfer.getSelection()).toArray();
+				for (Object item : selected) {
+					((GridChooserItem)item).setSelected(_selected);
+				}
+			}
+		}
+		
 	}
 }
