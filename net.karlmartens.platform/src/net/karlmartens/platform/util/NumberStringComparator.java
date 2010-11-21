@@ -1,4 +1,4 @@
-package net.karlmartens.platform;
+package net.karlmartens.platform.util;
 
 import java.text.NumberFormat;
 import java.text.ParseException;

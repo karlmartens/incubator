@@ -11,7 +11,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import net.karlmartens.platform.NumberStringComparator;
+import net.karlmartens.platform.util.NumberStringComparator;
 import net.karlmartens.ui.viewer.ItemViewerComparator;
 
 import org.eclipse.jface.util.LocalSelectionTransfer;

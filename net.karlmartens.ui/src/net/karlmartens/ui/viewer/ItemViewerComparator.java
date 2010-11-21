@@ -2,7 +2,7 @@ package net.karlmartens.ui.viewer;
 
 import java.util.Comparator;
 
-import net.karlmartens.platform.ComparableComparator;
+import net.karlmartens.platform.util.ComparableComparator;
 
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
