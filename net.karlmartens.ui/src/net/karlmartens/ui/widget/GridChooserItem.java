@@ -239,42 +239,48 @@ public final class GridChooserItem extends Item {
 
 	public void setSelected(boolean selected) {
 		checkWidget();
-		if (selected && _selectionOrder >= 0) return;
+		if (selected && _selectionOrder >= 0) 
+			return;
 		
-		if (!selected) {
-			_selectionOrder = -1;
-		} else {
-			int selectionOrder = 0;
-			for (GridChooserItem item : _parent.getItems()) {
-				final int candidate = item._selectionOrder;
-				if (candidate >= selectionOrder) {
-					selectionOrder = candidate+1;
-				}
-			}
-			_selectionOrder = selectionOrder;
-		}
+		if (!selected && _selectionOrder < 0) 
+			return;
+		
+		setSelectionOrder(selected ? _parent.getSelectionCount() : -1, true);
 		_parent.redraw();
 	}
 	
 	void setSelectionOrder(int order, boolean allowDeselect) {
-		final int maxIndex = _parent.getSelectionCount() - 1;
 		final int minIndex = allowDeselect ? -1 : 0;
+		final int maxIndex = _parent.getSelectionCount() - (_selectionOrder < 0 ? 0 : 1);
 		final int targetOrder = Math.max(minIndex, Math.min(maxIndex, order)); 
-		final int originalOrder = _selectionOrder;
-		final int diff = targetOrder - originalOrder;
-		if (diff == 0)
+		if (targetOrder == _selectionOrder)
 			return;
-
-		final int correction = diff < 0 ? 1 : -1;
-		final int upper = Math.max(0, Math.max(originalOrder, targetOrder));
-		final int lower = Math.max(0, Math.min(originalOrder, targetOrder));
-		for (GridChooserItem item : _parent.getItems()) {
-			final int candidate = item.getSelectionOrder();
-			if (candidate >= lower && candidate <= upper) {
-				item._selectionOrder = candidate+correction;
-			}
-		}
 		
+		final GridChooserItem[] items = _parent.getSelection();
+		final int lower; 
+		final int upper; 
+		final int correction;
+		if (targetOrder < 0) {
+			lower = _selectionOrder + 1;
+			upper = items.length - 1;
+			correction = -1;
+		} else if (_selectionOrder < 0) {
+			lower = targetOrder;
+			upper = items.length - 1;
+			correction = 1;
+		} else if (_selectionOrder < targetOrder){
+			lower = _selectionOrder + 1;
+			upper = Math.min(targetOrder, items.length - 1);
+			correction = -1;
+		} else {
+			lower = targetOrder;
+			upper = Math.max(0, _selectionOrder - 1);
+			correction = 1;
+		}
+		for(int i=lower; i<=upper; i++) {
+			items[i]._selectionOrder += correction;
+		}
+
 		_selectionOrder = targetOrder;
 		_parent.redraw();
 	}

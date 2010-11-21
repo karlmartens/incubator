@@ -5,7 +5,10 @@ import static net.karlmartens.ui.Images.ARROW_LEFT;
 import static net.karlmartens.ui.Images.ARROW_RIGHT;
 import static net.karlmartens.ui.Images.ARROW_UP;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import net.karlmartens.ui.viewer.ItemViewerComparator;
@@ -26,7 +29,6 @@ import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DragSourceEvent;
-import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.TableDragSourceEffect;
 import org.eclipse.swt.dnd.TableDropTargetEffect;
@@ -46,6 +48,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
 
 public final class GridChooser extends Composite {
 
@@ -165,6 +168,7 @@ public final class GridChooser extends Composite {
 		
 		final GridChooserItem[] result = new GridChooserItem[i];
 		System.arraycopy(selected, 0, result, 0, i);
+		Arrays.sort(result, new GridChooserItemSelectionOrderComparator());
 		return result;
 	}
 	
@@ -406,7 +410,6 @@ public final class GridChooser extends Composite {
 		}
 		
 	}
-
 	
 	private static class ItemSelectionFilter extends ViewerFilter {
 		
@@ -429,12 +432,13 @@ public final class GridChooser extends Composite {
 	}
 
 	private static class SelectionOrderViewerComparator extends ViewerComparator {
+		
+		private final Comparator<GridChooserItem> _comparator = new GridChooserItemSelectionOrderComparator();
+		
 		@Override
 		public int compare(Viewer viewer, Object e1, Object e2) {
 			if (e1 instanceof GridChooserItem && e2 instanceof GridChooserItem) {
-				final Integer i1 = Integer.valueOf(((GridChooserItem)e1).getSelectionOrder());
-				final Integer i2 = Integer.valueOf(((GridChooserItem)e2).getSelectionOrder());
-				return i1.compareTo(i2);
+				return _comparator.compare((GridChooserItem)e1, (GridChooserItem)e2);
 			}
 			
 			return super.compare(viewer, e1, e2);
@@ -502,12 +506,35 @@ public final class GridChooser extends Composite {
 		public void drop(DropTargetEvent event) {
 			final LocalSelectionTransfer transfer = LocalSelectionTransfer.getTransfer();
 			if (transfer.isSupportedType(event.currentDataType)) {
-				final Object[] selected = ((StructuredSelection)transfer.getSelection()).toArray();
-				for (Object item : selected) {
-					((GridChooserItem)item).setSelected(_selected);
+				@SuppressWarnings("unchecked")
+				final List<GridChooserItem> selected = new ArrayList<GridChooserItem>(((StructuredSelection)transfer.getSelection()).toList());
+				if (!_selected || event.item == null) {
+					for (GridChooserItem item : selected) {
+						item.setSelected(_selected);
+					}
+					return;
+				}
+				
+				final GridChooserItem targetItem = (GridChooserItem)((TableItem)event.item).getData();
+				final int targetIndex = targetItem.getSelectionOrder();
+				final int minIndex = minimumSelectionOrder(selected);
+				if (minIndex >= targetIndex) {
+					Collections.reverse(selected);
+				}
+				for (GridChooserItem item : selected) {
+					item.setSelectionOrder(targetIndex, false);
 				}
 			}
 		}
-		
+
+		private int minimumSelectionOrder(List<GridChooserItem> items) {
+			int idx = items.size();
+			for (GridChooserItem item : items) {
+				if (item.getSelectionOrder() < idx) {
+					idx = item.getSelectionOrder();
+				}
+			}
+			return idx;
+		}
 	}
 }
