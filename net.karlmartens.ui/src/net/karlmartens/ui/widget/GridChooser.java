@@ -471,12 +471,14 @@ public final class GridChooser extends Composite {
 		}
 	}
 	
-	private static class SelectedDropTargetListener extends TableDropTargetEffect {
+	private class SelectedDropTargetListener extends TableDropTargetEffect {
+		private final TableViewer _viewer;
 		private final boolean _selected;
 		
 		public SelectedDropTargetListener(TableViewer viewer, boolean selected) {
 			super(viewer.getTable());
 			viewer.addDropSupport(DND.DROP_MOVE, new Transfer[] {LocalSelectionTransfer.getTransfer()}, this);
+			_viewer = viewer;
 			_selected = selected;
 		}
 		
@@ -508,33 +510,39 @@ public final class GridChooser extends Composite {
 			if (transfer.isSupportedType(event.currentDataType)) {
 				@SuppressWarnings("unchecked")
 				final List<GridChooserItem> selected = new ArrayList<GridChooserItem>(((StructuredSelection)transfer.getSelection()).toList());
-				if (!_selected || event.item == null) {
+				if (!_selected) {
 					for (GridChooserItem item : selected) {
 						item.setSelected(_selected);
 					}
+					_viewer.setSelection(new StructuredSelection(selected), true);
+					_viewer.getTable().setFocus();
 					return;
 				}
 				
-				final GridChooserItem targetItem = (GridChooserItem)((TableItem)event.item).getData();
-				final int targetIndex = targetItem.getSelectionOrder();
-				final int minIndex = minimumSelectionOrder(selected);
-				if (minIndex >= targetIndex) {
-					Collections.reverse(selected);
+				int targetIndex;
+				if (event.item != null) {
+					final GridChooserItem targetItem = (GridChooserItem)((TableItem)event.item).getData();
+					targetIndex = targetItem.getSelectionOrder();
+				} else {
+					targetIndex = getSelectionCount();
 				}
+				
+				boolean inserted = false;
 				for (GridChooserItem item : selected) {
-					item.setSelectionOrder(targetIndex, false);
+					if (item.getSelectionOrder() < targetIndex && item.getSelectionOrder() >= 0) {
+						inserted = true;
+						item.setSelectionOrder(targetIndex, false);
+					} else {
+						if (inserted) {
+							targetIndex++;
+							inserted = false;
+						}
+						item.setSelectionOrder(targetIndex++, false);
+					}
 				}
+				_viewer.setSelection(new StructuredSelection(selected), true);
+				_viewer.getTable().setFocus();
 			}
-		}
-
-		private int minimumSelectionOrder(List<GridChooserItem> items) {
-			int idx = items.size();
-			for (GridChooserItem item : items) {
-				if (item.getSelectionOrder() < idx) {
-					idx = item.getSelectionOrder();
-				}
-			}
-			return idx;
 		}
 	}
 }
