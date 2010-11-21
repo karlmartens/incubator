@@ -47,6 +47,9 @@ public final class test {
 		GridChooserItem gcItem7 = new GridChooserItem(chooser, SWT.NONE);
 		gcItem7.setText(new String[] {"2", "2", "3"});
 		
+		GridChooserItem gcItem8 = new GridChooserItem(chooser, SWT.NONE);
+		gcItem8.setText(new String[] {"1.1", "2", "3"});
+		
 		shell.open();
 		
 		final Display display = shell.getDisplay();
