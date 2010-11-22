@@ -9,8 +9,12 @@ public final class GridChooserColumn extends Item {
 	private TableColumn[] _widgets;
 
 	public GridChooserColumn(GridChooser parent, int style) {
+		this(parent, style, parent.getColumnCount());
+	}
+	
+	public GridChooserColumn(GridChooser parent, int style, int index) {
 		super(parent, style);
-		parent.createItem(this, parent.getColumnCount());
+		parent.createItem(this, index);
 	}
 	
 	@Override

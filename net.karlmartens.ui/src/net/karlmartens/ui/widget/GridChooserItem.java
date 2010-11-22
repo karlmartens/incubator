@@ -61,11 +61,11 @@ public final class GridChooserItem extends Item {
 	
 	public void setImage(int index, Image image) {
 		checkWidget();
-		if (image == null)
-			SWT.error(SWT.ERROR_NULL_ARGUMENT);
+		if (image != null && image.isDisposed())
+			SWT.error(SWT.ERROR_INVALID_ARGUMENT);
 		
 		if (index == 0) {
-			if (image.equals(getImage()))
+			if (image != null && image.equals(getImage()))
 				return;
 			
 			super.setImage(image);
@@ -81,7 +81,7 @@ public final class GridChooserItem extends Item {
 		}
 		
 		if (_images != null) {
-			if (image.equals(_images[index]))
+			if (image != null && image.equals(_images[index]))
 				return;
 			_images[index] = image;
 		}
