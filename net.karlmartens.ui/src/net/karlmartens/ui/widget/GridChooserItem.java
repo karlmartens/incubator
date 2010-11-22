@@ -4,6 +4,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Item;
 
 public final class GridChooserItem extends Item {
@@ -20,9 +21,23 @@ public final class GridChooserItem extends Item {
 	private int _selectionOrder = -1;
 
 	public GridChooserItem(GridChooser parent, int style) {
+		this(parent, style, parent.getItemCount());
+	}
+	
+	public GridChooserItem(GridChooser parent, int style,  int rowIndex) {
 		super(parent, style);
 		_parent = parent;
-		parent.createItem(this, parent.getItemCount());
+		parent.createItem(this, rowIndex);
+	}
+	
+	public Rectangle getBounds(int index) {
+		checkWidget();
+		return _parent.getBounds(this, index);
+	}
+	
+	public Rectangle getBounds() {
+		checkWidget();
+		return _parent.getBounds(this);
 	}
 	
 	@Override
@@ -288,6 +303,10 @@ public final class GridChooserItem extends Item {
 	public void setSelectionOrder(int order) {
 		setSelectionOrder(order, true);
 	}
+
+	public GridChooser getParent() {
+		return _parent;
+	}
 	
 	public Color getBackground() {
 		checkWidget();
@@ -369,14 +388,21 @@ public final class GridChooserItem extends Item {
 		return _selectionOrder;
 	}
 	
-	void release() {
-		_parent = null;
+	void clear() {
+		super.setText("");
+		super.setImage(null);
+		_strings = null;
+		_images = null;
 		_font = null;
 		_cellFonts = null;
 		_background = null;
 		_cellBackgrounds = null;
 		_foreground = null;
 		_cellForegrounds = null;
-		_strings = null;
+	}
+	
+	void release() {
+		_parent = null;
+		clear();
 	}
 }
