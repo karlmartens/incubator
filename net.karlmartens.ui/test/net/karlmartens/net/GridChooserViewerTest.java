@@ -10,7 +10,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
-public final class test2 {
+public final class GridChooserViewerTest {
 
 	public static void main(String[] args) throws Exception {
 		final Shell shell = new Shell();
@@ -21,22 +21,12 @@ public final class test2 {
 		viewer.getGridChooser().setHeaderVisible(true);
 		
 		final GridChooserViewerColumn c1 = new GridChooserViewerColumn(viewer, SWT.NONE);
-		c1.setLabelProvider(new ColumnLabelProvider() {
-			@Override
-			public String getText(Object element) {
-				return ((String[]) element)[0];
-			}
-		});
+		c1.setLabelProvider(new ColumnLabelProviderImpl(0));
 		c1.getColumn().setText("Test");
 		c1.getColumn().setWidth(100);
 		
 		final GridChooserViewerColumn c2 = new GridChooserViewerColumn(viewer, SWT.NONE);
-		c2.setLabelProvider(new ColumnLabelProvider() {
-			@Override
-			public String getText(Object element) {
-				return ((String[]) element)[0];
-			}
-		});
+		c2.setLabelProvider(new ColumnLabelProviderImpl(1));
 		c2.getColumn().setText("Test 2");
 		c2.getColumn().setWidth(100);
 		
@@ -60,4 +50,18 @@ public final class test2 {
 		}
 	}
 
+	
+	private static class ColumnLabelProviderImpl extends ColumnLabelProvider {
+		
+		private final int _index;
+
+		private ColumnLabelProviderImpl(int index) {
+			_index = index;
+		}
+	
+		@Override
+		public String getText(Object element) {
+			return ((String[]) element)[_index];
+		}
+	}
 }

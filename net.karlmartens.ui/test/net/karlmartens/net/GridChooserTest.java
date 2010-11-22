@@ -9,7 +9,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
-public final class test {
+public final class GridChooserTest {
 
 	public static void main(String[] args) throws Exception {
 		final Shell shell = new Shell();
