@@ -13,6 +13,8 @@ import org.eclipse.jface.viewers.ColumnViewerEditor;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationEvent;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationStrategy;
 import org.eclipse.jface.viewers.EditingSupport;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
@@ -31,6 +33,12 @@ public final class GridChooserViewerTest {
 		viewer.setLabelProvider(new ColumnLabelProviderImpl(0));
 		viewer.setComparator(new ViewerComparator(new NumberStringComparator()));
 		viewer.getGridChooser().setHeaderVisible(true);
+		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+			@Override
+			public void selectionChanged(SelectionChangedEvent event) {
+				System.out.println("Selection changed event");
+			}
+		});
 		
 		final ColumnViewerEditorActivationStrategy activationStrategy = new ColumnViewerEditorActivationStrategy(viewer) {
 			@Override

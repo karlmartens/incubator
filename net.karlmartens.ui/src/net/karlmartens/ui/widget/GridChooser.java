@@ -56,6 +56,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.TypedListener;
 
 public final class GridChooser extends Composite {
 
@@ -318,21 +319,34 @@ public final class GridChooser extends Composite {
 		if (indices == null)
 			SWT.error(SWT.ERROR_NULL_ARGUMENT);
 		
+		boolean selectionChanged = false;
 		for(int index : indices) {
 			if (index < 0 || index > _itemCount) {
 				continue;
 			}
-			_items[index].setSelected(true);
+			selectionChanged |= _items[index].setSelected(true);
 		}
+		
+		if (!selectionChanged)
+			return;
+		
 		redraw();
+		notifyListeners(SWT.Selection, new Event());
 	}
 	
 	public void deselectAll() {
 		checkWidget();
+		
+		boolean selectionChanged = false;
 		for (GridChooserItem item : getSelection()) {
-			item.setSelected(false);
+			selectionChanged |= item.setSelected(false);
 		}
+		
+		if (!selectionChanged)
+			return;
+		
 		redraw();
+		notifyListeners(SWT.Selection, new Event());
 	}
 	
 	public void clear(int index) {
@@ -441,6 +455,25 @@ public final class GridChooser extends Composite {
 		super.redraw();
 	}
 
+	public void addSelectionListener(SelectionListener listener) {
+		checkWidget();
+		if (listener == null)
+			SWT.error(SWT.ERROR_NULL_ARGUMENT);
+		
+		final TypedListener typedListener = new TypedListener(listener);
+		addListener(SWT.Selection, typedListener);
+		addListener(SWT.DefaultSelection, typedListener);
+	}
+	
+	public void removeSelectionListener(SelectionListener listener) {
+		checkWidget();
+		if (listener == null)
+			SWT.error(SWT.ERROR_NULL_ARGUMENT);
+		
+		removeListener(SWT.Selection, listener);
+		removeListener(SWT.DefaultSelection, listener);
+	}
+	
 	void createItem(GridChooserColumn item, int index) {
 		if (index < 0 || index > _columnCount)
 			SWT.error(SWT.ERROR_INVALID_RANGE);
@@ -460,7 +493,6 @@ public final class GridChooser extends Composite {
 		System.arraycopy(_columns, index, _columns, index+1, _columnCount++-index);
 		_columns[index] = item;
 	}
-
 
 	void createItem(GridChooserItem item, int index) {
 		if (index < 0 || index > _itemCount)
@@ -531,7 +563,6 @@ public final class GridChooser extends Composite {
 		return button;
 	}
 	
-	
 	private void updateButtons() {
 		final Table selected = _selected.getTable();
 		final int itemCount = selected.getItemCount();
@@ -549,7 +580,6 @@ public final class GridChooser extends Composite {
 		_right.setEnabled(!_available.getSelection().isEmpty());
 	}
 	
-
 	private void updateSelection(TableViewer viewer, boolean selected) {
 		final Table table = viewer.getTable();
 		final int originalLastItemIndex = table.getItemCount() - 1;
@@ -557,9 +587,13 @@ public final class GridChooser extends Composite {
 		
 		@SuppressWarnings("unchecked")
 		final List<GridChooserItem> selection = ((StructuredSelection)viewer.getSelection()).toList();
+		boolean selectionChanged = false;
 		for (GridChooserItem item : selection) {
-			item.setSelected(selected);
+			selectionChanged |= item.setSelected(selected);
 		}
+		
+		if (!selectionChanged)
+			return;
 		
 		final int newItemCount = table.getItemCount();
 		if (newItemCount <= 0)
@@ -579,18 +613,26 @@ public final class GridChooser extends Composite {
 		System.arraycopy(originalIndicies, 0, newIndicies, 0, i);
 		table.setSelection(newIndicies);
 		redraw();
+		notifyListeners(SWT.Selection, new Event());
 	}
-	
 	
 	private void updateSelection(TableViewer viewer, int movement) {
 		@SuppressWarnings("unchecked")
 		final List<GridChooserItem> selection = ((StructuredSelection)viewer.getSelection()).toList();
+		if (selection.size() <= 0)
+			return;
+		
 		if (movement > 0) {
 			Collections.reverse(selection);
 		}
 		
+		boolean selectionChanged = false;
 		for (GridChooserItem item : selection) {
-			item.setSelectionOrder(item.getSelectionOrder() + movement, false);
+			selectionChanged |= item.setSelectionOrder(item.getSelectionOrder() + movement, false);
+		}
+		
+		if (selectionChanged) {
+			notifyListeners(SWT.Selection, new Event());
 		}
 	}
 	
@@ -896,11 +938,16 @@ public final class GridChooser extends Composite {
 				@SuppressWarnings("unchecked")
 				final List<GridChooserItem> selected = new ArrayList<GridChooserItem>(((StructuredSelection)transfer.getSelection()).toList());
 				if (!_selected) {
+					boolean selectionChanged = false;
 					for (GridChooserItem item : selected) {
-						item.setSelected(_selected);
+						selectionChanged |= item.setSelected(_selected);
 					}
-					_viewer.setSelection(new StructuredSelection(selected), true);
-					_viewer.getTable().setFocus();
+					
+					if (selectionChanged) {
+						_viewer.setSelection(new StructuredSelection(selected), true);
+						_viewer.getTable().setFocus();
+						notifyListeners(SWT.Selection, new Event());
+					}
 					return;
 				}
 				
@@ -912,21 +959,27 @@ public final class GridChooser extends Composite {
 					targetIndex = getSelectionCount();
 				}
 				
+				boolean selectionChanged = false;
 				boolean inserted = false;
 				for (GridChooserItem item : selected) {
 					if (item.getSelectionOrder() < targetIndex && item.getSelectionOrder() >= 0) {
 						inserted = true;
-						item.setSelectionOrder(targetIndex, false);
+						selectionChanged |= item.setSelectionOrder(targetIndex, false);
 					} else {
 						if (inserted) {
 							targetIndex++;
 							inserted = false;
 						}
-						item.setSelectionOrder(targetIndex++, false);
+						selectionChanged |= item.setSelectionOrder(targetIndex++, false);
 					}
 				}
+				
+				if (!selectionChanged)
+					return;
+				
 				_viewer.setSelection(new StructuredSelection(selected), true);
 				_viewer.getTable().setFocus();
+				notifyListeners(SWT.Selection, new Event());
 			}
 		}
 	}
@@ -977,10 +1030,8 @@ public final class GridChooser extends Composite {
 			event.button = e.button;
 			event.count = e.count;
 			event.data = e.data;
-			event.display = e.display;
 			event.stateMask = e.stateMask;
 			event.time = e.time;
-			event.widget = GridChooser.this;
 			final Rectangle r = _viewer.getTable().getBounds();
 			event.x = e.x + r.x;
 			event.y = e.y + r.y;
@@ -991,12 +1042,10 @@ public final class GridChooser extends Composite {
 			final Event event = new Event();
 			event.character = e.character;
 			event.data = e.data;
-			event.display = e.display;
 			event.keyCode = e.keyCode;
 			event.keyLocation = e.keyLocation;
 			event.stateMask = e.stateMask;
 			event.time = e.time;
-			event.widget = GridChooser.this;
 			return event;
 		}
 		

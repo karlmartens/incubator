@@ -257,24 +257,27 @@ public final class GridChooserItem extends Item {
 		_parent.redraw();
 	}
 
-	public void setSelected(boolean selected) {
+	public boolean setSelected(boolean selected) {
 		checkWidget();
 		if (selected && _selectionOrder >= 0) 
-			return;
+			return false;
 		
 		if (!selected && _selectionOrder < 0) 
-			return;
+			return false;
 		
-		setSelectionOrder(selected ? _parent.getSelectionCount() : -1, true);
+		if (!setSelectionOrder(selected ? _parent.getSelectionCount() : -1, true))
+			return false;
+		
 		_parent.redraw();
+		return true;
 	}
 	
-	void setSelectionOrder(int order, boolean allowDeselect) {
+	boolean setSelectionOrder(int order, boolean allowDeselect) {
 		final int minIndex = allowDeselect ? -1 : 0;
 		final int maxIndex = _parent.getSelectionCount() - (_selectionOrder < 0 ? 0 : 1);
 		final int targetOrder = Math.max(minIndex, Math.min(maxIndex, order)); 
 		if (targetOrder == _selectionOrder)
-			return;
+			return false;
 		
 		final GridChooserItem[] items = _parent.getSelection();
 		final int lower; 
@@ -303,10 +306,7 @@ public final class GridChooserItem extends Item {
 
 		_selectionOrder = targetOrder;
 		_parent.redraw();
-	}
-	
-	public void setSelectionOrder(int order) {
-		setSelectionOrder(order, true);
+		return true;
 	}
 
 	public GridChooser getParent() {
