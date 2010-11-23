@@ -121,9 +121,13 @@ final class GridChooserViewerRow extends ViewerRow {
 	
 	private GridChooserViewerRow getRowBelow() {
 		final int index = _item.getParent().indexOf(_item) + 1;
-		if (index >= 0) {
-			return new GridChooserViewerRow(_item.getParent().getItem(index));
+		if (index < _item.getParent().getItemCount()) {
+			final GridChooserItem item = _item.getParent().getItem(index);
+			if (item != null) {
+				return new GridChooserViewerRow(item);
+			}
 		}
+		
 		return null;
 	}
 
