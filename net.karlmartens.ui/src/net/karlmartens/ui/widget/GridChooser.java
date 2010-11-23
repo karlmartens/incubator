@@ -181,25 +181,11 @@ public final class GridChooser extends Composite {
 	public GridChooserItem getItem(Point point) {
 		checkWidget();
 		
-		final Rectangle r1 = _available.getControl().getBounds();
-		if (r1.contains(point)) {
-			final Point clientPoint = new Point(point.x - r1.x, point.y - r1.y);
-			final TableItem item = _available.getTable().getItem(clientPoint);
-			if (item == null)
-				return null;
-			return (GridChooserItem) item.getData();
-		}
+		GridChooserItem item = getItem(_available, point);
+		if (item != null)
+			return item;
 		
-		final Rectangle r2 = _selected.getControl().getBounds();
-		if (r2.contains(point)) {
-			final Point clientPoint = new Point(point.x - r2.x, point.y - r2.y);
-			final TableItem item = _selected.getTable().getItem(clientPoint);
-			if (item == null)
-				return null;
-			return (GridChooserItem) item.getData();
-		}
-		
-		return null;
+		return getItem(_selected, point);
 	}
 	
 	public int indexOf(GridChooserItem item) {
@@ -239,34 +225,6 @@ public final class GridChooser extends Composite {
 		return items; 
 	}
 	
-	public void setItemCount(int count) {
-		checkWidget();
-		final int c = Math.max(0, count);
-		if (c == _itemCount)
-			return;
-		
-		if (c > _itemCount) {
-			for (int i=_itemCount; i<c; i++) {
-				new GridChooserItem(this, SWT.NONE, i);
-			}
-			return;
-		}
-		
-		for (int i=c; i<_itemCount; i++) {
-			final GridChooserItem item = _items[i];
-			if (item != null && !item.isDisposed())
-				item.release();
-			_items[i] = null;
-		}
-		
-		final int length = Math.max(4, (c + 3) / 4 * 4);
-		final GridChooserItem[] newItems = new GridChooserItem[length];
-		System.arraycopy(_items, 0, newItems, 0, c);
-		_items = newItems;
-		_itemCount = c;
-		refresh();
-	}
-	
 	public int[] getSelectionIndices() {
 		checkWidget();
 		final Integer[] selected = new Integer[_itemCount];
@@ -294,6 +252,39 @@ public final class GridChooser extends Composite {
 			result[i] = _items[selected[i]];
 		}
 		return result;
+	}
+	
+	public int getSelectionCount() {
+		checkWidget();
+		return getSelection().length;
+	}
+	
+	public void setItemCount(int count) {
+		checkWidget();
+		final int c = Math.max(0, count);
+		if (c == _itemCount)
+			return;
+		
+		if (c > _itemCount) {
+			for (int i=_itemCount; i<c; i++) {
+				new GridChooserItem(this, SWT.NONE, i);
+			}
+			return;
+		}
+		
+		for (int i=c; i<_itemCount; i++) {
+			final GridChooserItem item = _items[i];
+			if (item != null && !item.isDisposed())
+				item.release();
+			_items[i] = null;
+		}
+		
+		final int length = Math.max(4, (c + 3) / 4 * 4);
+		final GridChooserItem[] newItems = new GridChooserItem[length];
+		System.arraycopy(_items, 0, newItems, 0, c);
+		_items = newItems;
+		_itemCount = c;
+		refresh();
 	}
 	
 	public void setSelection(GridChooserItem[] items) {
@@ -337,11 +328,7 @@ public final class GridChooser extends Composite {
 			}
 			_items[index].setSelected(true);
 		}
-	}
-	
-	public int getSelectionCount() {
-		checkWidget();
-		return getSelection().length;
+		redraw();
 	}
 	
 	public void deselectAll() {
@@ -349,6 +336,7 @@ public final class GridChooser extends Composite {
 		for (GridChooserItem item : getSelection()) {
 			item.setSelected(false);
 		}
+		redraw();
 	}
 	
 	public void clear(int index) {
@@ -365,35 +353,6 @@ public final class GridChooser extends Composite {
 			_items[i].clear();
 		}
 		redraw();
-	}
-	
-	@Override
-	public void redraw() {
-		_available.refresh();
-		_selected.refresh();
-		updateButtons();
-		super.redraw();
-	}
-	
-	public void showItem(GridChooserItem item) {
-		checkWidget();
-		if (item == null)
-			SWT.error(SWT.ERROR_NULL_ARGUMENT);
-		if (item.isDisposed())
-			SWT.error(SWT.ERROR_INVALID_ARGUMENT);
-		final int index = indexOf(item);
-		if (index < 0)
-			return;
-		
-		if (item.isSelected()) {
-			_selected.reveal(item);
-		} else {
-			_available.reveal(item);
-		}
-	}
-	
-	public void showSelection() {
-		// nothing to do - always visible
 	}
 	
 	public void remove(int[] indices) {
@@ -451,10 +410,39 @@ public final class GridChooser extends Composite {
 		refresh();
 	}
 	
+	public void showItem(GridChooserItem item) {
+		checkWidget();
+		if (item == null)
+			SWT.error(SWT.ERROR_NULL_ARGUMENT);
+		if (item.isDisposed())
+			SWT.error(SWT.ERROR_INVALID_ARGUMENT);
+		final int index = indexOf(item);
+		if (index < 0)
+			return;
+		
+		if (item.isSelected()) {
+			_selected.reveal(item);
+		} else {
+			_available.reveal(item);
+		}
+	}
+	
+	public void showSelection() {
+		// nothing to do - always visible
+	}
+	
 	public void refresh() {
 		_available.setInput(getItems());
 		_selected.setInput(getItems());
 		redraw();		
+	}
+
+	@Override
+	public void redraw() {
+		_available.refresh();
+		_selected.refresh();
+		updateButtons();
+		super.redraw();
 	}
 
 	void createItem(GridChooserColumn item, int index) {
@@ -462,7 +450,6 @@ public final class GridChooser extends Composite {
 			SWT.error(SWT.ERROR_INVALID_RANGE);
 		
 		if (index == _columns.length) {
-			
 			final GridChooserColumn[] newColumns = new GridChooserColumn[_columns.length + 4];
 			System.arraycopy(_columns, 0, newColumns, 0, _columns.length);
 			_columns = newColumns;
@@ -619,6 +606,19 @@ public final class GridChooser extends Composite {
 		
 		System.arraycopy(_items, index+1, _items, index, --_itemCount-index);
 		_items[_itemCount] = null;
+	}
+	
+	private static GridChooserItem getItem(TableViewer viewer, Point point) {
+		final Rectangle r1 = viewer.getControl().getBounds();
+		if (r1.contains(point)) {
+			final Point clientPoint = new Point(point.x - r1.x, point.y - r1.y);
+			final TableItem item = viewer.getTable().getItem(clientPoint);
+			if (item != null) {
+				return (GridChooserItem) item.getData();
+			}
+		}
+		
+		return null;
 	}
 	
 	private static Rectangle getBounds(TableViewer viewer, GridChooserItem item) {
