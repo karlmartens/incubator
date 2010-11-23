@@ -9,6 +9,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Widget;
 
+import net.karlmartens.ui.widget.GridChooser;
 import net.karlmartens.ui.widget.GridChooserItem;
 
 final class GridChooserViewerRow extends ViewerRow {
@@ -100,35 +101,44 @@ final class GridChooserViewerRow extends ViewerRow {
 
 	@Override
 	public ViewerRow getNeighbor(int direction, boolean sameLevel) {
+		final GridChooserItem item;
 		if (ViewerRow.ABOVE == direction) {
-			return getRowAbove();
+			 item = getNeighbor(-1);
+		} else if (ViewerRow.BELOW == direction) {
+			item = getNeighbor(1);
+		} else {
+			throw new IllegalArgumentException();
 		}
 		
-		if (ViewerRow.BELOW == direction) {
-			return getRowBelow();
-		}
+		if (item == null)
+			return null;
 		
-		throw new IllegalArgumentException();
-	}
-
-	private GridChooserViewerRow getRowAbove() {
-		final int index = _item.getParent().indexOf(_item) - 1;
-		if (index >= 0) {
-			return new GridChooserViewerRow(_item.getParent().getItem(index));
-		}
-		return null;
+		return new GridChooserViewerRow(item);
 	}
 	
-	private GridChooserViewerRow getRowBelow() {
-		final int index = _item.getParent().indexOf(_item) + 1;
-		if (index < _item.getParent().getItemCount()) {
-			final GridChooserItem item = _item.getParent().getItem(index);
-			if (item != null) {
-				return new GridChooserViewerRow(item);
+	private GridChooserItem getNeighbor(int direction) {
+		final GridChooser parent = _item.getParent();
+		if (_item.isSelected()) {
+			final GridChooserItem[] selection = parent.getSelection();
+			final int index = _item.getSelectionOrder() + direction;
+			if (index < 0 || index >= selection.length) {
+				return null;
 			}
+		return selection[index];
 		}
 		
-		return null;
+		int index = parent.indexOf(_item);
+		for(;;) {
+			index += direction;
+			if (index < 0 || index >= parent.getItemCount()) {
+				return null;
+			}
+			
+			final GridChooserItem item = parent.getItem(index);
+			if (!item.isSelected()) {
+				return item;
+			}
+		}
 	}
 
 	@Override

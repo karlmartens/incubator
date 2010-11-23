@@ -1,6 +1,7 @@
 package net.karlmartens.net;
 
 import net.karlmartens.platform.util.NullSafe;
+import net.karlmartens.platform.util.NumberStringComparator;
 import net.karlmartens.ui.viewer.GridChooserViewer;
 import net.karlmartens.ui.viewer.GridChooserViewerColumn;
 import net.karlmartens.ui.viewer.GridChooserViewerEditor;
@@ -13,6 +14,7 @@ import org.eclipse.jface.viewers.ColumnViewerEditorActivationEvent;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationStrategy;
 import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.TextCellEditor;
+import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
@@ -26,6 +28,8 @@ public final class GridChooserViewerTest {
 		
 		final GridChooserViewer viewer = new GridChooserViewer(shell);
 		viewer.setContentProvider(new ArrayContentProvider());
+		viewer.setLabelProvider(new ColumnLabelProviderImpl(0));
+		viewer.setComparator(new ViewerComparator(new NumberStringComparator()));
 		viewer.getGridChooser().setHeaderVisible(true);
 		
 		final ColumnViewerEditorActivationStrategy activationStrategy = new ColumnViewerEditorActivationStrategy(viewer) {

@@ -11,9 +11,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import net.karlmartens.platform.util.NumberStringComparator;
-import net.karlmartens.ui.viewer.ItemViewerComparator;
-
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -100,7 +97,6 @@ public final class GridChooser extends Composite {
 		_available.setLabelProvider(new TableLabelProviderImpl());
 		_available.addFilter(new ItemSelectionFilter(false));
 		_available.addSelectionChangedListener(_selectionChangedListener);
-		_available.setComparator(new ItemViewerComparator(new NumberStringComparator()));
 		new DragSourceListenerImpl(_available);
 		new SelectedDropTargetListener(_available, false);
 		new BubbleEventsListener(_available);
