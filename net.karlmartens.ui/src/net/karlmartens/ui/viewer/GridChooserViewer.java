@@ -72,9 +72,9 @@ public final class GridChooserViewer extends AbstractTableViewer {
 		if (elements.length == 0)
 			return;
 		
-		final Set<ElementHashableEntry> elementsToRemove = new HashSet<ElementHashableEntry>();
+		final Set<ElementHashtableEntry> elementsToRemove = new HashSet<ElementHashtableEntry>();
 		for (Object element : elements) {
-			elementsToRemove.add(new ElementHashableEntry(element, getComparer()));
+			elementsToRemove.add(new ElementHashtableEntry(element, getComparer()));
 		}
 
 		boolean deselectedItems = false;
@@ -83,7 +83,7 @@ public final class GridChooserViewer extends AbstractTableViewer {
 			if (o == null)
 				continue;
 			
-			if (elementsToRemove.contains(new ElementHashableEntry(o, getComparer()))) {
+			if (elementsToRemove.contains(new ElementHashtableEntry(o, getComparer()))) {
 				deselectedItems = true;
 				break;
 			}

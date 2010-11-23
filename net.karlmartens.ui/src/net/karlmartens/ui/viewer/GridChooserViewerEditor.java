@@ -15,7 +15,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Item;
 
 public final class GridChooserViewerEditor extends ColumnViewerEditor {
-	
 
 	private final GridChooserViewer _viewer;
 	private final GridChooserEditor _editor;

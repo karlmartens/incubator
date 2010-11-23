@@ -555,11 +555,11 @@ public final class GridChooser extends Composite {
 		return getImageBounds(_available, item, index);
 	}
 
-	Composite getSelectedComposite() {
+	Table getSelectedComposite() {
 		return _selected.getTable();
 	}
 	
-	Composite getAvailableComposite() {
+	Table getAvailableComposite() {
 		return _available.getTable();
 	}
 	

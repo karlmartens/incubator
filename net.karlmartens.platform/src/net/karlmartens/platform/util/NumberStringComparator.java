@@ -52,5 +52,4 @@ public final class NumberStringComparator implements Comparator<String> {
 
 		return _comparator.compare(o1, o2);
 	}
-
 }

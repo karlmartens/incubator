@@ -315,8 +315,13 @@ public final class GridChooserItem extends Item {
 	
 	public Color getBackground() {
 		checkWidget();
-		if (_background == null)
-			return _parent.getBackground();
+		if (_background == null) {
+            if (isSelected()) {
+                return _parent.getSelectedComposite().getBackground();
+            }
+            
+            return _parent.getAvailableComposite().getBackground();
+		}
 		
 		return _background;
 	}
