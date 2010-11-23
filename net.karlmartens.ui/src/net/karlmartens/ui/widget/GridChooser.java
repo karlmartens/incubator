@@ -1,8 +1,10 @@
 package net.karlmartens.ui.widget;
 
+import static net.karlmartens.ui.Images.ARROW_BOTTOM;
 import static net.karlmartens.ui.Images.ARROW_DOWN;
 import static net.karlmartens.ui.Images.ARROW_LEFT;
 import static net.karlmartens.ui.Images.ARROW_RIGHT;
+import static net.karlmartens.ui.Images.ARROW_TOP;
 import static net.karlmartens.ui.Images.ARROW_UP;
 
 import java.util.ArrayList;
@@ -64,8 +66,10 @@ public final class GridChooser extends Composite {
 	private final TableViewer _selected;
 	private final Button _left;
 	private final Button _right;
+	private final Button _top;
 	private final Button _up;
 	private final Button _down;
+	private final Button _bottom;
 	
 	private Image[] _images;
 	private int _columnCount;
@@ -84,10 +88,12 @@ public final class GridChooser extends Composite {
 		_items = new GridChooserItem[0];
 		
 		_images = new Image[] {
-				ARROW_LEFT.createImage(),
-				ARROW_RIGHT.createImage(),
-				ARROW_UP.createImage(),
-				ARROW_DOWN.createImage()
+				ARROW_LEFT.createImage(), //
+				ARROW_RIGHT.createImage(), //
+				ARROW_TOP.createImage(), //
+				ARROW_UP.createImage(), //
+				ARROW_DOWN.createImage(), //
+				ARROW_BOTTOM.createImage() //
 		};
 		
 		setLayout(new FormLayout());
@@ -107,8 +113,10 @@ public final class GridChooser extends Composite {
 		
 		_left = createButton(centerPart, _images[0], _changeSelectionListener);
 		_right = createButton(centerPart, _images[1], _changeSelectionListener);
-		_up = createButton(centerPart, _images[2], _changeSelectionListener);
-		_down = createButton(centerPart, _images[3], _changeSelectionListener);
+		_top = createButton(centerPart, _images[2], _changeSelectionListener);
+		_up = createButton(centerPart, _images[3], _changeSelectionListener);
+		_down = createButton(centerPart, _images[4], _changeSelectionListener);
+		_bottom = createButton(centerPart, _images[5], _changeSelectionListener);
 		
 		_selected = new TableViewer(this, style);
 		_selected.setContentProvider(ArrayContentProvider.getInstance());
@@ -576,7 +584,9 @@ public final class GridChooser extends Composite {
 		final boolean hasSelection = !_selected.getSelection().isEmpty(); 
 		_left.setEnabled(hasSelection);
 		_up.setEnabled(hasSelection && !firstSelected);
+		_top.setEnabled(hasSelection && !firstSelected);
 		_down.setEnabled(hasSelection && !lastSelected);
+		_bottom.setEnabled(hasSelection && !lastSelected);
 		_right.setEnabled(!_available.getSelection().isEmpty());
 	}
 	
@@ -697,6 +707,42 @@ public final class GridChooser extends Composite {
 		throw new IllegalArgumentException();
 	}
 
+	private static int minSelectionOrder(TableViewer viewer) {
+		final StructuredSelection selection = (StructuredSelection)viewer.getSelection();
+		if (selection.isEmpty())
+			return -1;
+		
+		final GridChooserItem[] items = new GridChooserItem[selection.size()];
+		System.arraycopy(selection.toArray(), 0, items, 0, selection.size());
+
+		int index = items[0].getSelectionOrder();
+		for (int i=1; i<items.length; i++) {
+			final int candidate = items[i].getSelectionOrder();
+			if (index > candidate) {
+				index = candidate;
+			}
+		}
+		return index;
+	}
+
+	private static int maxSelectionOrder(TableViewer viewer) {
+		final StructuredSelection selection = (StructuredSelection)viewer.getSelection();
+		if (selection.isEmpty())
+			return -1;
+		
+		final GridChooserItem[] items = new GridChooserItem[selection.size()];
+		System.arraycopy(selection.toArray(), 0, items, 0, selection.size());
+
+		int index = items[0].getSelectionOrder();
+		for (int i=1; i<items.length; i++) {
+			final int candidate = items[i].getSelectionOrder();
+			if (index < candidate) {
+				index = candidate;
+			}
+		}
+		return index;
+	}
+
 	private DisposeListener _disposeListener = new DisposeListener() {
 		@Override
 		public void widgetDisposed(DisposeEvent e) {
@@ -764,6 +810,16 @@ public final class GridChooser extends Composite {
 			
 			if (_down.equals(e.widget)) {
 				updateSelection(_selected, 1);
+				return;
+			}
+			
+			if (_top.equals(e.widget)) {
+				updateSelection(_selected, -1 * minSelectionOrder(_selected));
+				return;
+			}
+			
+			if (_bottom.equals(e.widget)) {
+				updateSelection(_selected, getSelectionCount() - maxSelectionOrder(_selected) - 1);
 				return;
 			}
 		}
