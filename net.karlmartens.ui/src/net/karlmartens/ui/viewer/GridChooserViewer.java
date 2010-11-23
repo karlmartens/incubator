@@ -61,6 +61,10 @@ public final class GridChooserViewer extends AbstractTableViewer {
 		}
 	}
 	
+	public void refresh(boolean updateLabels, boolean reveal) {
+		refresh(getRoot(), updateLabels, reveal);
+	}
+	
 	public void remove(Object[] elements) {
 		if (checkBusy())
 			return;
@@ -92,10 +96,6 @@ public final class GridChooserViewer extends AbstractTableViewer {
 			updateSelection(selection);
 			firePostSelectionChanged(new SelectionChangedEvent(this, selection));
 		}
-	}
-	
-	public void refresh(boolean updateLabels, boolean reveal) {
-		refresh(getRoot(), updateLabels, reveal);
 	}
 	
 	@Override
