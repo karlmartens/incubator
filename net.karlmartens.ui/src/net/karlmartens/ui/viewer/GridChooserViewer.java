@@ -8,6 +8,7 @@ import net.karlmartens.ui.widget.GridChooserItem;
 
 import org.eclipse.jface.viewers.AbstractTableViewer;
 import org.eclipse.jface.viewers.ColumnViewerEditor;
+import org.eclipse.jface.viewers.ColumnViewerEditorActivationStrategy;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.ViewerRow;
@@ -28,6 +29,7 @@ public final class GridChooserViewer extends AbstractTableViewer {
 	
 	public GridChooserViewer(GridChooser chooser) {
 		_chooser = chooser;
+		hookControl(chooser);
 	}
 
 	@Override
@@ -219,8 +221,9 @@ public final class GridChooserViewer extends AbstractTableViewer {
 
 	@Override
 	protected ColumnViewerEditor createViewerEditor() {
-		// TODO Auto-generated method stub
-		return null;
+		return new GridChooserViewerEditor(this, 
+				new ColumnViewerEditorActivationStrategy(this), 
+				ColumnViewerEditor.DEFAULT);
 	}
 
 	@Override

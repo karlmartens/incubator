@@ -36,6 +36,8 @@ import org.eclipse.swt.dnd.TableDropTargetEffect;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
@@ -49,6 +51,7 @@ import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
@@ -96,6 +99,7 @@ public final class GridChooser extends Composite {
 		_available.setComparator(new ItemViewerComparator(new NumberStringComparator()));
 		new DragSourceListenerImpl(_available);
 		new SelectedDropTargetListener(_available, false);
+		new MouseListenerImpl(_available);
 		
 		final Composite centerPart = new Composite(this, SWT.NONE);
 		centerPart.setLayout(new RowLayout(SWT.VERTICAL));
@@ -113,6 +117,7 @@ public final class GridChooser extends Composite {
 		_selected.setComparator(new SelectionOrderViewerComparator());
 		new DragSourceListenerImpl(_selected);
 		new SelectedDropTargetListener(_selected, true);
+		new MouseListenerImpl(_selected);
 		
 		final FormData availableFormData = new FormData();
 		availableFormData.top = new FormAttachment(0, 100, 10);
@@ -528,7 +533,14 @@ public final class GridChooser extends Composite {
 		
 		throw new IllegalArgumentException();
 	}
+
+	Composite getSelectedComposite() {
+		return _selected.getTable();
+	}
 	
+	Composite getAvailableComposite() {
+		return _available.getTable();
+	}
 	
 	private Button createButton(Composite parent, Image image, SelectionListener listener) {
 		final Button button = new Button(parent, SWT.PUSH);
@@ -602,7 +614,7 @@ public final class GridChooser extends Composite {
 	}
 	
 	
-	private void refresh() {
+	public void refresh() {
 		_available.setInput(getItems());
 		_selected.setInput(getItems());
 		redraw();		
@@ -891,6 +903,53 @@ public final class GridChooser extends Composite {
 				_viewer.setSelection(new StructuredSelection(selected), true);
 				_viewer.getTable().setFocus();
 			}
+		}
+	}
+	
+	private class MouseListenerImpl implements MouseListener, DisposeListener {
+
+		private final TableViewer _viewer;
+
+		public MouseListenerImpl(TableViewer viewer) {
+			_viewer  = viewer;
+			viewer.getControl().addMouseListener(this);
+			viewer.getControl().addDisposeListener(this);
+		}
+
+		@Override
+		public void mouseDoubleClick(MouseEvent e) {
+			notifyListeners(SWT.MouseDoubleClick, convertEvent(e));
+		}
+
+		@Override
+		public void mouseDown(MouseEvent e) {
+			notifyListeners(SWT.MouseDown, convertEvent(e));
+		}
+
+		@Override
+		public void mouseUp(MouseEvent e) {
+			notifyListeners(SWT.MouseUp, convertEvent(e));
+		}
+		
+		private org.eclipse.swt.widgets.Event convertEvent(MouseEvent e) {
+			final Event event = new Event();
+			event.button = e.button;
+			event.count = e.count;
+			event.data = e.data;
+			event.display = _viewer.getTable().getDisplay();
+			event.stateMask = e.stateMask;
+			event.time = e.time;
+			event.widget = GridChooser.this;
+			final Rectangle r = _viewer.getTable().getBounds();
+			event.x = e.x + r.x;
+			event.y = e.y + r.y;
+			return event;
+		}
+
+		@Override
+		public void widgetDisposed(DisposeEvent e) {
+			_viewer.getControl().removeDisposeListener(this);
+			_viewer.getControl().removeMouseListener(this);
 		}
 	}
 }

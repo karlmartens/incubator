@@ -1,10 +1,18 @@
 package net.karlmartens.net;
 
+import net.karlmartens.platform.util.NullSafe;
 import net.karlmartens.ui.viewer.GridChooserViewer;
 import net.karlmartens.ui.viewer.GridChooserViewerColumn;
+import net.karlmartens.ui.viewer.GridChooserViewerEditor;
 
 import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.ColumnViewerEditor;
+import org.eclipse.jface.viewers.ColumnViewerEditorActivationEvent;
+import org.eclipse.jface.viewers.ColumnViewerEditorActivationStrategy;
+import org.eclipse.jface.viewers.EditingSupport;
+import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
@@ -20,6 +28,25 @@ public final class GridChooserViewerTest {
 		viewer.setContentProvider(new ArrayContentProvider());
 		viewer.getGridChooser().setHeaderVisible(true);
 		
+		// TODO should I implement??
+		//final TableViewerFocusCellManager focusCellManager = new TableViewerFocusCellManager(viewer, new FocusCellOwnerDrawHighlighter(viewer));
+		final ColumnViewerEditorActivationStrategy activationStrategy = new ColumnViewerEditorActivationStrategy(viewer) {
+			@Override
+			protected boolean isEditorActivationEvent(
+					ColumnViewerEditorActivationEvent event) {
+				return event.eventType == ColumnViewerEditorActivationEvent.TRAVERSAL
+					|| event.eventType == ColumnViewerEditorActivationEvent.MOUSE_DOUBLE_CLICK_SELECTION
+					|| (event.eventType == ColumnViewerEditorActivationEvent.KEY_PRESSED && event.keyCode == SWT.CR)
+					|| event.eventType == ColumnViewerEditorActivationEvent.PROGRAMMATIC;
+			}
+		};
+		
+		GridChooserViewerEditor.create(viewer, activationStrategy, 
+					ColumnViewerEditor.TABBING_HORIZONTAL | 
+					ColumnViewerEditor.TABBING_MOVE_TO_ROW_NEIGHBOR | 
+					ColumnViewerEditor.TABBING_VERTICAL | 
+					ColumnViewerEditor.KEYBOARD_ACTIVATION);
+		
 		final GridChooserViewerColumn c1 = new GridChooserViewerColumn(viewer, SWT.NONE);
 		c1.setLabelProvider(new ColumnLabelProviderImpl(0));
 		c1.getColumn().setText("Test");
@@ -27,6 +54,7 @@ public final class GridChooserViewerTest {
 		
 		final GridChooserViewerColumn c2 = new GridChooserViewerColumn(viewer, SWT.NONE);
 		c2.setLabelProvider(new ColumnLabelProviderImpl(1));
+		c2.setEditingSupport(new TextEditingSupport(viewer, 1));
 		c2.getColumn().setText("Test 2");
 		c2.getColumn().setWidth(100);
 		
@@ -49,7 +77,6 @@ public final class GridChooserViewerTest {
 				display.sleep();
 		}
 	}
-
 	
 	private static class ColumnLabelProviderImpl extends ColumnLabelProvider {
 		
@@ -62,6 +89,38 @@ public final class GridChooserViewerTest {
 		@Override
 		public String getText(Object element) {
 			return ((String[]) element)[_index];
+		}
+	}
+	
+	private static class TextEditingSupport extends EditingSupport {
+
+		private final int _index;
+
+		public TextEditingSupport(GridChooserViewer viewer, int index) {
+			super(viewer);
+			_index = index;
+		}
+
+		@Override
+		protected CellEditor getCellEditor(Object element) {
+			return new TextCellEditor();
+		}
+
+		@Override
+		protected boolean canEdit(Object element) {
+			return true;
+		}
+
+		@Override
+		protected Object getValue(Object element) {
+			final String[] data = (String[])element;
+			return data[_index];
+		}
+
+		@Override
+		protected void setValue(Object element, Object value) {
+			final String[] data = (String[])element;
+			data[_index] = NullSafe.toString(value);
 		}
 	}
 }
