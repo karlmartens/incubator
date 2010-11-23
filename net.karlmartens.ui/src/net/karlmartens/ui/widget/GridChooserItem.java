@@ -39,6 +39,11 @@ public final class GridChooserItem extends Item {
 		checkWidget();
 		return _parent.getBounds(this);
 	}
+
+	public Rectangle getImageBounds(int index) {
+		checkWidget();
+		return _parent.getImageBounds(this, index);
+	}
 	
 	@Override
 	public void setImage(Image image) {

@@ -30,8 +30,8 @@ public final class GridChooserViewerEditor extends ColumnViewerEditor {
 
 	@Override
 	protected void setEditor(Control w, Item item, int columnIndex) {
-		_editor.get()...
-		_editor.setEditor(w, (GridChooserItem)item, columnIndex);
+		final GridChooserItem chooserItem = (GridChooserItem)item;
+		_editor.setEditor(w, chooserItem, columnIndex);
 	}
 	
 	@Override
@@ -49,7 +49,8 @@ public final class GridChooserViewerEditor extends ColumnViewerEditor {
 	@Override
 	protected void updateFocusCell(ViewerCell focusCell,
 			ColumnViewerEditorActivationEvent event) {
-		// TODO implement??
+		
+		// Nothing to do
 	}
 
 	public static void create(GridChooserViewer viewer, ColumnViewerEditorActivationStrategy activationStrategy, int feature) {
@@ -72,18 +73,13 @@ public final class GridChooserViewerEditor extends ColumnViewerEditor {
 		@Override
 		public void beforeEditorDeactivated(
 				ColumnViewerEditorDeactivationEvent event) {
-			// nothing to do
+			// Nothing to do
 		}
 
 		@Override
 		public void afterEditorDeactivated(
 				ColumnViewerEditorDeactivationEvent event) {
-			final GridChooserItem item = _editor.getItem();
-			if (item == null || item.isDisposed())
-				return;
-				
-			_viewer.update(item.getData(), new String[] {});
+			_viewer.refresh();
 		}
-		
 	};
 }

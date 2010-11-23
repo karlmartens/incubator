@@ -36,10 +36,14 @@ import org.eclipse.swt.dnd.TableDropTargetEffect;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.events.TraverseEvent;
+import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
@@ -99,7 +103,7 @@ public final class GridChooser extends Composite {
 		_available.setComparator(new ItemViewerComparator(new NumberStringComparator()));
 		new DragSourceListenerImpl(_available);
 		new SelectedDropTargetListener(_available, false);
-		new MouseListenerImpl(_available);
+		new BubbleEventsListener(_available);
 		
 		final Composite centerPart = new Composite(this, SWT.NONE);
 		centerPart.setLayout(new RowLayout(SWT.VERTICAL));
@@ -117,7 +121,7 @@ public final class GridChooser extends Composite {
 		_selected.setComparator(new SelectionOrderViewerComparator());
 		new DragSourceListenerImpl(_selected);
 		new SelectedDropTargetListener(_selected, true);
-		new MouseListenerImpl(_selected);
+		new BubbleEventsListener(_selected);
 		
 		final FormData availableFormData = new FormData();
 		availableFormData.top = new FormAttachment(0, 100, 10);
@@ -446,6 +450,12 @@ public final class GridChooser extends Composite {
 		_itemCount = 0;
 		refresh();
 	}
+	
+	public void refresh() {
+		_available.setInput(getItems());
+		_selected.setInput(getItems());
+		redraw();		
+	}
 
 	void createItem(GridChooserColumn item, int index) {
 		if (index < 0 || index > _columnCount)
@@ -492,46 +502,34 @@ public final class GridChooser extends Composite {
 			SWT.error(SWT.ERROR_NULL_ARGUMENT);
 
 		if (item.isSelected()) {
-			for (TableItem tableItem : _selected.getTable().getItems()) {
-				if (tableItem.getData() == item) {
-					return tableItem.getBounds();
-				}
-			}
-			
-			throw new IllegalArgumentException();
+			return getBounds(_selected, item);
 		}
-		
-		for (TableItem tableItem : _available.getTable().getItems()) {
-			if (tableItem.getData() == item) {
-				return tableItem.getBounds();
-			}
-		}
-		
-		throw new IllegalArgumentException();
+
+		return getBounds(_available, item);
 	}
-	
+
 	Rectangle getBounds(GridChooserItem item, int index) {
 		checkWidget();
 		if (item == null)
 			SWT.error(SWT.ERROR_NULL_ARGUMENT);
 
 		if (item.isSelected()) {
-			for (TableItem tableItem : _selected.getTable().getItems()) {
-				if (tableItem.getData() == item) {
-					return tableItem.getBounds(index);
-				}
-			}
-			
-			throw new IllegalArgumentException();
+			return getBounds(_selected, item, index);
 		}
 		
-		for (TableItem tableItem : _available.getTable().getItems()) {
-			if (tableItem.getData() == item) {
-				return tableItem.getBounds(index);
-			}
+		return getBounds(_available, item, index);
+	}
+
+	Rectangle getImageBounds(GridChooserItem item, int index) {
+		checkWidget();
+		if (item == null)
+			SWT.error(SWT.ERROR_NULL_ARGUMENT);
+
+		if (item.isSelected()) {
+			return getImageBounds(_selected, item, index);
 		}
 		
-		throw new IllegalArgumentException();
+		return getImageBounds(_available, item, index);
 	}
 
 	Composite getSelectedComposite() {
@@ -613,13 +611,6 @@ public final class GridChooser extends Composite {
 		}
 	}
 	
-	
-	public void refresh() {
-		_available.setInput(getItems());
-		_selected.setInput(getItems());
-		redraw();		
-	}
-
 	private void internalRemove(int index) {
 		final GridChooserItem item = _items[index];
 		if (item != null) {
@@ -628,6 +619,44 @@ public final class GridChooser extends Composite {
 		
 		System.arraycopy(_items, index+1, _items, index, --_itemCount-index);
 		_items[_itemCount] = null;
+	}
+	
+	private static Rectangle getBounds(TableViewer viewer, GridChooserItem item) {
+		for (TableItem tableItem : viewer.getTable().getItems()) {
+			if (tableItem.getData() == item) {
+				final Rectangle parentBounds = viewer.getTable().getBounds();
+				final Rectangle childBounds = tableItem.getBounds();
+				return new Rectangle(parentBounds.x + childBounds.x, parentBounds.y + childBounds.y, childBounds.width, childBounds.height);
+			}
+		}
+		
+		throw new IllegalArgumentException();
+	}
+	
+	private static Rectangle getBounds(TableViewer viewer, GridChooserItem item,
+			int index) {
+		for (TableItem tableItem : viewer.getTable().getItems()) {
+			if (tableItem.getData() == item) {
+				final Rectangle parentBounds = viewer.getTable().getBounds();
+				final Rectangle childBounds = tableItem.getBounds(index);
+				return new Rectangle(parentBounds.x + childBounds.x, parentBounds.y + childBounds.y, childBounds.width, childBounds.height);
+			}
+		}
+		
+		throw new IllegalArgumentException();
+	}
+
+	private static Rectangle getImageBounds(TableViewer viewer,
+			GridChooserItem item, int index) {
+		for (TableItem tableItem : viewer.getTable().getItems()) {
+			if (tableItem.getData() == item) {
+				final Rectangle parentBounds = viewer.getTable().getBounds();
+				final Rectangle childBounds = tableItem.getImageBounds(index);
+				return new Rectangle(parentBounds.x + childBounds.x, parentBounds.y + childBounds.y, childBounds.width, childBounds.height);
+			}
+		}
+		
+		throw new IllegalArgumentException();
 	}
 
 	private DisposeListener _disposeListener = new DisposeListener() {
@@ -906,13 +935,14 @@ public final class GridChooser extends Composite {
 		}
 	}
 	
-	private class MouseListenerImpl implements MouseListener, DisposeListener {
+	private class BubbleEventsListener implements MouseListener, KeyListener, TraverseListener, DisposeListener {
 
 		private final TableViewer _viewer;
 
-		public MouseListenerImpl(TableViewer viewer) {
+		public BubbleEventsListener(TableViewer viewer) {
 			_viewer  = viewer;
 			viewer.getControl().addMouseListener(this);
+			viewer.getControl().addKeyListener(this);
 			viewer.getControl().addDisposeListener(this);
 		}
 
@@ -930,13 +960,28 @@ public final class GridChooser extends Composite {
 		public void mouseUp(MouseEvent e) {
 			notifyListeners(SWT.MouseUp, convertEvent(e));
 		}
-		
-		private org.eclipse.swt.widgets.Event convertEvent(MouseEvent e) {
+
+		@Override
+		public void keyPressed(KeyEvent e) {
+			notifyListeners(SWT.KeyDown, convertEvent(e));
+		}
+
+		@Override
+		public void keyReleased(KeyEvent e) {
+			notifyListeners(SWT.KeyUp, convertEvent(e));
+		}
+
+		@Override
+		public void keyTraversed(TraverseEvent e) {
+			notifyListeners(SWT.Traverse, convertEvent(e));
+		}
+
+		private Event convertEvent(MouseEvent e) {
 			final Event event = new Event();
 			event.button = e.button;
 			event.count = e.count;
 			event.data = e.data;
-			event.display = _viewer.getTable().getDisplay();
+			event.display = e.display;
 			event.stateMask = e.stateMask;
 			event.time = e.time;
 			event.widget = GridChooser.this;
@@ -945,11 +990,31 @@ public final class GridChooser extends Composite {
 			event.y = e.y + r.y;
 			return event;
 		}
+		
+		private Event convertEvent(KeyEvent e) {
+			final Event event = new Event();
+			event.character = e.character;
+			event.data = e.data;
+			event.display = e.display;
+			event.keyCode = e.keyCode;
+			event.keyLocation = e.keyLocation;
+			event.stateMask = e.stateMask;
+			event.time = e.time;
+			event.widget = GridChooser.this;
+			return event;
+		}
+		
+		private Event convertEvent(TraverseEvent e) {
+			final Event event = convertEvent((KeyEvent)e);
+			event.detail = e.detail;
+			return event;
+		}
 
 		@Override
 		public void widgetDisposed(DisposeEvent e) {
 			_viewer.getControl().removeDisposeListener(this);
 			_viewer.getControl().removeMouseListener(this);
+			_viewer.getControl().removeKeyListener(this);
 		}
 	}
 }

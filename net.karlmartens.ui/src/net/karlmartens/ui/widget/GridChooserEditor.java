@@ -5,6 +5,7 @@ import org.eclipse.swt.custom.ControlEditor;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 
@@ -39,6 +40,8 @@ public final class GridChooserEditor extends ControlEditor {
 				layout ();
 			}
 		};
+		
+		grabVertical=true;
 	}
 	
 	public GridChooserItem getItem() {
@@ -93,11 +96,19 @@ public final class GridChooserEditor extends ControlEditor {
 	
 	@Override
 	public void setEditor(Control editor) {
+		final GridChooserItem item = getItem();
+		if (editor != null && item != null) {
+			if (getItem().isSelected()) {
+				editor.setParent(_chooser.getSelectedComposite());
+			} else {
+				editor.setParent(_chooser.getAvailableComposite());
+			}
+		}
 		super.setEditor(editor);
 		resize();
 	}
 
-	public void setEditor(Control editor, GridChooserItem item, int columnIndex) {
+	public void setEditor(Control editor, GridChooserItem item, int columnIndex) {		
 		setItem(item);
 		setColumn(columnIndex);
 		setEditor(editor);
@@ -144,43 +155,46 @@ public final class GridChooserEditor extends ControlEditor {
 	private Rectangle computeCellBounds() {
 		if (_item == null || _column <= -1 || _item.isDisposed())
 			return new Rectangle(0, 0, 0, 0);
-		
+
 		final Rectangle cell = _item.getBounds(_column);
-		//final Rectangle rect = _item.getImageBounds(_column);
+
+		// Remove space taken by image from editor
+		final Rectangle image = _item.getImageBounds(_column);
+		cell.x = image.x + image.width;
+		cell.width -= image.width;
+
+		// Convert from global widget coordinates to table relative coordinates
+		final Composite parent = getEditor().getParent();
+		final Rectangle table = parent.getBounds();
+		cell.x -= table.x;
+		cell.y -= table.y;
 		
-		//cell.x = rect.x + rect.width;
-		//cell.width -= rect.width;
-		
-		final Rectangle area = _chooser.getClientArea();
+		// Reduce cell width to compensate for trimming
+		final Rectangle area = parent.getClientArea();
 		if (cell.x < area.x + area.width) {
 			if (cell.x + cell.width > area.x + area.width) {
 				cell.width = area.x + area.width - cell.x;
 			}
 		}
 		
-		final Rectangle editorRect = new Rectangle(cell.x, cell.y, cell.width, cell.height);
+		final Rectangle editor = new Rectangle(cell.x, cell.y, minimumWidth, minimumHeight);
+		
 		if (grabHorizontal) {
-			editorRect.width = Math.max(cell.width, minimumWidth);
+			editor.width = Math.max(cell.width, minimumWidth);
 		}
 		
 		if (grabVertical) {
-			editorRect.height = Math.max(cell.height, minimumHeight);
+			editor.height = Math.max(cell.height, minimumHeight);
 		}
+
 		if (horizontalAlignment == SWT.RIGHT) {
-			editorRect.x += cell.width - editorRect.width;
+			editor.x += cell.width - editor.width;
 		} else if (horizontalAlignment == SWT.LEFT) {
-			// do nothing - cell.x is the right answer
-		} else { // default is CENTER
-			editorRect.x += (cell.width - editorRect.width)/2;
+			// nothing to do
+		} else {
+			editor.x += (cell.width - editor.width) / 2;
 		}
 		
-		if (verticalAlignment == SWT.BOTTOM) {
-			editorRect.y += cell.height - editorRect.height;
-		} else if (verticalAlignment == SWT.TOP) {
-			// do nothing - cell.y is the right answer
-		} else { // default is CENTER
-			editorRect.y += (cell.height - editorRect.height)/2;
-		}
-		return editorRect;
+		return editor;
 	}
 }

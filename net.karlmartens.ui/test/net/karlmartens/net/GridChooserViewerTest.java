@@ -28,8 +28,6 @@ public final class GridChooserViewerTest {
 		viewer.setContentProvider(new ArrayContentProvider());
 		viewer.getGridChooser().setHeaderVisible(true);
 		
-		// TODO should I implement??
-		//final TableViewerFocusCellManager focusCellManager = new TableViewerFocusCellManager(viewer, new FocusCellOwnerDrawHighlighter(viewer));
 		final ColumnViewerEditorActivationStrategy activationStrategy = new ColumnViewerEditorActivationStrategy(viewer) {
 			@Override
 			protected boolean isEditorActivationEvent(
@@ -94,16 +92,18 @@ public final class GridChooserViewerTest {
 	
 	private static class TextEditingSupport extends EditingSupport {
 
+		private final GridChooserViewer _viewer;
 		private final int _index;
 
 		public TextEditingSupport(GridChooserViewer viewer, int index) {
 			super(viewer);
+			_viewer = viewer;
 			_index = index;
 		}
 
 		@Override
 		protected CellEditor getCellEditor(Object element) {
-			return new TextCellEditor();
+			return new TextCellEditor(_viewer.getGridChooser());
 		}
 
 		@Override
