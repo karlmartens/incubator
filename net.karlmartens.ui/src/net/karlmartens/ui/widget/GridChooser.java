@@ -445,7 +445,7 @@ public final class GridChooser extends Composite {
 		if (index < 0 || index > _columnCount)
 			SWT.error(SWT.ERROR_INVALID_RANGE);
 		
-		if (index == _columns.length) {
+		if (_columnCount == _columns.length) {
 			final GridChooserColumn[] newColumns = new GridChooserColumn[_columns.length + 4];
 			System.arraycopy(_columns, 0, newColumns, 0, _columns.length);
 			_columns = newColumns;
