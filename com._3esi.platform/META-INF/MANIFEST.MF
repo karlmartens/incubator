@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Control
+Bundle-SymbolicName: com._3esi.platform
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: com._3esi.platform.desktop.ui.control.Activator
+Bundle-Vendor: _3ESI
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.joda.time,
+ com.jidesoft.grid
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-ActivationPolicy: lazy

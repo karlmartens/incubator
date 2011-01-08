@@ -5,6 +5,7 @@ import net.karlmartens.platform.util.NumberStringComparator;
 import net.karlmartens.ui.viewer.GridChooserViewer;
 import net.karlmartens.ui.viewer.GridChooserViewerColumn;
 import net.karlmartens.ui.viewer.GridChooserViewerEditor;
+import net.karlmartens.ui.widget.GridChooserColumnWeightedResize;
 
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CellEditor;
@@ -13,6 +14,8 @@ import org.eclipse.jface.viewers.ColumnViewerEditor;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationEvent;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationStrategy;
 import org.eclipse.jface.viewers.EditingSupport;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
@@ -31,6 +34,12 @@ public final class GridChooserViewerTest {
 		viewer.setLabelProvider(new ColumnLabelProviderImpl(0));
 		viewer.setComparator(new ViewerComparator(new NumberStringComparator()));
 		viewer.getGridChooser().setHeaderVisible(true);
+		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+			@Override
+			public void selectionChanged(SelectionChangedEvent event) {
+				System.out.println("Selection changed event");
+			}
+		});
 		
 		final ColumnViewerEditorActivationStrategy activationStrategy = new ColumnViewerEditorActivationStrategy(viewer) {
 			@Override
@@ -52,13 +61,13 @@ public final class GridChooserViewerTest {
 		final GridChooserViewerColumn c1 = new GridChooserViewerColumn(viewer, SWT.NONE);
 		c1.setLabelProvider(new ColumnLabelProviderImpl(0));
 		c1.getColumn().setText("Test");
-		c1.getColumn().setWidth(100);
 		
 		final GridChooserViewerColumn c2 = new GridChooserViewerColumn(viewer, SWT.NONE);
 		c2.setLabelProvider(new ColumnLabelProviderImpl(1));
 		c2.setEditingSupport(new TextEditingSupport(viewer, 1));
 		c2.getColumn().setText("Test 2");
-		c2.getColumn().setWidth(100);
+		
+		new GridChooserColumnWeightedResize(viewer.getGridChooser(), new int[] {1, 1});
 		
 		viewer.setInput(new String[][] {
 				{"Andrew", "2", "3"}, //

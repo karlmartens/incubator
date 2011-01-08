@@ -2,12 +2,12 @@ package net.karlmartens.ui.viewer;
 
 import org.eclipse.jface.viewers.IElementComparer;
 
-final class ElementHashableEntry {
+final class ElementHashtableEntry {
 
 	private final Object _element;
 	private final IElementComparer _comparer;
 
-	ElementHashableEntry(Object element, IElementComparer comparer) {
+	ElementHashtableEntry(Object element, IElementComparer comparer) {
 		if (element == null)
 			throw new NullPointerException();
 		
