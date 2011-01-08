@@ -1,13 +1,19 @@
 package net.karlmartens.ui.widget;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.eclipse.draw2d.ColorConstants;
-import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FigureCanvas;
 import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.Layer;
+import org.eclipse.draw2d.LayeredPane;
 import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.MouseMotionListener;
 import org.eclipse.draw2d.RectangleFigure;
+import org.eclipse.draw2d.StackLayout;
 import org.eclipse.draw2d.XYLayout;
+import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlEvent;
@@ -21,13 +27,19 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 
 public final class SparklineScrollBar extends Composite {
+	
+	private static final int THUMB_ALPHA_DEFAULT = 60;
+	private static final int THUMB_ALPHA_OVER = 80;
 
 	private final Button _left;
 	private final FigureCanvas _track;
 	private final Button _right;
+	private Layer _sparkLineLayer;
+	private Layer _thumbLayer;
 	private RectangleFigure _thumbFigure;
 	
 	private int _minimum = 0;
@@ -36,7 +48,7 @@ public final class SparklineScrollBar extends Composite {
 	private int _highlight = -1;
 	private int _increment = 1;
 	private int _selection = 0;
-	private double[] _data = new double[4];
+	private double[] _data = new double[101];
 	
 	
 	public SparklineScrollBar(Composite parent) {
@@ -54,13 +66,17 @@ public final class SparklineScrollBar extends Composite {
 		setLayout(layout);
 		
 		final Listener listener = new Listener();
+		final Display display = getShell().getDisplay();
 		
 		_left = new Button(this, SWT.ARROW | SWT.LEFT);
+		_left.setForeground(display.getSystemColor(SWT.COLOR_BLUE));
 		_left.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, true, 1, 1));
 		_left.addSelectionListener(listener);
 		_left.addMouseListener(listener);
 		
 		_track = new FigureCanvas(this);
+		_track.setBackground(display.getSystemColor(SWT.COLOR_WHITE));
+		_track.setScrollBarVisibility(FigureCanvas.NEVER);
 		_track.setContents(createContents(listener));
 		_track.getViewport().setContentsTracksHeight(true);
 		_track.getViewport().setContentsTracksWidth(true);
@@ -68,25 +84,44 @@ public final class SparklineScrollBar extends Composite {
 		_track.addMouseListener(listener);
 		
 		_right = new Button(this, SWT.ARROW | SWT.RIGHT);
+		_right.setForeground(display.getSystemColor(SWT.COLOR_BLUE));
 		_right.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, true, 1, 1));
 		_right.addSelectionListener(listener);
 		_right.addMouseListener(listener);
 		
+		refresh();
 		addControlListener(listener);
 	}
 	
 	private IFigure createContents(Listener listener) {
-		final Figure container = new Figure();
+		final LayeredPane container = new LayeredPane();
 		container.setBorder(new LineBorder());
-		container.setLayoutManager(new XYLayout());
+		container.setBackgroundColor(ColorConstants.blue);
+		container.setLayoutManager(new StackLayout());
+		
+		_sparkLineLayer = new Layer();
+		_sparkLineLayer.setLayoutManager(new XYLayout());
+		container.add(_sparkLineLayer, 0);
+		
+		_thumbLayer = new Layer();
+		_sparkLineLayer.setLayoutManager(new XYLayout());
+		container.add(_thumbLayer, 1);
 		
 		_thumbFigure = new RectangleFigure();
-		_thumbFigure.setBackgroundColor(ColorConstants.blue);
+		_thumbFigure.setBackgroundColor(ColorConstants.yellow);
+		_thumbFigure.setAlpha(THUMB_ALPHA_DEFAULT);
 		_thumbFigure.addMouseListener(listener);
 		_thumbFigure.addMouseMotionListener(listener);
-		container.add(_thumbFigure);
+		_thumbLayer.add(_thumbFigure);
 		
 		return container;
+	}
+	
+	private IFigure createDataPointFigure() {
+		final RectangleFigure figure = new RectangleFigure();
+		figure.setBackgroundColor(ColorConstants.gray);
+		figure.setForegroundColor(ColorConstants.gray);
+		return figure;
 	}
 
 	public void setMinimum(int value) {
@@ -96,7 +131,6 @@ public final class SparklineScrollBar extends Composite {
 		
 		_minimum = value;
 		resizeData();
-		// TODO cause widget to redraw
 	}
 	
 	public int getMinimum() {
@@ -111,7 +145,6 @@ public final class SparklineScrollBar extends Composite {
 		
 		_maximum = value;
 		resizeData();
-		// TODO cause widget to redraw
 	}
 	
 	public int getMaximum() {
@@ -127,7 +160,7 @@ public final class SparklineScrollBar extends Composite {
 		_thumb = value;
 		if (_highlight >= _thumb)
 			_highlight = -1;
-		// TODO cause widget to redraw
+		handleResize();
 	}
 	
 	public void setHighlight(int value) {
@@ -167,7 +200,7 @@ public final class SparklineScrollBar extends Composite {
 		final int v = Math.min(Math.max(_minimum, value), _maximum - _thumb + 1);
 		if (v == _selection)
 			return;
-		
+
 		_selection = v;
 		handleResize();
 		notifyListeners(SWT.Selection, new Event());
@@ -194,35 +227,94 @@ public final class SparklineScrollBar extends Composite {
 		final int i = index - _minimum;
 		final int l = Math.min(_maximum - _minimum + 1 - i, data.length);
 		System.arraycopy(data, 0, _data, i, l);
-		// TODO cause widget to redraw
+		handleResize();
 	}
 	
-	private void resizeData() {
-		final int size = _maximum - _minimum + 1;
-		for (int i=size; i<_data.length; i++) {
-			_data[i] = 0.0;
+	public void refresh() {
+		final int points = computeDataPoints();
+		final List<?> dataPoints = _sparkLineLayer.getChildren();
+		for (int i=points; i<dataPoints.size(); i++) {
+			_sparkLineLayer.remove((IFigure)dataPoints.get(i));
+			_sparkLineLayer.invalidate();
 		}
 
-		if (_data.length >= size)
-			return;
-
-		final double[] newData = new double[size];
-		System.arraycopy(_data, 0, newData, 0, _data.length);
-		_data = newData;
-	}
-	
-	private void incrementSelection(int direction) {
-		setSelection(_selection + (_increment * direction));
+		for (int i=dataPoints.size(); i<points; i++) {
+			_sparkLineLayer.add(createDataPointFigure());
+			_sparkLineLayer.invalidate();
+		}
+		
+		handleResize();	
 	}
 	
 	private void handleResize() {
 		this.layout();
 		final Rectangle available = _track.getClientArea();
-		final int points = _maximum - _minimum + 1;
 		
-		_thumbFigure.setSize(Math.max(5, available.width * _thumb / points), available.height);
-		_thumbFigure.setLocation(new Point(available.width * _selection / points, 0));
+		final double max = computeMaxValue();
+		final List<?> c = _sparkLineLayer.getChildren();
+		final IFigure[] points = c.toArray(new IFigure[] {});
+
+		final double idealPointWidth = (double)available.width / (double)points.length;
+		final int pointWidth = Math.max(1, (int)idealPointWidth);
+		final double delta = idealPointWidth - pointWidth;
+		
+		double error=0.0;
+		int x=0;
+		for(int i=0; i<points.length; i++) {
+			final int width = pointWidth + (int)error;
+			error = error + delta - (int)error;
+			final int height = (int)((double)available.height * _data[i] / max);
+			points[i].setVisible(height >=0 && width >=0);
+			
+			if (width <= 0)
+				continue;
+			
+			points[i].setSize(new Dimension(width, height));
+			points[i].setLocation(new Point(x, available.height - height - 1));
+			x+=width;			
+		}
+		
+		_track.getContents().setSize(available.width, available.height);
+		_sparkLineLayer.setSize(available.width, available.height);
+		_thumbLayer.setSize(available.width, available.height);
+		
+		_thumbFigure.setSize(Math.max(5, available.width * _thumb / points.length), available.height);
+		_thumbFigure.setLocation(new Point(available.width * _selection / points.length, 0));
 		_thumbFigure.invalidate();
+	}
+
+	private double computeMaxValue() {
+		double max = Double.MIN_VALUE;
+		for(int i=0; i<computeDataPoints(); i++) {
+			final double candidate = _data[i];
+			if (candidate > max)
+				max = candidate;
+		}
+		return max;
+	}
+	
+	private int computeDataPoints() {
+		return _maximum - _minimum + 1;
+	}
+	
+	private void resizeData() {
+		final int points = computeDataPoints();
+		if (_data.length == points)
+			return;
+
+		if (_data.length > points) {
+			Arrays.fill(_data, points, _data.length, 0.0);
+			return;
+		}
+
+		final double[] newData = new double[points];
+		System.arraycopy(_data, 0, newData, 0, _data.length);
+		_data = newData;
+		refresh();
+	}
+	
+	private void incrementSelection(int direction) {
+		setSelection(_selection + (_increment * direction));
 	}
 	
 	private final class Listener implements SelectionListener, MouseListener, org.eclipse.draw2d.MouseListener, MouseMotionListener, ControlListener {
@@ -263,7 +355,7 @@ public final class SparklineScrollBar extends Composite {
 			
 			if (source == _track) {
 				final double pct = (double)e.x / (double)_track.getClientArea().width;
-				final int points = _maximum - _minimum + 1; 
+				final int points = computeDataPoints(); 
 				final int selection =  (int)(points * pct) + _minimum;
 				if (selection < _selection || selection >= _selection + _thumb)
 					setSelection(selection);
@@ -320,7 +412,7 @@ public final class SparklineScrollBar extends Composite {
 				final int diff = e.getLocation().x - _startLocation.x;
 				final double pct = (double)diff / (double)_track.getClientArea().width;
 
-				final int points = _maximum - _minimum + 1;
+				final int points = computeDataPoints();
 				final int correction = (int)(points * pct);
 				setSelection(_selection + correction);
 				_startLocation.x = _track.getClientArea().width * _selection / points + _offset;
@@ -330,12 +422,18 @@ public final class SparklineScrollBar extends Composite {
 
 		@Override
 		public void mouseEntered(org.eclipse.draw2d.MouseEvent e) {
-			// do nothing
+			if (e.getSource() == _thumbFigure) {
+				e.consume();
+				_thumbFigure.setAlpha(THUMB_ALPHA_OVER);
+			}
 		}
 
 		@Override
 		public void mouseExited(org.eclipse.draw2d.MouseEvent e) {
-			// do nothing
+			if (e.getSource() == _thumbFigure) {
+				e.consume();
+				_thumbFigure.setAlpha(THUMB_ALPHA_DEFAULT);
+			}
 		}
 
 		@Override
@@ -387,7 +485,7 @@ public final class SparklineScrollBar extends Composite {
 			if (isDisposed() || _cancelled)
 				return;
 			
-			final int speed = Math.max(Math.min(_iterations++ / 8, 8), 1);
+			final int speed = Math.max(Math.min(_iterations++ / 8, 64), 1);
 			incrementSelection(_direction*speed);
 			schedule();
 		}

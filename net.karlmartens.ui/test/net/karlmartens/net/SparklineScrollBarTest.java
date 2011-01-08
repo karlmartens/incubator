@@ -16,9 +16,14 @@ public final class SparklineScrollBarTest {
 		
 		final SparklineScrollBar control = new SparklineScrollBar(shell);
 		control.setSelection(0);
-		control.setThumb(50);
-		control.setMaximum(1000);
-		control.setData(new double[] {1.0,5.0,5.0,6.0,7.0});
+		control.setMaximum(18262);
+		control.setThumb(365);
+		
+		final double[] data = new double[18263];
+		for (int i=0; i<data.length; i++) {
+			data[i] = Math.random();
+		}
+		control.setData(data);
 		
 		shell.open();
 
