@@ -32,8 +32,8 @@ public final class SparklineScrollBarTest {
 		_control.setSparklineColor(_display.getSystemColor(SWT.COLOR_GRAY));
 		_control.setLabelColor(_display.getSystemColor(SWT.COLOR_BLACK));
 		_control.setLabelFont(new Font(_display, "Arial", 10, SWT.BOLD));
-		_control.setMaximum(599);
-		_control.setThumb(36);
+		_control.setMaximum(120);
+		_control.setThumb(12);
 		_control.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -52,6 +52,10 @@ public final class SparklineScrollBarTest {
 		}
 		_control.setDataPoints(data);		
 		_control.setSelection(0);
+		_control.setHighlight(8);
+		_control.highlight(20, 39);
+		_control.highlight(new int[] {100, 101, 103});
+		_control.setHighlightColor(_display.getSystemColor(SWT.COLOR_RED));
 		updateLabel();
 	}
 	

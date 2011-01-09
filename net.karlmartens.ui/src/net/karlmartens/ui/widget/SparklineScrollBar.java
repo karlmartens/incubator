@@ -1,6 +1,8 @@
 package net.karlmartens.ui.widget;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.List;
 
 import org.eclipse.draw2d.ColorConstants;
@@ -40,22 +42,25 @@ public final class SparklineScrollBar extends Composite {
 	private static final Color LABEL_DEFAULT_COLOR = ColorConstants.black;
 
 	private Color _dataPointColor = ColorConstants.gray;
+	private Color _highlightColor = ColorConstants.blue;
 
 	private final Button _left;
 	private final FigureCanvas _track;
 	private final Button _right;
 	private Layer _sparkLineLayer;
 	private Layer _thumbLayer;
+	private Layer _highlightLayer;
 	private RectangleFigure _thumbFigure;
 	private Label _labelFigure;
 	
 	private int _minimum = 0;
 	private int _maximum = 100;
 	private int _thumb = 10;
-	private int _highlight = -1;
+	private BitSet _highlight = new BitSet();
 	private int _increment = 1;
 	private int _selection = 0;
 	private double[] _data = new double[101];
+	private boolean _inUpdate = false;
 	
 	
 	public SparklineScrollBar(Composite parent) {
@@ -107,9 +112,13 @@ public final class SparklineScrollBar extends Composite {
 		_sparkLineLayer.setLayoutManager(new XYLayout());
 		container.add(_sparkLineLayer, 0);
 		
+		_highlightLayer = new Layer();
+		_highlightLayer.setLayoutManager(new XYLayout());
+		container.add(_highlightLayer, 1);
+		
 		_thumbLayer = new Layer();
 		_thumbLayer.setLayoutManager(new XYLayout());
-		container.add(_thumbLayer, 1);
+		container.add(_thumbLayer, 2);
 		
 		_thumbFigure = new RectangleFigure();
 		_thumbFigure.setLayoutManager(new XYLayout());
@@ -128,13 +137,6 @@ public final class SparklineScrollBar extends Composite {
 		_thumbFigure.add(_labelFigure, new org.eclipse.draw2d.geometry.Rectangle(2, 2, 100, 10));
 		
 		return container;
-	}
-	
-	private IFigure createDataPointFigure() {
-		final RectangleFigure figure = new RectangleFigure();
-		figure.setBackgroundColor(_dataPointColor);
-		figure.setForegroundColor(_dataPointColor );
-		return figure;
 	}
 
 	public void setMinimum(int value) {
@@ -171,28 +173,115 @@ public final class SparklineScrollBar extends Composite {
 			SWT.error(SWT.ERROR_INVALID_RANGE);
 		
 		_thumb = value;
-		if (_highlight >= _thumb)
-			_highlight = -1;
-		handleResize();
-	}
-	
-	public void setHighlight(int value) {
-		checkWidget();
-		if (value >= _thumb)
-			SWT.error(SWT.ERROR_INVALID_RANGE);
-		
-		_highlight = value;
-		// TODO cause widget to redraw
-	}
-	
-	public int getHighlight() {
-		checkWidget();
-		return _highlight;
+		refreshThumb();
 	}
 	
 	public int getThumb() {
 		checkWidget();
 		return _thumb;
+	}
+	
+	public void setHighlights(int[] indices) {
+		checkWidget();
+		if (indices == null)
+			SWT.error(SWT.ERROR_NULL_ARGUMENT);
+		
+		try {
+			_inUpdate = true;
+			clearHighlights();
+			highlight(indices);
+		} finally {
+			_inUpdate = false;
+		}
+		refreshHighlights();
+	}
+	
+	public void setHighlights(int fromIndex, int toIndex) {
+		checkWidget();
+		if (fromIndex > toIndex)
+			SWT.error(SWT.ERROR_INVALID_RANGE);
+
+		try {
+			_inUpdate = true;
+			clearHighlights();
+			highlight(fromIndex, toIndex);
+		} finally {
+			_inUpdate = false;
+		}
+		refreshHighlights();
+	}
+	
+	public void setHighlight(int index) {
+		checkWidget();
+		if (index < _minimum || index > _maximum)
+			SWT.error(SWT.ERROR_INVALID_RANGE);
+		
+		try {
+			_inUpdate = true;
+			clearHighlights();
+			highlight(index);
+		} finally {
+			_inUpdate = false;
+		}
+		refreshHighlights();
+	}
+	
+	public void clearHighlights() {
+		checkWidget();
+		_highlight.clear();
+		refreshHighlights();
+	}
+
+	public void highlight(int[] indices) {
+		checkWidget();
+		if (indices == null)
+			SWT.error(SWT.ERROR_NULL_ARGUMENT);
+		
+		try {
+			_inUpdate = true;
+			for (int index : indices) {
+				highlight(index);
+			}
+		} finally {
+			_inUpdate = false;
+		}
+		refreshHighlights();
+	}
+	
+	public void highlight(int fromIndex, int toIndex) {
+		checkWidget();
+		if (fromIndex >= toIndex) {
+			SWT.error(SWT.ERROR_INVALID_ARGUMENT);
+		}
+		
+		try {
+			_inUpdate = true;
+			for (int index=fromIndex; index<toIndex; index++) {
+				highlight(index);
+			}
+		} finally {
+			_inUpdate = false;
+		}
+		refreshHighlights();
+	}
+	
+	public void highlight(int index) {
+		checkWidget();
+		if (index < _minimum || index > _maximum)
+			SWT.error(SWT.ERROR_INVALID_RANGE);
+		
+		_highlight.set(index - _minimum);
+		refreshHighlights();
+	}
+	
+	public int[] getHighlights() {
+		checkWidget();
+		final int[] highlight = new int[_highlight.size()];
+		int idx=0;
+		for (int h = _highlight.nextSetBit(0); h >= 0; h = _highlight.nextSetBit(h+1)) {
+		     highlight[idx++] = h + _minimum;
+		 }
+		return highlight;
 	}
 	
 	public void setIncrement(int value) {
@@ -215,7 +304,7 @@ public final class SparklineScrollBar extends Composite {
 			return;
 
 		_selection = v;
-		handleMove();
+		refreshThumb();
 		notifyListeners(SWT.Selection, new Event());
 	}
 	
@@ -247,7 +336,7 @@ public final class SparklineScrollBar extends Composite {
 		final int i = index - _minimum;
 		final int l = Math.min(_maximum - _minimum + 1 - i, data.length);
 		System.arraycopy(data, 0, _data, i, l);
-		handleResize();
+		refreshSparkline();
 	}
 
 	public void setLabel(String text) {
@@ -283,28 +372,12 @@ public final class SparklineScrollBar extends Composite {
 
 	public void setSparklineColor(Color color) {
 		_dataPointColor = color;
-		for (Object o : _sparkLineLayer.getChildren()) {
-			final IFigure point = (IFigure)o;
-			point.setForegroundColor(color);
-			point.setBackgroundColor(color);
-			point.invalidate();
-		}
+		updateLayerColor(_sparkLineLayer, color);
 	}
-	
-	public void refresh() {
-		final int points = computeDataPoints();
-		final List<?> dataPoints = _sparkLineLayer.getChildren();
-		for (int i=dataPoints.size()-1; i>=points; i--) {
-			_sparkLineLayer.remove((IFigure)dataPoints.get(i));
-			_sparkLineLayer.invalidate();
-		}
 
-		for (int i=dataPoints.size(); i<points; i++) {
-			_sparkLineLayer.add(createDataPointFigure());
-			_sparkLineLayer.invalidate();
-		}
-		
-		handleResize();	
+	public void setHighlightColor(Color color) {
+		_highlightColor = color;
+		updateLayerColor(_highlightLayer, color);
 	}
 
 	public void addSelectionListener(SelectionListener listener) {
@@ -319,15 +392,70 @@ public final class SparklineScrollBar extends Composite {
 		removeListener(SWT.DefaultSelection, typedListener);
 	}
 	
-	private void handleMove() {
+	public void refresh() {
+		this.layout();
+		final Rectangle available = _track.getClientArea();
+		_track.getContents().setSize(available.width, available.height);
+				
+		refreshSparkline();
+		refreshHighlights();
+		refreshThumb();
+	}
+	
+	private void refreshHighlights() {
+		if (_inUpdate)
+			return;
+	
+		final Rectangle available = _track.getClientArea();
+		_highlightLayer.setSize(available.width, available.height);
+		
+		final List<Point> figures = new ArrayList<Point>();
+		int previous = 0;
+		Point p = null;
+		for (int i=_highlight.nextSetBit(0); i>=0; i=_highlight.nextSetBit(i+1)) {
+			if (p == null || i != previous+1) {
+				p = new Point(i, 1);
+				figures.add(p);
+			} else {
+				p.y++;
+			}
+			previous=i;
+		}
+		
+		resizeLayer(_highlightLayer, figures.size(), _highlightColor);
+		
+		final List<?> c = _highlightLayer.getChildren();
+		final RectangleFigure[] points = c.toArray(new RectangleFigure[] {});
+		for (int i=0; i<points.length; i++) {
+			final Point figure = figures.get(i);
+			final int x = computeX(figure.x);
+			final int width = computeX(figure.x + figure.y) - x;
+			
+			final org.eclipse.draw2d.geometry.Rectangle newBounds = new org.eclipse.draw2d.geometry.Rectangle(x, 0, width, available.height);
+			if (newBounds.equals(points[i].getBounds()))
+				continue;
+			
+			points[i].setBounds(newBounds);
+			points[i].setAlpha(80);
+			points[i].invalidate();
+		}
+	}
+
+	private void refreshThumb() {
+		final Rectangle available = _track.getClientArea();
+		_thumbLayer.setSize(available.width, available.height);
+		
 		final int x = computeX(_selection - _minimum);
 		_thumbFigure.setLocation(new Point(x, 0));
+		_thumbFigure.setSize(Math.max(5, available.width * _thumb / computeDataPoints()), available.height);
 		_thumbFigure.invalidate();		
 	}
 	
-	private void handleResize() {
-		this.layout();
+	private void refreshSparkline() {
+		resizeLayer(_sparkLineLayer, computeDataPoints(), _dataPointColor);
+		
 		final Rectangle available = _track.getClientArea();
+		_sparkLineLayer.setSize(available.width, available.height);
 		final double max = computeMaxValue();
 		final List<?> c = _sparkLineLayer.getChildren();
 		final IFigure[] points = c.toArray(new IFigure[] {});
@@ -351,13 +479,6 @@ public final class SparklineScrollBar extends Composite {
 
 			x = x1;			
 		}
-		
-		_track.getContents().setSize(available.width, available.height);
-		_sparkLineLayer.setSize(available.width, available.height);
-		_thumbLayer.setSize(available.width, available.height);
-		
-		_thumbFigure.setSize(Math.max(5, available.width * _thumb / points.length), available.height);
-		handleMove();
 	}
 	
 	private double _lastError = 0.0;
@@ -368,7 +489,7 @@ public final class SparklineScrollBar extends Composite {
 		if (index == _lastIdx)
 			return _lastX;
 
-		if (index < _lastX) {
+		if (index < _lastIdx) {
 			_lastX = 0;
 			_lastError = 0.0;
 			_lastIdx = 0;
@@ -381,11 +502,11 @@ public final class SparklineScrollBar extends Composite {
 		
 		for (int i=_lastIdx; i<index; i++) {
 			final int width = pointWidth + (int)_lastError;
-			_lastError += delta - (int)_lastError;
+			_lastError = _lastError + delta - (int)_lastError;
 			
 			if (width <= 0)
 				continue;
-			
+
 			_lastX += width;			
 		}
 		
@@ -427,6 +548,35 @@ public final class SparklineScrollBar extends Composite {
 	
 	private void incrementSelection(int direction) {
 		setSelection(_selection + (_increment * direction));
+	}
+	
+	private static IFigure createDataPointFigure(Color color) {
+		final RectangleFigure figure = new RectangleFigure();
+		figure.setBackgroundColor(color);
+		figure.setForegroundColor(color);
+		return figure;
+	}
+	
+	private static void resizeLayer(Layer layer, int numObjects, Color color) {
+		final List<?> dataPoints = layer.getChildren();
+		for (int i=dataPoints.size()-1; i>=numObjects; i--) {
+			layer.remove((IFigure)dataPoints.get(i));
+			layer.invalidate();
+		}
+
+		for (int i=dataPoints.size(); i<numObjects; i++) {
+			layer.add(createDataPointFigure(color));
+			layer.invalidate();
+		}
+	}
+	
+	private static void updateLayerColor(Layer layer, Color color) {
+		for (Object o : layer.getChildren()) {
+			final IFigure point = (IFigure)o;
+			point.setForegroundColor(color);
+			point.setBackgroundColor(color);
+			point.invalidate();
+		}
 	}
 	
 	private final class Listener implements SelectionListener, MouseListener, org.eclipse.draw2d.MouseListener, MouseMotionListener, ControlListener {
@@ -507,7 +657,7 @@ public final class SparklineScrollBar extends Composite {
 			if (isDisposed())
 				return;
 			
-			handleResize();
+			refresh();
 		}
 
 		private void cancelRepeater() {
