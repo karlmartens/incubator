@@ -215,7 +215,7 @@ public final class SparklineScrollBar extends Composite {
 			return;
 
 		_selection = v;
-		handleResize();
+		handleMove();
 		notifyListeners(SWT.Selection, new Event());
 	}
 	
@@ -319,23 +319,22 @@ public final class SparklineScrollBar extends Composite {
 		removeListener(SWT.DefaultSelection, typedListener);
 	}
 	
+	private void handleMove() {
+		final int x = computeX(_selection - _minimum);
+		_thumbFigure.setLocation(new Point(x, 0));
+		_thumbFigure.invalidate();		
+	}
+	
 	private void handleResize() {
 		this.layout();
 		final Rectangle available = _track.getClientArea();
-		
 		final double max = computeMaxValue();
 		final List<?> c = _sparkLineLayer.getChildren();
 		final IFigure[] points = c.toArray(new IFigure[] {});
-
-		final double idealPointWidth = (double)available.width / (double)points.length;
-		final int pointWidth = Math.max(1, (int)idealPointWidth);
-		final double delta = idealPointWidth - pointWidth;
-		
-		double error=0.0;
 		int x=0;
 		for(int i=0; i<points.length; i++) {
-			final int width = pointWidth + (int)error;
-			error = error + delta - (int)error;
+			final int x1 = computeX(i+1);
+			final int width = x1 - x;
 			final int height = (int)((double)available.height * _data[i] / max * 0.9);
 			points[i].setVisible(height >=0 && width >=0);
 			
@@ -350,7 +349,7 @@ public final class SparklineScrollBar extends Composite {
 				points[i].invalidate();
 			}
 
-			x+=width;			
+			x = x1;			
 		}
 		
 		_track.getContents().setSize(available.width, available.height);
@@ -358,8 +357,40 @@ public final class SparklineScrollBar extends Composite {
 		_thumbLayer.setSize(available.width, available.height);
 		
 		_thumbFigure.setSize(Math.max(5, available.width * _thumb / points.length), available.height);
-		_thumbFigure.setLocation(new Point(available.width * _selection / points.length, 0));
-		_thumbFigure.invalidate();
+		handleMove();
+	}
+	
+	private double _lastError = 0.0;
+	private int _lastX = 0;
+	private int _lastIdx = 0;
+	
+	private int computeX(int index) {
+		if (index == _lastIdx)
+			return _lastX;
+
+		if (index < _lastX) {
+			_lastX = 0;
+			_lastError = 0.0;
+			_lastIdx = 0;
+		}
+
+		final Rectangle available = _track.getClientArea();
+		final double idealPointWidth = (double)available.width / (double)computeDataPoints();
+		final int pointWidth = Math.max(1, (int)idealPointWidth);
+		final double delta = idealPointWidth - pointWidth;
+		
+		for (int i=_lastIdx; i<index; i++) {
+			final int width = pointWidth + (int)_lastError;
+			_lastError += delta - (int)_lastError;
+			
+			if (width <= 0)
+				continue;
+			
+			_lastX += width;			
+		}
+		
+		_lastIdx = index;
+		return _lastX;
 	}
 
 	private double computeMaxValue() {
