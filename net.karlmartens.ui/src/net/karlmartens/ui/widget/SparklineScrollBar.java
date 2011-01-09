@@ -426,11 +426,13 @@ public final class SparklineScrollBar extends Composite {
 			final Object source = e.getSource();
 			if (source == _left) {
 				createRepeater(-1);
+				_labelFigure.setVisible(true);
 				return;
 			}
 			
 			if (source == _right) {
 				createRepeater(1);
+				_labelFigure.setVisible(true);
 				return;
 			}
 			
@@ -440,6 +442,7 @@ public final class SparklineScrollBar extends Composite {
 				final int selection =  (int)(points * pct) + _minimum;
 				if (selection < _selection || selection >= _selection + _thumb)
 					setSelection(selection);
+				_labelFigure.setVisible(true);
 				return;
 			}
 		}
@@ -447,6 +450,9 @@ public final class SparklineScrollBar extends Composite {
 		@Override
 		public void mouseUp(MouseEvent e) {
 			cancelRepeater();
+			final Object source = e.getSource();
+			if (source == _left || source == _right)
+				_labelFigure.setVisible(false);
 		}
 
 		@Override
