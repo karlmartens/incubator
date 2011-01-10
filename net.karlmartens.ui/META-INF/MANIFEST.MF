@@ -7,6 +7,8 @@ Bundle-Activator: net.karlmartens.ui.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.draw2d,
+ com.jidesoft.grid,
+ org.joda.time,
  net.karlmartens.platform;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6

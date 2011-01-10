@@ -9,7 +9,6 @@ import net.karlmartens.ui.widget.GridChooserColumnWeightedResize;
 
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CellEditor;
-import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ColumnViewerEditor;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationEvent;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationStrategy;
@@ -31,7 +30,7 @@ public final class GridChooserViewerTest {
 		
 		final GridChooserViewer viewer = new GridChooserViewer(shell);
 		viewer.setContentProvider(new ArrayContentProvider());
-		viewer.setLabelProvider(new ColumnLabelProviderImpl(0));
+		viewer.setLabelProvider(new TestColumnLabelProvider(0));
 		viewer.setComparator(new ViewerComparator(new NumberStringComparator()));
 		viewer.getGridChooser().setHeaderVisible(true);
 		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
@@ -59,11 +58,11 @@ public final class GridChooserViewerTest {
 					ColumnViewerEditor.KEYBOARD_ACTIVATION);
 		
 		final GridChooserViewerColumn c1 = new GridChooserViewerColumn(viewer, SWT.NONE);
-		c1.setLabelProvider(new ColumnLabelProviderImpl(0));
+		c1.setLabelProvider(new TestColumnLabelProvider(0));
 		c1.getColumn().setText("Test");
 		
 		final GridChooserViewerColumn c2 = new GridChooserViewerColumn(viewer, SWT.NONE);
-		c2.setLabelProvider(new ColumnLabelProviderImpl(1));
+		c2.setLabelProvider(new TestColumnLabelProvider(1));
 		c2.setEditingSupport(new TextEditingSupport(viewer, 1));
 		c2.getColumn().setText("Test 2");
 		
@@ -86,20 +85,6 @@ public final class GridChooserViewerTest {
 		while (!shell.isDisposed()) {
 			if (!display.readAndDispatch())
 				display.sleep();
-		}
-	}
-	
-	private static class ColumnLabelProviderImpl extends ColumnLabelProvider {
-		
-		private final int _index;
-
-		private ColumnLabelProviderImpl(int index) {
-			_index = index;
-		}
-	
-		@Override
-		public String getText(Object element) {
-			return ((String[]) element)[_index];
 		}
 	}
 	
