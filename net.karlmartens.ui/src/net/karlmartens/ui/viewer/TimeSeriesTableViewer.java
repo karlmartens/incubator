@@ -6,7 +6,7 @@ import net.karlmartens.ui.widget.TimeSeriesTableItem;
 
 import org.eclipse.jface.viewers.AbstractTableViewer;
 import org.eclipse.jface.viewers.ColumnViewerEditor;
-import org.eclipse.jface.viewers.ViewerRow;
+import org.eclipse.jface.viewers.ColumnViewerEditorActivationStrategy;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Item;
@@ -15,6 +15,7 @@ import org.eclipse.swt.widgets.Widget;
 public final class TimeSeriesTableViewer extends AbstractTableViewer {
 
 	private final TimeSeriesTable _control;
+	private TimeSeriesTableViewerRow _cachedRow;
 
 	public TimeSeriesTableViewer(Composite parent) {
 		this(new TimeSeriesTable(parent));
@@ -22,6 +23,7 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 	
 	public TimeSeriesTableViewer(TimeSeriesTable control) {
 		_control = control;
+		hookControl(control);
 	}
 
 	@Override
@@ -90,9 +92,15 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 	}
 
 	@Override
-	protected void doResetItem(Item arg0) {
-		// TODO Auto-generated method stub
-
+	protected void doResetItem(Item item) {
+		final TimeSeriesTableItem actualItem = (TimeSeriesTableItem)item;
+		final int columnCount = Math.max(1, _control.getColumnCount());
+		for (int i=0; i<columnCount; i++) {
+			actualItem.setText(i, "");
+			if (actualItem.getImage(i) != null) {
+				actualItem.setImage(i, null);
+			}
+		}
 	}
 
 	@Override
@@ -128,15 +136,22 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 	}
 
 	@Override
-	protected ViewerRow internalCreateNewRowPart(int arg0, int arg1) {
-		// TODO Auto-generated method stub
-		return null;
+	protected TimeSeriesTableViewerRow internalCreateNewRowPart(int style, int rowIndex) {
+		final TimeSeriesTableItem item;
+		if (rowIndex >= 0) {
+			item = new TimeSeriesTableItem(_control, style, rowIndex);
+		} else {
+			item = new TimeSeriesTableItem(_control, style);
+		}
+
+		return getViewerRowFromItem(item);
 	}
 
 	@Override
-	protected ColumnViewerEditor createViewerEditor() {
-		// TODO Auto-generated method stub
-		return null;
+	protected TimeSeriesViewerEditor createViewerEditor() {
+		return new TimeSeriesViewerEditor(this, 
+				new ColumnViewerEditorActivationStrategy(this), 
+				ColumnViewerEditor.DEFAULT);
 	}
 
 	@Override
@@ -150,9 +165,14 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 	}
 
 	@Override
-	protected ViewerRow getViewerRowFromItem(Widget arg0) {
-		// TODO Auto-generated method stub
-		return null;
+	protected TimeSeriesTableViewerRow getViewerRowFromItem(Widget item) {
+		if (_cachedRow == null) {
+			_cachedRow = new TimeSeriesTableViewerRow((TimeSeriesTableItem)item);
+		} else {
+			_cachedRow.setItem((TimeSeriesTableItem)item);
+		}
+
+		return _cachedRow;
 	}
 
 	@Override

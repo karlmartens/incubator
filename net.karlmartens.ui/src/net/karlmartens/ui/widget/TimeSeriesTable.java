@@ -1,23 +1,50 @@
 package net.karlmartens.ui.widget;
 
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Frame;
+import java.awt.Panel;
 import java.util.Arrays;
+
+import javax.swing.CellEditor;
+import javax.swing.JRootPane;
 
 import net.karlmartens.platform.text.LocalDateFormat;
 import net.karlmartens.platform.util.Periodicity;
+import net.karlmartens.platform.util.UiThreadUtil;
+import net.karlmartens.platform.util.UiThreadUtil.Task;
+import net.karlmartens.platform.util.UiThreadUtil.TaskWithResult;
 import net.karlmartens.ui.widget.TimeSeriesTableModel.Column;
 import net.karlmartens.ui.widget.TimeSeriesTableModel.Row;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.FormAttachment;
+import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.joda.time.LocalDate;
 
+import com.jidesoft.filter.FilterFactoryManager;
+import com.jidesoft.grid.BooleanCheckBoxCellEditor;
+import com.jidesoft.grid.BooleanCheckBoxCellRenderer;
+import com.jidesoft.grid.CellEditorFactory;
+import com.jidesoft.grid.CellEditorManager;
+import com.jidesoft.grid.CellRendererManager;
 import com.jidesoft.grid.MultiTableModel;
+import com.jidesoft.grid.TableModelWrapperUtils;
+import com.jidesoft.plaf.LookAndFeelFactory;
 
 
 public final class TimeSeriesTable extends Composite {
 	
+	private final TimeSeriesTableEventAdapter _tableListener;
+	private final TableScrollPane _scrollPane;
+	private final SparklineScrollBar _navigationBar;
+
 	private final TimeSeriesTableModel _model = new TimeSeriesTableModel();
 	
 	private Periodicity _periodicity = Periodicity.MONTHLY;
@@ -31,13 +58,50 @@ public final class TimeSeriesTable extends Composite {
 	private int _attributeColumnCount = 0;
 	private TimeSeriesTableItem[] _items = new TimeSeriesTableItem[4];
 	private int _itemCount = 0;
-	private int _lastIndexOf = 0;
 
 	public TimeSeriesTable(Composite parent) {
 		super(parent, SWT.NONE);
 		setLayout(new FormLayout());
+	
+		initSwingEnvironment();
 		
+		final Composite tableComposite = new Composite(this, SWT.EMBEDDED | SWT.NO_BACKGROUND);
+		tableComposite.setLayout(new FillLayout());
+		final Frame frame = SWT_AWT.new_Frame(tableComposite);
 		
+		_scrollPane = UiThreadUtil.performSyncOnSwing(new TaskWithResult<TableScrollPane>() {
+			@Override
+			public TableScrollPane run() {
+                initializeJideFramework();
+                final Panel panel = new Panel(new BorderLayout());
+                final JRootPane root = new JRootPane();
+                panel.add(root);
+                final Container contentPane = root.getContentPane();
+                final TableScrollPane scrollPane = new TableScrollPane(_model);
+                contentPane.add(scrollPane, BorderLayout.CENTER);
+                frame.add(panel);
+                return scrollPane;
+			}
+		});
+		
+		_navigationBar = new SparklineScrollBar(this);
+		
+		final FormData tableData = new FormData();
+		tableData.top = new FormAttachment(0, 100, 0);
+		tableData.bottom = new FormAttachment(_navigationBar, -5, SWT.TOP);
+		tableData.left = new FormAttachment(_navigationBar, 0, SWT.LEFT);
+		tableData.right = new FormAttachment(_navigationBar, 0, SWT.RIGHT);
+		
+		final FormData navigationData = new FormData();
+		navigationData.bottom = new FormAttachment(100, 100, 0);
+		navigationData.left = new FormAttachment(0, 100, 0);
+		navigationData.right = new FormAttachment(100, 100, 0);
+		navigationData.height = 40;
+		
+		tableComposite.setLayoutData(tableData);
+		_navigationBar.setLayoutData(navigationData);
+		
+		_tableListener = new TimeSeriesTableEventAdapter(this, _scrollPane);
 	}
 	
 	public void setPeriodicity(Periodicity periodicity) {
@@ -127,14 +191,16 @@ public final class TimeSeriesTable extends Composite {
 
 	public int getColumnCount() {
 		checkWidget();
-		// TODO Auto-generated method stub
-		return 0;
+		return _model.getColumnCount();
 	}
 
 	public TimeSeriesTableColumn getColumn(int index) {
 		checkWidget();
 		// TODO Auto-generated method stub
-		return null;
+		if (index < 0 || index >= _attributeColumnCount)
+			SWT.error(SWT.ERROR_INVALID_RANGE);
+		
+		return _attributeColumns[index];
 	}
 
 	public int getItemCount() {
@@ -187,84 +253,114 @@ public final class TimeSeriesTable extends Composite {
 		checkWidget();
 		if (item == null)
 			SWT.error(SWT.ERROR_NULL_ARGUMENT);
-		
-		if (_lastIndexOf >= 1 && _lastIndexOf < _itemCount - 1) {
-			if (_items[_lastIndexOf] == item) return _lastIndexOf;
-			if (_items[_lastIndexOf + 1] == item) return ++_lastIndexOf;
-			if (_items[_lastIndexOf - 1] == item) return --_lastIndexOf;
-		}
-		
-		if (_lastIndexOf < _itemCount / 2) {
-			for (int i=0; i<_itemCount; i++) {
-				if (_items[i] == item) {
-					_lastIndexOf = i;
-					return i;
-				}
-			}
-		} else {
-			for (int i=_itemCount-1; i>=0; i--) {
-				if (_items[i] == item) {
-					_lastIndexOf = i;
-					return i;
-				}
-			}
-		}
-		
-		return -1;
+
+		// TODO think about this
+		return _model.indexOf(item.getRow());
 	}
 
 	public TimeSeriesTableItem getItem(Point point) {
 		checkWidget();
-		// TODO Auto-generated method stub
-		return null;
+		
+		final int index = _scrollPane.getRowAt(point.x, point.y);
+		if (index <= 0)
+			return null;
+		return _items[index];
 	}
 
 	public TimeSeriesTableItem[] getSelection() {
 		checkWidget();
-		// TODO Auto-generated method stub
-		return null;
+		
+		final int[] selectedIndices = getSelectionIndices(); 
+		final TimeSeriesTableItem[] selected = new TimeSeriesTableItem[selectedIndices.length];
+		int i=0;
+		for (int index : selectedIndices) {
+			selected[i++] = _items[index];
+		}
+		
+		return selected;
 	}
 
 	public int[] getSelectionIndices() {
 		checkWidget();
-		// TODO Auto-generated method stub
-		return null;
+		return _tableListener.getSelectionIndices();
 	}
 
-	public void setSelection(TimeSeriesTableItem[] actualItems) {
+	public void setSelection(TimeSeriesTableItem[] items) {
 		checkWidget();
-		// TODO Auto-generated method stub
+		if (items == null)
+			SWT.error(SWT.ERROR_NULL_ARGUMENT);
 		
+		final int[] selected = new int[items.length];
+		for(int i=0; i<items.length; i++) {
+			selected[i] = indexOf(items[i]);
+		}
+		
+		setSelection(selected);
 	}
 
 	public void setSelection(int[] indices) {
 		checkWidget();
-		// TODO Auto-generated method stub
 		
+		deselectAll();
+		select(indices);
 	}
 
 	public void select(int[] indices) {
 		checkWidget();
-		// TODO Auto-generated method stub
+		if (indices == null)
+			SWT.error(SWT.ERROR_NULL_ARGUMENT);
 		
+		final int[] idxs = new int[indices.length];
+		System.arraycopy(indices, 0, idxs, 0, idxs.length);
+		Arrays.sort(idxs);
+		
+		final int[] selected = getSelectionIndices();
+		
+		UiThreadUtil.performAsyncOnSwing(new Task() {
+			@Override
+			public void run() {				
+				int previous = -1;
+				int selectedIndex = 0;
+				for (int index : idxs) {
+					if (previous == index)
+						continue;
+					
+					while(selectedIndex < selected.length && index < selected[selectedIndex])
+						selectedIndex++;
+					
+					if (selectedIndex < selected.length && index == selected[selectedIndex])
+						continue;
+					
+					final int rowIndex = TableModelWrapperUtils.getRowAt(_scrollPane.getModel(), index);
+					_scrollPane.getMainTable().changeSelection(rowIndex, 0, true, false);
+					previous = index;
+				}
+			}});
 	}
 
 	public void deselectAll() {
 		checkWidget();
-		// TODO Auto-generated method stub
-		
+		UiThreadUtil.performAsyncOnSwing(new Task() {
+			@Override
+			public void run() {
+				_scrollPane.getRowHeaderTable().clearSelection();
+				_scrollPane.getMainTable().clearSelection();
+				}
+			});
 	}
 
 	public void clear(int index) {
 		checkWidget();
-		// TODO Auto-generated method stub
-		
+		if (index < 0 || index >= _itemCount)
+			SWT.error(SWT.ERROR_INVALID_RANGE);
+		_items[index].clear();
 	}
 
 	public void clearAll() {
 		checkWidget();
-		// TODO Auto-generated method stub
-		
+		for (int i=0; i<_itemCount; i++) {
+			_items[i].clear();
+		}
 	}
 
 	public void remove(int[] indices) {
@@ -315,22 +411,35 @@ public final class TimeSeriesTable extends Composite {
 		}
 		
 		_itemCount = 0;
-		_model.removeAllRows();
+		UiThreadUtil.performAsyncOnSwing(new Task() {
+			@Override
+			public void run() {
+				_model.removeAllRows();
+			}
+		});
 	}
 
 	public void showItem(TimeSeriesTableItem item) {
 		checkWidget();
-		// TODO Auto-generated method stub
-		
+		final int index = indexOf(item);
+		UiThreadUtil.performAsyncOnSwing(new Task() {
+			@Override
+			public void run() {
+				_scrollPane.scrollToRow(index);
+			}});
 	}
 
 	public void showSelection() {
 		checkWidget();
-		// TODO Auto-generated method stub
 		
+		final TimeSeriesTableItem[] items = getSelection();
+		if (items.length <= 0)
+			return;
+		
+		showItem(items[0]);
 	}
 	
-	void createItem(TimeSeriesTableColumn item, int index) {
+	void createItem(final TimeSeriesTableColumn item, final int index) {
 		if (index < 0 || index > _attributeColumnCount)
 			SWT.error(SWT.ERROR_INVALID_RANGE);
 		
@@ -340,11 +449,11 @@ public final class TimeSeriesTable extends Composite {
 			_attributeColumns = newColumns;
 		}
 		
-		final Column column = _model.createColumn(MultiTableModel.HEADER_COLUMN, index);
-		item.register(column);
-		
 		System.arraycopy(_attributeColumns, index, _attributeColumns, index+1, _attributeColumnCount++-index);
 		_attributeColumns[index] = item;
+		
+		final Column column = _model.createColumn(MultiTableModel.HEADER_COLUMN, index);
+		item.register(column);
 	}
 
 	void createItem(TimeSeriesTableItem item, int index) {
@@ -358,14 +467,28 @@ public final class TimeSeriesTable extends Composite {
 			_items = newItems;
 		}
 		
-		final Row row = _model.createRow(index);
-		item.register(row);
-		
 		System.arraycopy(_items, index, _items, index+1, _itemCount++-index);
 		_items[index] = item;
+		
+		final Row row = _model.createRow(index);
+		item.register(row);
+	}
+
+	Rectangle getBounds(TimeSeriesTableItem item, int columnIndex) {
+		// TODO implement
+		final int actualColumnIndex = TableModelWrapperUtils.getColumnAt(_model, columnIndex);
+		final int rowIndex = indexOf(item);
+		final int actualRowIndex = TableModelWrapperUtils.getRowAt(_model, rowIndex);
+		
+		return new Rectangle(0, 0, 0, 0);
 	}
 	
-	private void internalRemove(int index) {
+	Rectangle getBounds(TimeSeriesTableItem item) {
+		// TODO implement
+		return new Rectangle(0, 0, 0, 0);
+	}
+	
+	private void internalRemove(final int index) {
 		final TimeSeriesTableItem item = _items[index];
 		if (item != null) {
 			item.release();
@@ -373,6 +496,43 @@ public final class TimeSeriesTable extends Composite {
 		
 		System.arraycopy(_items, index+1, _items, index, --_itemCount-index);
 		_items[_itemCount] = null;
-		_model.removeRow(index);
+		
+		UiThreadUtil.performAsyncOnSwing(new Task() {
+			@Override
+			public void run() {
+				_model.removeRow(index);
+			}
+		});
 	}
+
+	private static void initSwingEnvironment() {
+        UiThreadUtil.performAsyncOnSwing(new Task() {
+            @Override
+            public void run() {
+                LookAndFeelFactory.installDefaultLookAndFeelAndExtension();
+                try {
+                    System.setProperty("sun.awt.noerasebackground", "true"); //$NON-NLS-1$ //$NON-NLS-2$
+                } catch (NoSuchMethodError error) {
+                    // do nothing
+                }
+            }
+        });
+    }
+
+	private static void initializeJideFramework() {
+        CellRendererManager.initDefaultRenderer();
+        CellRendererManager.registerRenderer(Boolean.class,
+            new BooleanCheckBoxCellRenderer());
+
+        CellEditorManager.initDefaultEditor();
+        CellEditorManager.registerEditor(Boolean.class, new CellEditorFactory() {
+            @Override
+            public CellEditor create() {
+                return new BooleanCheckBoxCellEditor();
+            }
+        });
+
+        FilterFactoryManager filterManager = new FilterFactoryManager();
+        filterManager.registerDefaultFilterFactories();
+	};
 }

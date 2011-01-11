@@ -12,6 +12,10 @@ class TestColumnLabelProvider extends ColumnLabelProvider {
 
 	@Override
 	public String getText(Object element) {
-		return ((String[]) element)[_index];
+		final Object o = ((Object[]) element)[_index];
+		if (o==null)
+			return "";
+		
+		return o.toString();
 	}
 }

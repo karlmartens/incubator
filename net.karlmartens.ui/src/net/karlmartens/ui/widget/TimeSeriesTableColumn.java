@@ -28,6 +28,7 @@ public final class TimeSeriesTableColumn extends Item {
 	}
 
 	void register(Column column) {
+		checkWidget();
 		_column = column;		
 	}
 

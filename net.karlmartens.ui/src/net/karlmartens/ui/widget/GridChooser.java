@@ -359,7 +359,7 @@ public final class GridChooser extends Composite {
 	
 	public void clear(int index) {
 		checkWidget();
-		if (index < 0 || index >= _columnCount)
+		if (index < 0 || index >= _itemCount)
 			SWT.error(SWT.ERROR_INVALID_RANGE);
 		_items[index].clear();
 		redraw();
@@ -367,7 +367,7 @@ public final class GridChooser extends Composite {
 	
 	public void clearAll() {
 		checkWidget();
-		for (int i=0; i<_columnCount; i++) {
+		for (int i=0; i<_itemCount; i++) {
 			_items[i].clear();
 		}
 		redraw();
