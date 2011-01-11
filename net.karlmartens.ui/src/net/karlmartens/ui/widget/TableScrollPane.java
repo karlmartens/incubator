@@ -30,7 +30,7 @@ final class TableScrollPane extends com.jidesoft.grid.TableScrollPane {
 	private static final long serialVersionUID = 1L;
 	
 	TableScrollPane(MultiTableModel model) {
-		super(new FilterableTableModel(new CachedTableModel(model)), true);
+		super(new SortableTableModel(new FilterableTableModel(new CachedTableModel(model))), true);
 		UiThreadUtil.assertSwingThread();
         setAutoscrolls(true);
         setAllowMultiSelectionInDifferentTable(true);
