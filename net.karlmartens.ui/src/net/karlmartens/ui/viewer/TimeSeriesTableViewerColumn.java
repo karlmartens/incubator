@@ -6,7 +6,7 @@ import net.karlmartens.ui.widget.TimeSeriesTableColumn;
 import org.eclipse.jface.viewers.ViewerColumn;
 
 public final class TimeSeriesTableViewerColumn extends ViewerColumn {
-
+	
 	private final TimeSeriesTableColumn _column;
 
 	public TimeSeriesTableViewerColumn(TimeSeriesTableViewer viewer, int style) {

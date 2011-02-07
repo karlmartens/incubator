@@ -27,18 +27,35 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 	}
 
 	@Override
-	protected void doClear(int index) {
-		_control.clear(index);
+	protected TimeSeriesTableViewerRow internalCreateNewRowPart(int style, int rowIndex) {
+		final TimeSeriesTableItem item;
+		if (rowIndex >= 0) {
+			item = new TimeSeriesTableItem(_control, rowIndex);
+		} else {
+			item = new TimeSeriesTableItem(_control);
+		}
+
+		return getViewerRowFromItem(item);
 	}
 
 	@Override
-	protected void doClearAll() {
-		_control.clearAll();
+	protected int doIndexOf(Item item) {
+		return _control.indexOf((TimeSeriesTableItem)item);
 	}
 
 	@Override
-	protected void doDeselectAll() {
-		_control.deselectAll();
+	protected int doGetItemCount() {
+		return _control.getItemCount();
+	}
+
+	@Override
+	protected void doSetItemCount(int count) {
+		_control.setItemCount(count);
+	}
+
+	@Override
+	protected TimeSeriesTableItem[] doGetItems() {
+		return _control.getItems();
 	}
 
 	@Override
@@ -52,16 +69,6 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 	}
 
 	@Override
-	protected int doGetItemCount() {
-		return _control.getItemCount();
-	}
-
-	@Override
-	protected TimeSeriesTableItem[] doGetItems() {
-		return _control.getItems();
-	}
-
-	@Override
 	protected TimeSeriesTableItem[] doGetSelection() {
 		return _control.getSelection();
 	}
@@ -72,13 +79,22 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 	}
 
 	@Override
-	protected int doIndexOf(Item item) {
-		return _control.indexOf((TimeSeriesTableItem)item);
+	protected void doClearAll() {
+		_control.clearAll();
 	}
 
 	@Override
-	protected void doRemove(int[] indices) {
-		_control.remove(indices);
+	protected void doResetItem(Item item) {
+		final TimeSeriesTableItem tableItem = (TimeSeriesTableItem)item;
+		final int columnCount = Math.max(1, _control.getColumnCount());
+		for (int i=0; i<columnCount; i++) {
+			tableItem.setText(i, "");
+		}
+		
+		final int periodCount = Math.max(1, _control.getPeriodCount());
+		for (int i=0; i<periodCount; i++) {
+			tableItem.setValue(i, 0.0);
+		}
 	}
 
 	@Override
@@ -92,37 +108,8 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 	}
 
 	@Override
-	protected void doResetItem(Item item) {
-		final TimeSeriesTableItem actualItem = (TimeSeriesTableItem)item;
-		final int columnCount = Math.max(1, _control.getColumnCount());
-		for (int i=0; i<columnCount; i++) {
-			actualItem.setText(i, "");
-			if (actualItem.getImage(i) != null) {
-				actualItem.setImage(i, null);
-			}
-		}
-	}
-
-	@Override
-	protected void doSelect(int[] indices) {
-		_control.select(indices);
-	}
-
-	@Override
-	protected void doSetItemCount(int count) {
-		_control.setItemCount(count);
-	}
-
-	@Override
-	protected void doSetSelection(Item[] items) {
-		final TimeSeriesTableItem[] actualItems = new TimeSeriesTableItem[items.length];
-		System.arraycopy(items, 0, actualItems, 0, actualItems.length);
-		_control.setSelection(actualItems);
-	}
-
-	@Override
-	protected void doSetSelection(int[] indices) {
-		_control.setSelection(indices);
+	protected void doRemove(int[] indices) {
+		_control.remove(indices);
 	}
 
 	@Override
@@ -131,37 +118,42 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 	}
 
 	@Override
+	protected void doDeselectAll() {
+		_control.deselectAll();
+	}
+
+	@Override
+	protected void doSetSelection(Item[] items) {
+		final TimeSeriesTableItem[] tableItems = new TimeSeriesTableItem[items.length];
+		System.arraycopy(items, 0, tableItems, 0, tableItems.length);
+		_control.setSelection(tableItems);
+	}
+
+	@Override
 	protected void doShowSelection() {
 		_control.showSelection();
 	}
 
 	@Override
-	protected TimeSeriesTableViewerRow internalCreateNewRowPart(int style, int rowIndex) {
-		final TimeSeriesTableItem item;
-		if (rowIndex >= 0) {
-			item = new TimeSeriesTableItem(_control, style, rowIndex);
-		} else {
-			item = new TimeSeriesTableItem(_control, style);
-		}
-
-		return getViewerRowFromItem(item);
+	protected void doSetSelection(int[] indices) {
+		_control.setSelection(indices);
 	}
 
 	@Override
-	protected TimeSeriesViewerEditor createViewerEditor() {
-		return new TimeSeriesViewerEditor(this, 
+	protected void doClear(int index) {
+		_control.clear(index);
+	}
+
+	@Override
+	protected void doSelect(int[] indices) {
+		_control.select(indices);
+	}
+
+	@Override
+	protected TimeSeriesTableViewerEditor createViewerEditor() {
+		return new TimeSeriesTableViewerEditor(this, 
 				new ColumnViewerEditorActivationStrategy(this), 
 				ColumnViewerEditor.DEFAULT);
-	}
-
-	@Override
-	protected int doGetColumnCount() {
-		return _control.getColumnCount();
-	}
-
-	@Override
-	protected TimeSeriesTableItem getItemAt(Point point) {
-		return _control.getItem(point);
 	}
 
 	@Override
@@ -176,8 +168,17 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 	}
 
 	@Override
+	protected TimeSeriesTableItem getItemAt(Point point) {
+		return _control.getItem(point);
+	}
+
+	@Override
+	protected int doGetColumnCount() {
+		return _control.getColumnCount();
+	}
+
+	@Override
 	public TimeSeriesTable getControl() {
 		return _control;
 	}
-
 }

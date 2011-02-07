@@ -10,12 +10,16 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 
-public class TimeSeriesTableViewerRow extends ViewerRow {
+final class TimeSeriesTableViewerRow extends ViewerRow {
 
 	private TimeSeriesTableItem _item;
 
 	public TimeSeriesTableViewerRow(TimeSeriesTableItem item) {
-		setItem(item);
+		_item = item;
+	}
+	
+	public void setItem(TimeSeriesTableItem item) {
+		_item = item;
 	}
 
 	@Override
@@ -95,22 +99,11 @@ public class TimeSeriesTableViewerRow extends ViewerRow {
 
 	@Override
 	public ViewerRow getNeighbor(int direction, boolean sameLevel) {
-		final TimeSeriesTable table = _item.getParent();
-		final int index = table.indexOf(_item);
-		
 		final TimeSeriesTableItem item;
 		if (ViewerRow.ABOVE == direction) {
-			if (index >= table.getItemCount() - 1) {
-				return null;
-			}
-
-			item = table.getItem(index + 1);
+			 item = getNeighbor(-1);
 		} else if (ViewerRow.BELOW == direction) {
-			if (index <= 0) {
-				return null;
-			} 
-			
-			item = table.getItem(index + 1);
+			item = getNeighbor(1);
 		} else {
 			throw new IllegalArgumentException();
 		}
@@ -119,6 +112,15 @@ public class TimeSeriesTableViewerRow extends ViewerRow {
 			return null;
 		
 		return new TimeSeriesTableViewerRow(item);
+	}
+
+	private TimeSeriesTableItem getNeighbor(int delta) {
+		final TimeSeriesTable table = _item.getParent();
+		final int index = table.indexOf(_item) + delta;
+		if (index < 0 || index >= table.getItemCount())
+			return null;
+		
+		return table.getItem(index);
 	}
 
 	@Override
@@ -134,10 +136,6 @@ public class TimeSeriesTableViewerRow extends ViewerRow {
 	@Override
 	public Object getElement() {
 		return _item.getData();
-	}
-
-	void setItem(TimeSeriesTableItem item) {
-		_item = item;
 	}
 
 }

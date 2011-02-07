@@ -35,14 +35,8 @@ import org.eclipse.swt.dnd.TableDropTargetEffect;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.KeyListener;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.events.TraverseEvent;
-import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
@@ -62,6 +56,7 @@ import org.eclipse.swt.widgets.TypedListener;
 
 public final class GridChooser extends Composite {
 
+	private final PassthoughEventListener _passthroughListener;
 	private final TableViewer _available;
 	private final TableViewer _selected;
 	private final Button _left;
@@ -98,6 +93,8 @@ public final class GridChooser extends Composite {
 		
 		setLayout(new FormLayout());
 		
+		_passthroughListener = new PassthoughEventListener(this);
+		
 		final int style = SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER;
 		_available = new TableViewer(this, style);
 		_available.setContentProvider(ArrayContentProvider.getInstance());
@@ -106,7 +103,7 @@ public final class GridChooser extends Composite {
 		_available.addSelectionChangedListener(_selectionChangedListener);
 		new DragSourceListenerImpl(_available);
 		new SelectedDropTargetListener(_available, false);
-		new BubbleEventsListener(_available);
+		_passthroughListener.addSource(_available.getControl());
 		
 		final Composite centerPart = new Composite(this, SWT.NONE);
 		centerPart.setLayout(new RowLayout(SWT.VERTICAL));
@@ -126,7 +123,7 @@ public final class GridChooser extends Composite {
 		_selected.setComparator(new SelectionOrderViewerComparator());
 		new DragSourceListenerImpl(_selected);
 		new SelectedDropTargetListener(_selected, true);
-		new BubbleEventsListener(_selected);
+		_passthroughListener.addSource(_selected.getControl());
 		
 		final FormData availableFormData = new FormData();
 		availableFormData.top = new FormAttachment(0, 100, 10);
@@ -1037,85 +1034,6 @@ public final class GridChooser extends Composite {
 				_viewer.getTable().setFocus();
 				notifyListeners(SWT.Selection, new Event());
 			}
-		}
-	}
-	
-	private class BubbleEventsListener implements MouseListener, KeyListener, TraverseListener, DisposeListener {
-
-		private final TableViewer _viewer;
-
-		public BubbleEventsListener(TableViewer viewer) {
-			_viewer  = viewer;
-			viewer.getControl().addMouseListener(this);
-			viewer.getControl().addKeyListener(this);
-			viewer.getControl().addDisposeListener(this);
-		}
-
-		@Override
-		public void mouseDoubleClick(MouseEvent e) {
-			notifyListeners(SWT.MouseDoubleClick, convertEvent(e));
-		}
-
-		@Override
-		public void mouseDown(MouseEvent e) {
-			notifyListeners(SWT.MouseDown, convertEvent(e));
-		}
-
-		@Override
-		public void mouseUp(MouseEvent e) {
-			notifyListeners(SWT.MouseUp, convertEvent(e));
-		}
-
-		@Override
-		public void keyPressed(KeyEvent e) {
-			notifyListeners(SWT.KeyDown, convertEvent(e));
-		}
-
-		@Override
-		public void keyReleased(KeyEvent e) {
-			notifyListeners(SWT.KeyUp, convertEvent(e));
-		}
-
-		@Override
-		public void keyTraversed(TraverseEvent e) {
-			notifyListeners(SWT.Traverse, convertEvent(e));
-		}
-
-		private Event convertEvent(MouseEvent e) {
-			final Event event = new Event();
-			event.button = e.button;
-			event.count = e.count;
-			event.data = e.data;
-			event.stateMask = e.stateMask;
-			event.time = e.time;
-			final Rectangle r = _viewer.getTable().getBounds();
-			event.x = e.x + r.x;
-			event.y = e.y + r.y;
-			return event;
-		}
-		
-		private Event convertEvent(KeyEvent e) {
-			final Event event = new Event();
-			event.character = e.character;
-			event.data = e.data;
-			event.keyCode = e.keyCode;
-			event.keyLocation = e.keyLocation;
-			event.stateMask = e.stateMask;
-			event.time = e.time;
-			return event;
-		}
-		
-		private Event convertEvent(TraverseEvent e) {
-			final Event event = convertEvent((KeyEvent)e);
-			event.detail = e.detail;
-			return event;
-		}
-
-		@Override
-		public void widgetDisposed(DisposeEvent e) {
-			_viewer.getControl().removeDisposeListener(this);
-			_viewer.getControl().removeMouseListener(this);
-			_viewer.getControl().removeKeyListener(this);
 		}
 	}
 }

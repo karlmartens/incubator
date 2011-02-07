@@ -761,7 +761,7 @@ public final class SparklineScrollBar extends Composite {
 		}
 
 		private void schedule() {
-			getShell().getDisplay().timerExec(20, this);
+			getShell().getDisplay().timerExec(Math.max(20, 400 / Math.max(1, _iterations)), this);
 		}
 	}
 }
