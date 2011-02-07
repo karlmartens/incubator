@@ -4,13 +4,17 @@ import net.karlmartens.ui.widget.TimeSeriesTable;
 import net.karlmartens.ui.widget.TimeSeriesTableColumn;
 import net.karlmartens.ui.widget.TimeSeriesTableItem;
 
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.viewers.AbstractTableViewer;
 import org.eclipse.jface.viewers.ColumnViewerEditor;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationStrategy;
+import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Widget;
+import org.joda.time.Interval;
+import org.joda.time.LocalDate;
 
 public final class TimeSeriesTableViewer extends AbstractTableViewer {
 
@@ -180,5 +184,39 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 	@Override
 	public TimeSeriesTable getControl() {
 		return _control;
+	}
+	
+	@Override
+	protected void inputChanged(Object input, Object oldInput) {
+		super.inputChanged(input, oldInput);
+		
+		final TimeSeriesContentProvider cp = (TimeSeriesContentProvider)getContentProvider();
+		if (cp == null)
+			return;
+		
+		final LocalDate[] dates = cp.getDates();
+		if (dates == null || dates.length < 2)
+			return;
+		
+		final LocalDate[] periods = new LocalDate[dates.length - 1];
+		System.arraycopy(dates, 0, periods, 0, periods.length);
+		_control.setPeriods(periods);
+		
+		final Object[] elements = getSortedChildren(getRoot());
+		for (int i=0; i<elements.length; i++) {
+			final double[] values = new double[dates.length - 1];
+			for (int j=0; j<periods.length; j++) {
+				final Interval interval = new Interval(dates[j].toDateMidnight(), dates[j+1].toDateMidnight());
+				values[j] = cp.getValue(elements[i], interval);
+			}
+			
+			final TimeSeriesTableItem item = _control.getItem(i);
+			item.setValue(values);
+		}
+	}
+	
+	@Override
+	protected void assertContentProviderType(IContentProvider provider) {
+		Assert.isTrue(provider instanceof TimeSeriesContentProvider);
 	}
 }

@@ -717,7 +717,7 @@ public final class TimeSeriesTable extends Composite {
 
 		@Override
 		public KTableCellEditor doGetCellEditor(int col, int row) {
-			// TODO Auto-generated method stub
+			// Not used
 			return null;
 		}
 		
@@ -815,8 +815,7 @@ public final class TimeSeriesTable extends Composite {
 
 		@Override
 		public void doSetContentAt(int col, int row, Object newValue) {
-			// TODO Auto-generated method stub
-			
+			// Not used
 		}
 
 		@Override
@@ -892,7 +891,14 @@ public final class TimeSeriesTable extends Composite {
 		public void paintControl(PaintEvent e) {
 			if (e.getSource() == _table) {
 				final Rectangle visible = getVisibleDataCells();
+				if (visible.width <= 0) {
+					_hscroll.setThumb(_hscroll.getMaximum() + 1);
+					_hscroll.setEnabled(false);
+					return;
+				}
+				
 				_hscroll.setThumb(Math.max(1, visible.width));
+				_hscroll.setEnabled(true);
 			}
 		}
 		

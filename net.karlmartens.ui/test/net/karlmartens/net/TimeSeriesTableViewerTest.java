@@ -1,11 +1,16 @@
 package net.karlmartens.net;
 
+import java.text.DecimalFormat;
 import java.util.BitSet;
 
+import net.karlmartens.platform.text.LocalDateFormat;
 import net.karlmartens.platform.util.NumberStringComparator;
+import net.karlmartens.ui.viewer.TimeSeriesContentProvider;
 import net.karlmartens.ui.viewer.TimeSeriesTableViewer;
 import net.karlmartens.ui.viewer.TimeSeriesTableViewerColumn;
 import net.karlmartens.ui.viewer.TimeSeriesTableViewerEditor;
+import net.karlmartens.ui.widget.TimeSeriesTable;
+import net.karlmartens.ui.widget.TimeSeriesTable.ScrollDataMode;
 
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnViewerEditor;
@@ -19,6 +24,9 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.joda.time.Interval;
+import org.joda.time.LocalDate;
+import org.joda.time.format.DateTimeFormat;
 
 public final class TimeSeriesTableViewerTest {
 	private static BitSet TRAVERSAL_KEYS = new BitSet();
@@ -33,6 +41,10 @@ public final class TimeSeriesTableViewerTest {
 		TRAVERSAL_KEYS.set(SWT.PAGE_UP);
 		TRAVERSAL_KEYS.set(SWT.PAGE_DOWN);
 		TRAVERSAL_KEYS.set(SWT.TAB);		
+		TRAVERSAL_KEYS.set(SWT.SHIFT);		
+		TRAVERSAL_KEYS.set(SWT.CONTROL);		
+		TRAVERSAL_KEYS.set(SWT.ALT);		
+		TRAVERSAL_KEYS.set(SWT.COMMAND);		
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -41,12 +53,18 @@ public final class TimeSeriesTableViewerTest {
 		final Display display = shell.getDisplay();
 		
 		final TimeSeriesTableViewer viewer = new TimeSeriesTableViewer(shell);
-		viewer.setContentProvider(new ArrayContentProvider());
+		viewer.setContentProvider(new TestTimeSeriesContentProvider());
 		viewer.setLabelProvider(new TestColumnLabelProvider(0));
 		viewer.setComparator(new ViewerComparator(new NumberStringComparator()));
-		viewer.getControl().setHeaderVisible(true);
-		viewer.getControl().setBackground(display.getSystemColor(SWT.COLOR_WHITE));
-		viewer.getControl().setFont(new Font(display, "Arial", 10, SWT.NORMAL));
+		
+		final TimeSeriesTable table = viewer.getControl();
+		table.setHeaderVisible(true);
+		table.setBackground(display.getSystemColor(SWT.COLOR_WHITE));
+		table.setFont(new Font(display, "Arial", 10, SWT.NORMAL));
+		table.setDateFormat(new LocalDateFormat(DateTimeFormat.forPattern("MMM yyyy")));
+		table.setNumberFormat(new DecimalFormat("#,##0.00"));
+		table.setScrollDataMode(ScrollDataMode.SELECTED_ROWS);
+		
 		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
@@ -95,6 +113,29 @@ public final class TimeSeriesTableViewerTest {
 		while (!shell.isDisposed()) {
 			if (!display.readAndDispatch())
 				display.sleep();
+		}
+	}
+	
+	private static class TestTimeSeriesContentProvider extends ArrayContentProvider implements TimeSeriesContentProvider {
+
+		private final LocalDate[] _dates;
+		
+		public TestTimeSeriesContentProvider() {
+			final LocalDate initialDate = new LocalDate(2011, 1, 1);
+			_dates = new LocalDate[12*15];
+			for (int i=0; i<_dates.length; i++) {
+				_dates[i] = initialDate.plusMonths(i);
+			}
+		}
+		
+		@Override
+		public LocalDate[] getDates() {
+			return _dates;
+		}
+		
+		@Override
+		public Double getValue(Object element, Interval interval) {
+			return Math.random() * 100000;
 		}
 	}
 }
