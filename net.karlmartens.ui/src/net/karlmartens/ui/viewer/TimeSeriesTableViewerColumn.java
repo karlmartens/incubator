@@ -17,7 +17,7 @@ public final class TimeSeriesTableViewerColumn extends ViewerColumn {
 		this(viewer, createColumn(viewer.getControl(), style, index));
 	}
 	
-	private TimeSeriesTableViewerColumn(TimeSeriesTableViewer viewer, TimeSeriesTableColumn column) {
+	TimeSeriesTableViewerColumn(TimeSeriesTableViewer viewer, TimeSeriesTableColumn column) {
 		super(viewer, column);
 		_column = column;
 	}

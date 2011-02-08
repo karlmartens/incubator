@@ -71,7 +71,7 @@ public final class TimeSeriesTableEditor extends ControlEditor {
 		if (_item == null || _item.isDisposed()) 
 			return;
 		
-		final int columnCount = _table.getColumnCount();
+		final int columnCount = _table.getColumnCount() + _table.getPeriodCount();
 		if (columnCount == 0 && _column != 0) 
 			return;
 		
@@ -94,7 +94,7 @@ public final class TimeSeriesTableEditor extends ControlEditor {
 	@Override
 	public void dispose() {
 		if (_table != null && !_table.isDisposed()) {
-			if (_column > -1 && _column < _table.getColumnCount()) {
+			if (_column > -1 && _column < (_table.getColumnCount() + _table.getPeriodCount())) {
 				final TimeSeriesTableColumn column = _table.getColumn(_column);
 				column.removeControlListener(_columnListener);
 			}
@@ -114,7 +114,7 @@ public final class TimeSeriesTableEditor extends ControlEditor {
 	}
 	
 	private void setColumn(int column) {
-		final int columnCount = _table.getColumnCount();
+		final int columnCount = _table.getColumnCount() + _table.getPeriodCount();
 		
 		if (columnCount == 0) {
 			_column = column == 0 ? 0 : -1;

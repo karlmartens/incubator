@@ -56,6 +56,7 @@ public final class TimeSeriesTableViewerTest {
 		viewer.setContentProvider(new TestTimeSeriesContentProvider());
 		viewer.setLabelProvider(new TestColumnLabelProvider(0));
 		viewer.setComparator(new ViewerComparator(new NumberStringComparator()));
+		//viewer.setEditingSupport();
 		
 		final TimeSeriesTable table = viewer.getControl();
 		table.setHeaderVisible(true);

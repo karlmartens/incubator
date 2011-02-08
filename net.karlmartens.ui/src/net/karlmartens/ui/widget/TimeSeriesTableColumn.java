@@ -24,6 +24,10 @@ public final class TimeSeriesTableColumn extends Item {
 		super(table, style);
 		table.createItem(this, index);
 	}
+	
+	TimeSeriesTableColumn(TimeSeriesTable table) {
+		super(table, SWT.NONE);
+	}
 
 	public void setWidth(int width) {
 		_width = width;

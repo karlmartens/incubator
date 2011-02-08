@@ -185,24 +185,22 @@ public final class TimeSeriesTable extends Composite {
 		final Point location = _table.getLocation();
 		final Point clientPoint = new Point(point.x - location.x, point.y - location.y);
 		final Point cell = _table.getCellForCoordinates(clientPoint.x, clientPoint.y);
-		final int top = _showHeader ? 1 : 0;
-		if (cell.y < top) {
+		final int row = computeActualRow(cell.y);
+		if (row < 0)
 			return null;
-		}
 		
-		return _items[cell.y - top];
+		return _items[row];
 	}
 	
 	public int[] getSelectionIndices() {
 		checkWidget();
 		
-		final int top = _showHeader ? 1 : 0;
 		final BitSet selectedRows = new BitSet();
 		for (Point selection : _table.getCellSelection()) {
 			if (_showHeader && selection.y == 0)
 				continue;
 			
-			selectedRows.set(selection.y - top);
+			selectedRows.set(computeActualRow(selection.y));
 		}
 		
 		int index = 0;
@@ -229,7 +227,7 @@ public final class TimeSeriesTable extends Composite {
 	public Point getFocusCell() {
 		checkWidget();
 		
-		final int row = _lastFocusRow - (_showHeader ? 1 : 0);
+		final int row = computeActualRow(_lastFocusRow);
 		final int col = _lastFocusColumn;
 		if (row < 0 || col < 0 || col >= _columnCount)
 			return null;
@@ -237,12 +235,17 @@ public final class TimeSeriesTable extends Composite {
 		return new Point(col, row);
 	}
 	
+	private TimeSeriesTableColumn _periodColumn = new TimeSeriesTableColumn(this);
+	
 	public TimeSeriesTableColumn getColumn(int index) {
 		checkWidget();
-		if (index < 0 || index >= _columnCount)
+		if (index < 0 || index >= (_columnCount + _periods.length))
 			SWT.error(SWT.ERROR_INVALID_RANGE);
 		
-		return _columns[index];
+		if (index < _columnCount)
+			return _columns[index];
+			
+		return _periodColumn;
 	}
 	
 	public void setHeaderVisible(boolean show) {
@@ -325,7 +328,7 @@ public final class TimeSeriesTable extends Composite {
 		final Point[] selections = new Point[indices.length * width];
 		for (int i=0; i<indices.length; i++) {
 			for (int j=0; j<width; j++) {
-				selections[i*width+j] = new Point(j, indices[i]);
+				selections[i*width+j] = new Point(j, computeModelRow(indices[i]));
 			}
 		}
 		_table.setSelection(selections, false);
@@ -355,9 +358,11 @@ public final class TimeSeriesTable extends Composite {
 
 	public void setCellSelection(int col, int row) {
 		checkWidget();
+		if (col < 0 || col >= (_columnCount + _periods.length) 
+				|| row < 0 || row >= _itemCount)
+			SWT.error(SWT.ERROR_INVALID_RANGE);
 		
-		final int actualRow = row + (_showHeader ? 1 : 0);
-		_table.setSelection(col, actualRow, true);
+		_table.setSelection(col, computeModelRow(row), true);
 	}
 	
 	public void showSelection() {
@@ -377,8 +382,7 @@ public final class TimeSeriesTable extends Composite {
 		if (index < 0)
 			return;
 		
-		final int top = _showHeader ? 1 : 0;
-		_table.scroll(Math.max(0, _lastFocusColumn), index + top);
+		_table.scroll(Math.max(0, _lastFocusColumn), computeModelRow(index));
 	}
 
 	public void scrollTo(LocalDate date) {
@@ -428,7 +432,7 @@ public final class TimeSeriesTable extends Composite {
 			SWT.error(SWT.ERROR_INVALID_RANGE);
 		
 		for (int i=end; i>start; i--) {
-			internalRemove(i);
+			doRemove(i);
 		}
 		_table.redraw();
 	}
@@ -445,7 +449,7 @@ public final class TimeSeriesTable extends Composite {
 		Arrays.sort(idxs);
 		
 		for (int i=idxs.length-1; i >= 0; i--) {
-			internalRemove(i);
+			doRemove(i);
 		}
 		_table.redraw();
 	}
@@ -530,11 +534,10 @@ public final class TimeSeriesTable extends Composite {
 		checkWidget();
 		if (item == null)
 			SWT.error(SWT.ERROR_NULL_ARGUMENT);
-		if (index < 0 || index >= _columnCount)
+		if (index < 0 || index >= (_columnCount + _periods.length))
 			SWT.error(SWT.ERROR_INVALID_RANGE);
 		
-		final int row = indexOf(item) + (_showHeader ? 1 : 0);
-		final Rectangle r = _table.getCellRect(index, row);
+		final Rectangle r = _table.getCellRect(index, computeModelRow(indexOf(item)));
 		final Point p = _table.getLocation();
 		return new Rectangle(r.x + p.x + 1, r.y + p.y + 2, r.width, r.height);
 	}
@@ -544,7 +547,7 @@ public final class TimeSeriesTable extends Composite {
 		if (item == null)
 			SWT.error(SWT.ERROR_NULL_ARGUMENT);
 		
-		final int row = indexOf(item) + (_showHeader ? 1 : 0);
+		final int row = computeModelRow(indexOf(item));
 		final Point p = _table.getLocation();
 		final Rectangle bounds = new Rectangle(p.x, p.y, 0, 0);
 		for (int i=0; i<_columnCount; i++) {
@@ -565,7 +568,7 @@ public final class TimeSeriesTable extends Composite {
 		checkWidget();
 		if (item == null)
 			SWT.error(SWT.ERROR_NULL_ARGUMENT);
-		if (index < 0 || index >= _columnCount)
+		if (index < 0 || index >= (_columnCount + _periods.length))
 			SWT.error(SWT.ERROR_INVALID_RANGE);
 		
 		final Rectangle r = getBounds(item, index);
@@ -577,6 +580,20 @@ public final class TimeSeriesTable extends Composite {
     Composite getTableComposite() {
 		return _table;
 	}
+    
+    private int computeModelRow(int row) {
+    	if (_showHeader)
+    		return row + _table.getModel().getFixedHeaderRowCount();
+    	
+    	return row;
+    }
+    
+    private int computeActualRow(int row) {
+    	if (_showHeader)
+    		return row - _table.getModel().getFixedHeaderRowCount();
+    	
+    	return row;
+    }
 
 	private void hookControls() {
 		_table.addCellSelectionListener(_listener);
@@ -653,10 +670,10 @@ public final class TimeSeriesTable extends Composite {
 		Arrays.fill(data, 0.0);
 		
 		if (ScrollDataMode.FOCUS_CELL.equals(_scrollDataMode)) {
-			final int top = _showHeader ? 1 : 0;
 			if (_lastFocusRow >= 0 && (!_showHeader || _lastFocusRow > 0)) {
+				final int row = computeActualRow(_lastFocusRow);
 				for (int j=0; j<data.length; j++) {
-					data[j] += _items[_lastFocusRow - top].getValue(j);
+					data[j] += _items[row].getValue(j);
 				}
 			}
 		}
@@ -671,7 +688,7 @@ public final class TimeSeriesTable extends Composite {
 		_hscroll.setDataPoints(data);
 	}
 	
-	private void internalRemove(int index) {
+	private void doRemove(int index) {
 		_items[index].release();
 		
 		System.arraycopy(_items, index+1, _items, index, --_itemCount-index);
@@ -735,7 +752,7 @@ public final class TimeSeriesTable extends Composite {
 				return _headerRenderer;
 			}
 			
-			final int actualRow = row - (_showHeader ? 1 : 0);
+			final int actualRow = computeActualRow(row);
 			final TimeSeriesTableItem item = getItem(actualRow);
 			final DefaultCellRenderer renderer;
 			if (col < _columnCount) {	
@@ -788,8 +805,7 @@ public final class TimeSeriesTable extends Composite {
 				return _dateFormat.format(date);
 			}
 			
-			final int correction = _showHeader ? 1 : 0;
-			final TimeSeriesTableItem item = _items[row - correction];
+			final TimeSeriesTableItem item = _items[computeActualRow(row)];
 			if (col < _columnCount) {
 				final String text = item.getText(col);
 				if ((SWT.CHECK & _columns[col].getStyle()) > 0)
@@ -810,7 +826,7 @@ public final class TimeSeriesTable extends Composite {
 
 		@Override
 		public int doGetRowCount() {
-			return _itemCount + (_showHeader ? 1 : 0);
+			return computeModelRow(_itemCount);
 		}
 
 		@Override
@@ -834,7 +850,7 @@ public final class TimeSeriesTable extends Composite {
 			if ((_showHeader && row == 0) || row < 0) {
 				_gc.setFont(getFont());
 			} else {
-				final TimeSeriesTableItem item = getItem(row - (_showHeader ? 1 : 0));
+				final TimeSeriesTableItem item = getItem(computeActualRow(row));
 				_gc.setFont(item.getFont());
 			}
 

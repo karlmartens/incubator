@@ -1,7 +1,8 @@
 package net.karlmartens.net;
 
+import net.karlmartens.ui.viewer.CheckboxCellEditor;
+
 import org.eclipse.jface.viewers.CellEditor;
-import org.eclipse.jface.viewers.CheckboxCellEditor;
 import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.swt.widgets.Composite;

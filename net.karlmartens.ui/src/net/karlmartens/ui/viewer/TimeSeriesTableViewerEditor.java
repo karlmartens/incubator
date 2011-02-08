@@ -5,6 +5,7 @@ import net.karlmartens.ui.widget.TimeSeriesTableEditor;
 import net.karlmartens.ui.widget.TimeSeriesTableItem;
 
 import org.eclipse.jface.viewers.CellEditor.LayoutData;
+import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ColumnViewerEditor;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationEvent;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationListener;
@@ -107,7 +108,10 @@ public final class TimeSeriesTableViewerEditor extends ColumnViewerEditor {
 			table.removeSelectionListener(_selectionListener);
 			
 			final ViewerCell cell = (ViewerCell)event.getSource();
-			_viewer.getLabelProvider(cell.getColumnIndex()).update(cell);
+			final CellLabelProvider labelProvider = _viewer.getLabelProvider(cell.getColumnIndex());
+			if (labelProvider != null)
+				labelProvider.update(cell);
+			
 			table.redraw();
 		}
 	};

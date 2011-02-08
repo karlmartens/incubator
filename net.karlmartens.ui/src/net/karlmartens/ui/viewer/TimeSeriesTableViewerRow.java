@@ -39,7 +39,7 @@ final class TimeSeriesTableViewerRow extends ViewerRow {
 
 	@Override
 	public int getColumnCount() {
-		return _item.getParent().getColumnCount();
+		return _item.getParent().getColumnCount() + _item.getParent().getPeriodCount();
 	}
 
 	@Override

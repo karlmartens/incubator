@@ -6,9 +6,12 @@ import net.karlmartens.ui.widget.TimeSeriesTableItem;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.viewers.AbstractTableViewer;
+import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnViewerEditor;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationStrategy;
+import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.IContentProvider;
+import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Item;
@@ -20,6 +23,7 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 
 	private final TimeSeriesTable _control;
 	private TimeSeriesTableViewerRow _cachedRow;
+	private TimeSeriesTableViewerColumn _periodColumn;
 
 	public TimeSeriesTableViewer(Composite parent) {
 		this(new TimeSeriesTable(parent));
@@ -178,7 +182,7 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 
 	@Override
 	protected int doGetColumnCount() {
-		return _control.getColumnCount();
+		return _control.getColumnCount() + _control.getPeriodCount();
 	}
 
 	@Override
@@ -201,6 +205,34 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 		final LocalDate[] periods = new LocalDate[dates.length - 1];
 		System.arraycopy(dates, 0, periods, 0, periods.length);
 		_control.setPeriods(periods);
+		
+		if (_periodColumn == null) {
+			_periodColumn = new TimeSeriesTableViewerColumn(this, _control.getColumn(_control.getColumnCount()));
+			_periodColumn.setEditingSupport(new EditingSupport(this) {
+				
+				@Override
+				protected void setValue(Object element, Object value) {
+					// TODO Auto-generated method stub
+					
+				}
+				
+				@Override
+				protected Object getValue(Object element) {
+					// TODO Auto-generated method stub
+					return "";
+				}
+				
+				@Override
+				protected CellEditor getCellEditor(Object element) {
+					return new TextCellEditor((Composite)TimeSeriesTableViewer.this.getControl());
+				}
+				
+				@Override
+				protected boolean canEdit(Object element) {
+					return true;
+				}
+			});
+		}
 		
 		final Object[] elements = getSortedChildren(getRoot());
 		for (int i=0; i<elements.length; i++) {
