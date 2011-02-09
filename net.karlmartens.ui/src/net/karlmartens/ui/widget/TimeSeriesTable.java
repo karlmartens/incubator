@@ -397,6 +397,20 @@ public final class TimeSeriesTable extends Composite {
 
 		_hscroll.setSelection(index);
 	}
+	
+	public void scrollTo(int col, int row) {
+		checkWidget();
+		if (col < 0 || col < (_columnCount + _periods.length)
+				|| row < 0 || row >= _itemCount)
+			SWT.error(SWT.ERROR_INVALID_RANGE);
+		
+		final int index = col - _columnCount;
+		if (index > 0) {
+			_hscroll.setSelection(index);
+		}
+		
+		// TODO/karl scroll
+	}
 
 	public void setItemCount(int count) {
 		checkWidget();
@@ -610,7 +624,7 @@ public final class TimeSeriesTable extends Composite {
 		removeDisposeListener(_listener);
 	}
 	
-	private Rectangle getVisibleDataCells() {
+	private Rectangle doGetVisibleDataCells() {
 		final Rectangle r = _table.getVisibleCells();
 
 		if (r.width > 0 && (_showHeader || r.y < _itemCount)) {
@@ -634,7 +648,7 @@ public final class TimeSeriesTable extends Composite {
 		if (_lastFocusColumn < _columnCount)
 			return;
 		
-		final Rectangle r = getVisibleDataCells();
+		final Rectangle r = doGetVisibleDataCells();
 		if (_lastFocusColumn >= _columnCount && _lastFocusColumn < r.x) {
 			_hscroll.setSelection(_lastFocusColumn - _columnCount);
 		}
@@ -869,7 +883,7 @@ public final class TimeSeriesTable extends Composite {
 				
 				_hscroll.setLabel(_dateFormat.format(_periods[selection]));
 				
-				final Rectangle visible = getVisibleDataCells();
+				final Rectangle visible = doGetVisibleDataCells();
 				final int x = _hscroll.getSelection() + _columnCount; 
 				final int y = Math.max(0, Math.min(visible.y, _itemCount - _table.getVisibleRowCount()));
 				_table.scroll(x, y);
@@ -906,7 +920,7 @@ public final class TimeSeriesTable extends Composite {
 		@Override
 		public void paintControl(PaintEvent e) {
 			if (e.getSource() == _table) {
-				final Rectangle visible = getVisibleDataCells();
+				final Rectangle visible = doGetVisibleDataCells();
 				if (visible.width <= 0) {
 					_hscroll.setThumb(_hscroll.getMaximum() + 1);
 					_hscroll.setEnabled(false);

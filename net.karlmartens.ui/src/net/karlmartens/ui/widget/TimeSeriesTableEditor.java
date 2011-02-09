@@ -10,7 +10,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 
 public final class TimeSeriesTableEditor extends ControlEditor {
-	private static final int TIMEOUT = 1500;
+	private static final int TIMEOUT = 100;
 
 	private TimeSeriesTable _table;
 	private ControlListener _columnListener;
@@ -142,7 +142,6 @@ public final class TimeSeriesTableEditor extends ControlEditor {
 		
 		if (_table != null) {
 			final Display display = _table.getDisplay();
-			display.timerExec(-1, _timer);
 			display.timerExec(TIMEOUT, _timer);
 		}
 	}

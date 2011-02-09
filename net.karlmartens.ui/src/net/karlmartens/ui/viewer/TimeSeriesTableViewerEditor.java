@@ -80,7 +80,10 @@ public final class TimeSeriesTableViewerEditor extends ColumnViewerEditor {
 	@Override
 	protected void updateFocusCell(ViewerCell focusCell,
 			ColumnViewerEditorActivationEvent event) {
-		// nothing to do
+		final TimeSeriesTable table = _viewer.getControl();
+		final int row = table.indexOf((TimeSeriesTableItem)focusCell.getItem());
+		final int col = focusCell.getColumnIndex();
+		table.setCellSelection(col, row);
 	}
 	
 	private final ColumnViewerEditorActivationListener _listener = new ColumnViewerEditorActivationListener() {
