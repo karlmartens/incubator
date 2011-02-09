@@ -30,13 +30,13 @@ final class TestBooleanEditingSupport extends EditingSupport {
 
 	@Override
 	protected Object getValue(Object element) {
-		final String[] data = (String[])element;
-		return Boolean.valueOf(data[_index]);
+		final Object[] data = (Object[])element;
+		return (Boolean)data[_index];
 	}
 
 	@Override
 	protected void setValue(Object element, Object value) {
-		final String[] data = (String[])element;
-		data[_index] = value.toString();
+		final Object[] data = (Object[])element;
+		data[_index] = value;
 	}
 }

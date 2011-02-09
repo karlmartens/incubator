@@ -8,6 +8,6 @@ public interface TimeSeriesContentProvider extends IStructuredContentProvider {
 	
 	LocalDate[] getDates();
 	
-	Double getValue(Object element, Interval interval);
+	double getValue(Object element, Interval interval);
 
 }

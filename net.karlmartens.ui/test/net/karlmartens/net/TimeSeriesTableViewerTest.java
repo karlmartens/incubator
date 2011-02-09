@@ -5,14 +5,12 @@ import java.util.BitSet;
 
 import net.karlmartens.platform.text.LocalDateFormat;
 import net.karlmartens.platform.util.NumberStringComparator;
-import net.karlmartens.ui.viewer.TimeSeriesContentProvider;
 import net.karlmartens.ui.viewer.TimeSeriesTableViewer;
 import net.karlmartens.ui.viewer.TimeSeriesTableViewerColumn;
 import net.karlmartens.ui.viewer.TimeSeriesTableViewerEditor;
 import net.karlmartens.ui.widget.TimeSeriesTable;
 import net.karlmartens.ui.widget.TimeSeriesTable.ScrollDataMode;
 
-import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnViewerEditor;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationEvent;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationStrategy;
@@ -24,7 +22,6 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.joda.time.Interval;
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 
@@ -52,11 +49,13 @@ public final class TimeSeriesTableViewerTest {
 		shell.setLayout(new FillLayout());
 		final Display display = shell.getDisplay();
 		
+		final LocalDate[] dates = generateDates();
+		
 		final TimeSeriesTableViewer viewer = new TimeSeriesTableViewer(shell);
-		viewer.setContentProvider(new TestTimeSeriesContentProvider());
+		viewer.setContentProvider(new TestTimeSeriesContentProvider(dates, 3));
 		viewer.setLabelProvider(new TestColumnLabelProvider(0));
 		viewer.setComparator(new ViewerComparator(new NumberStringComparator()));
-		//viewer.setEditingSupport();
+		viewer.setEditingSupport(new TestTimeSeriesEditingSupport(new DecimalFormat("#,##0.0000"), dates, 3));
 		
 		final TimeSeriesTable table = viewer.getControl();
 		table.setHeaderVisible(true);
@@ -102,12 +101,13 @@ public final class TimeSeriesTableViewerTest {
 		c2.getColumn().setText("Test 2");
 		c2.getColumn().setWidth(60);
 		
-		viewer.setInput(new String[][] {
-				{"Rigs", "true", "3"}, //
-				{"Capital", "true", "3"}, //
-				{"Oil", "true", "3"}, //
-				{"Water", "true", "3"}, //
-				{"Custom", "true", "3"}, //
+		final int seriesLength = dates.length - 1;
+		viewer.setInput(new Object[][] {
+				{"Rigs", Boolean.TRUE, "3", generateSeries(seriesLength)}, //
+				{"Capital", Boolean.FALSE, "3", generateSeries(seriesLength)}, //
+				{"Oil", Boolean.TRUE, "3", generateSeries(seriesLength)}, //
+				{"Water", Boolean.TRUE, "3", generateSeries(seriesLength)}, //
+				{"Custom", Boolean.TRUE, "3", generateSeries(seriesLength)}, //
 		});
 		
 		shell.open();
@@ -116,27 +116,21 @@ public final class TimeSeriesTableViewerTest {
 				display.sleep();
 		}
 	}
-	
-	private static class TestTimeSeriesContentProvider extends ArrayContentProvider implements TimeSeriesContentProvider {
 
-		private final LocalDate[] _dates;
-		
-		public TestTimeSeriesContentProvider() {
-			final LocalDate initialDate = new LocalDate(2011, 1, 1);
-			_dates = new LocalDate[12*15];
-			for (int i=0; i<_dates.length; i++) {
-				_dates[i] = initialDate.plusMonths(i);
-			}
+	private static LocalDate[] generateDates() {
+		final LocalDate initialDate = new LocalDate(2011, 1, 1);
+		final LocalDate[] dates = new LocalDate[12*15];
+		for (int i=0; i<dates.length; i++) {
+			dates[i] = initialDate.plusMonths(i);
 		}
-		
-		@Override
-		public LocalDate[] getDates() {
-			return _dates;
+		return dates;
+	}
+	
+	private static double[] generateSeries(int length) {
+		final double[] values = new double[length];
+		for (int i=0; i<values.length; i++) {
+			values[i] = Math.random() * 100000;
 		}
-		
-		@Override
-		public Double getValue(Object element, Interval interval) {
-			return Math.random() * 100000;
-		}
+		return values;
 	}
 }

@@ -31,13 +31,13 @@ final class TestTextEditingSupport extends EditingSupport {
 
 	@Override
 	protected Object getValue(Object element) {
-		final String[] data = (String[])element;
-		return data[_index];
+		final Object[] data = (Object[])element;
+		return (String)data[_index];
 	}
 
 	@Override
 	protected void setValue(Object element, Object value) {
-		final String[] data = (String[])element;
+		final Object[] data = (Object[])element;
 		data[_index] = NullSafe.toString(value);
 	}
 }

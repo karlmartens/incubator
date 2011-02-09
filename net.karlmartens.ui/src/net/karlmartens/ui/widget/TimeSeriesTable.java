@@ -229,7 +229,7 @@ public final class TimeSeriesTable extends Composite {
 		
 		final int row = computeActualRow(_lastFocusRow);
 		final int col = _lastFocusColumn;
-		if (row < 0 || col < 0 || col >= _columnCount)
+		if (row < 0 || col < 0 || col >= (_columnCount + _periods.length))
 			return null;
 		
 		return new Point(col, row);

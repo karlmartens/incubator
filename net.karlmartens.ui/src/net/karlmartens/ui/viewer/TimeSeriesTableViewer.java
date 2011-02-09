@@ -1,17 +1,15 @@
 package net.karlmartens.ui.viewer;
 
+
 import net.karlmartens.ui.widget.TimeSeriesTable;
 import net.karlmartens.ui.widget.TimeSeriesTableColumn;
 import net.karlmartens.ui.widget.TimeSeriesTableItem;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.viewers.AbstractTableViewer;
-import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnViewerEditor;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationStrategy;
-import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.IContentProvider;
-import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Item;
@@ -22,6 +20,7 @@ import org.joda.time.LocalDate;
 public final class TimeSeriesTableViewer extends AbstractTableViewer {
 
 	private final TimeSeriesTable _control;
+	private TimeSeriesEditingSupport _editingSupport;
 	private TimeSeriesTableViewerRow _cachedRow;
 	private TimeSeriesTableViewerColumn _periodColumn;
 
@@ -32,6 +31,14 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 	public TimeSeriesTableViewer(TimeSeriesTable control) {
 		_control = control;
 		hookControl(control);
+	}
+	
+	public void setEditingSupport(TimeSeriesEditingSupport editingSupport) {
+		_editingSupport = editingSupport;
+	}
+	
+	TimeSeriesEditingSupport getEditingSupport() {
+		return _editingSupport;
 	}
 
 	@Override
@@ -208,30 +215,7 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 		
 		if (_periodColumn == null) {
 			_periodColumn = new TimeSeriesTableViewerColumn(this, _control.getColumn(_control.getColumnCount()));
-			_periodColumn.setEditingSupport(new EditingSupport(this) {
-				
-				@Override
-				protected void setValue(Object element, Object value) {
-					// TODO Auto-generated method stub
-					
-				}
-				
-				@Override
-				protected Object getValue(Object element) {
-					// TODO Auto-generated method stub
-					return "";
-				}
-				
-				@Override
-				protected CellEditor getCellEditor(Object element) {
-					return new TextCellEditor((Composite)TimeSeriesTableViewer.this.getControl());
-				}
-				
-				@Override
-				protected boolean canEdit(Object element) {
-					return true;
-				}
-			});
+			_periodColumn.setEditingSupport(new TimeSeriesTableValueEditingSupport(this));
 		}
 		
 		final Object[] elements = getSortedChildren(getRoot());
