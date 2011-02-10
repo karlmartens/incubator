@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 
 import net.karlmartens.platform.text.LocalDateFormat;
+import net.karlmartens.platform.util.ArraySupport;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
@@ -397,20 +398,6 @@ public final class TimeSeriesTable extends Composite {
 
 		_hscroll.setSelection(index);
 	}
-	
-	public void scrollTo(int col, int row) {
-		checkWidget();
-		if (col < 0 || col < (_columnCount + _periods.length)
-				|| row < 0 || row >= _itemCount)
-			SWT.error(SWT.ERROR_INVALID_RANGE);
-		
-		final int index = col - _columnCount;
-		if (index > 0) {
-			_hscroll.setSelection(index);
-		}
-		
-		// TODO/karl scroll
-	}
 
 	public void setItemCount(int count) {
 		checkWidget();
@@ -550,7 +537,7 @@ public final class TimeSeriesTable extends Composite {
 			SWT.error(SWT.ERROR_NULL_ARGUMENT);
 		if (index < 0 || index >= (_columnCount + _periods.length))
 			SWT.error(SWT.ERROR_INVALID_RANGE);
-		
+				
 		final Rectangle r = _table.getCellRect(index, computeModelRow(indexOf(item)));
 		final Point p = _table.getLocation();
 		return new Rectangle(r.x + p.x + 1, r.y + p.y + 2, r.width, r.height);
@@ -700,6 +687,19 @@ public final class TimeSeriesTable extends Composite {
 			}
 		}
 		_hscroll.setDataPoints(data);
+	}
+	
+	private void doUpdateRows(int[] indices) {
+		Arrays.sort(indices);
+		
+		int previous = -1;
+		for (int index : indices) {
+			if (index == previous)
+				continue;
+			
+			final int width = doGetVisibleDataCells().width + _columnCount + 1;
+			_table.redraw(0, computeModelRow(index), width, 1);
+		}
 	}
 	
 	private void doRemove(int index) {
@@ -902,14 +902,18 @@ public final class TimeSeriesTable extends Composite {
 			
 			final int[] selectedRows = getSelectionIndices();
 			if (!Arrays.equals(_lastRowSelection, selectedRows)) {
+				final int[] oldSelection = _lastRowSelection;
 				_lastRowSelection = getSelectionIndices();
-				_table.redraw();
+				
+				final int[] update = ArraySupport.minus(oldSelection, _lastRowSelection);
+				doUpdateRows(update);
+				
+				notifyListeners(SWT.Selection, new Event());
 			}
 			
 			doUpdateScrollSelection();
 			doUpdateScrollHighlights();
 			doUpdateScrollData();
-			notifyListeners(SWT.Selection, new Event());
 		}
 
 		@Override

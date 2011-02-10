@@ -137,5 +137,10 @@ final class TimeSeriesTableViewerRow extends ViewerRow {
 	public Object getElement() {
 		return _item.getData();
 	}
+	
+	@Override
+	protected boolean isColumnVisible(int columnIndex) {
+		return true;
+	}
 
 }

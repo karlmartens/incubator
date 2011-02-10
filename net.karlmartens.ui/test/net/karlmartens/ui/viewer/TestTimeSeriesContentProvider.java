@@ -1,4 +1,4 @@
-package net.karlmartens.net;
+package net.karlmartens.ui.viewer;
 
 import java.util.Arrays;
 

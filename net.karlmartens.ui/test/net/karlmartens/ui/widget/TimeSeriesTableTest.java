@@ -1,4 +1,4 @@
-package net.karlmartens.net;
+package net.karlmartens.ui.widget;
 
 import java.text.DecimalFormat;
 

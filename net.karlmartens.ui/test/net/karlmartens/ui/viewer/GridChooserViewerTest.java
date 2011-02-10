@@ -1,4 +1,4 @@
-package net.karlmartens.net;
+package net.karlmartens.ui.viewer;
 
 import net.karlmartens.platform.util.NullSafe;
 import net.karlmartens.platform.util.NumberStringComparator;

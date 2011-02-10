@@ -1,19 +1,17 @@
-package net.karlmartens.net;
-
-import net.karlmartens.platform.util.NullSafe;
+package net.karlmartens.ui.viewer;
 
 import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.CheckboxCellEditor;
 import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.EditingSupport;
-import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.widgets.Composite;
 
-final class TestTextEditingSupport extends EditingSupport {
+final class TestBooleanEditingSupport extends EditingSupport {
 
 	private final ColumnViewer _viewer;
 	private final int _index;
 
-	public TestTextEditingSupport(ColumnViewer viewer, int index) {
+	public TestBooleanEditingSupport(ColumnViewer viewer, int index) {
 		super(viewer);
 		_viewer = viewer;
 		_index = index;
@@ -21,7 +19,7 @@ final class TestTextEditingSupport extends EditingSupport {
 
 	@Override
 	protected CellEditor getCellEditor(Object element) {
-		return new TextCellEditor((Composite)_viewer.getControl());
+		return new CheckboxCellEditor((Composite)_viewer.getControl());
 	}
 
 	@Override
@@ -32,12 +30,12 @@ final class TestTextEditingSupport extends EditingSupport {
 	@Override
 	protected Object getValue(Object element) {
 		final Object[] data = (Object[])element;
-		return (String)data[_index];
+		return (Boolean)data[_index];
 	}
 
 	@Override
 	protected void setValue(Object element, Object value) {
 		final Object[] data = (Object[])element;
-		data[_index] = NullSafe.toString(value);
+		data[_index] = value;
 	}
 }
