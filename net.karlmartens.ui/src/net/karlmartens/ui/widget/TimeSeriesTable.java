@@ -907,13 +907,12 @@ public final class TimeSeriesTable extends Composite {
 				
 				final int[] update = ArraySupport.minus(oldSelection, _lastRowSelection);
 				doUpdateRows(update);
-				
-				notifyListeners(SWT.Selection, new Event());
 			}
 			
 			doUpdateScrollSelection();
 			doUpdateScrollHighlights();
 			doUpdateScrollData();
+			notifyListeners(SWT.Selection, new Event());
 		}
 
 		@Override
@@ -939,13 +938,13 @@ public final class TimeSeriesTable extends Composite {
 		@Override
 		public void columnResized(int col, int newWidth) {
 			if (col < _columnCount) {
-				_columns[col].notifyListeners(SWT.RESIZE, new Event());
+				_columns[col].notifyListeners(SWT.Resize, new Event());
 			}
 		}
 		
 		@Override
 		public void rowResized(int row, int newHeight) {
-			// nothing to do
+			_items[computeActualRow(row)].notifyListeners(SWT.Resize, new Event());
 		}
 
 		@Override
