@@ -580,7 +580,7 @@ public final class GridChooser extends Composite {
 	}
 	
 	private Button createButton(Composite parent, Image image, SelectionListener listener) {
-		final Button button = new Button(parent, SWT.PUSH);
+		final Button button = new Button(parent, SWT.PUSH | SWT.CENTER);
 		button.setImage(image);
 		button.setEnabled(false);
 		button.addSelectionListener(listener);

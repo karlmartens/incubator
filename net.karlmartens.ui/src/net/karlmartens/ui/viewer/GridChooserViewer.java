@@ -33,7 +33,6 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.ViewerRow;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Widget;
 
@@ -52,11 +51,7 @@ public final class GridChooserViewer extends AbstractTableViewer {
 	}
 
 	@Override
-	public Control getControl() {
-		return _chooser;
-	}
-	
-	public GridChooser getGridChooser() {
+	public GridChooser getControl() {
 		return _chooser;
 	}
 	

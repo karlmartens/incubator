@@ -29,14 +29,14 @@ import org.eclipse.swt.widgets.Item;
 abstract class AbstractTableItem extends Item {
 
 	private Control _parent;
-	private String[] _strings;
-	private Image[] _images;
-	private Color _background;
-	private Color[] _cellBackgrounds;
-	private Color _foreground;
-	private Color[] _cellForegrounds;
-	private Font _font;
-	private Font[] _cellFonts;
+	protected String[] _strings;
+	protected Image[] _images;
+	protected Color _background;
+	protected Color[] _cellBackgrounds;
+	protected Color _foreground;
+	protected Color[] _cellForegrounds;
+	protected Font _font;
+	protected Font[] _cellFonts;
 	
 	AbstractTableItem(Control parent, int style) {
 		super(parent, style);

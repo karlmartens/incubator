@@ -45,13 +45,16 @@ public final class GridChooserViewerTest {
 
 	public static void main(String[] args) throws Exception {
 		final Shell shell = new Shell();
+		final Display display = shell.getDisplay();
 		shell.setLayout(new FillLayout());
 		
 		final GridChooserViewer viewer = new GridChooserViewer(shell);
 		viewer.setContentProvider(new ArrayContentProvider());
 		viewer.setLabelProvider(new TestColumnLabelProvider(0));
 		viewer.setComparator(new ViewerComparator(new NumberStringComparator()));
-		viewer.getGridChooser().setHeaderVisible(true);
+
+		viewer.getControl().setHeaderVisible(true);
+		
 		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
@@ -85,7 +88,7 @@ public final class GridChooserViewerTest {
 		c2.setEditingSupport(new TextEditingSupport(viewer, 1));
 		c2.getColumn().setText("Test 2");
 		
-		new GridChooserColumnWeightedResize(viewer.getGridChooser(), new int[] {1, 1});
+		new GridChooserColumnWeightedResize(viewer.getControl(), new int[] {1, 1});
 		
 		viewer.setInput(new String[][] {
 				{"Andrew", "2", "3"}, //
@@ -99,8 +102,6 @@ public final class GridChooserViewerTest {
 		});
 		
 		shell.open();
-		
-		final Display display = shell.getDisplay();
 		while (!shell.isDisposed()) {
 			if (!display.readAndDispatch())
 				display.sleep();
@@ -120,7 +121,7 @@ public final class GridChooserViewerTest {
 
 		@Override
 		protected CellEditor getCellEditor(Object element) {
-			return new TextCellEditor(_viewer.getGridChooser());
+			return new TextCellEditor(_viewer.getControl());
 		}
 
 		@Override

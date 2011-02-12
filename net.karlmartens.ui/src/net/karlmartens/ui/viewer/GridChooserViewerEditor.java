@@ -42,7 +42,7 @@ public final class GridChooserViewerEditor extends ColumnViewerEditor {
 			ColumnViewerEditorActivationStrategy activationStrategy, int feature) {
 		super(viewer, activationStrategy, feature);
 		_viewer = viewer;
-		_editor = new GridChooserEditor(viewer.getGridChooser());
+		_editor = new GridChooserEditor(viewer.getControl());
 		addEditorActivationListener(_listener);
 	}
 

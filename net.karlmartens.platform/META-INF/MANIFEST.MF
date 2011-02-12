@@ -3,8 +3,6 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Platform
 Bundle-SymbolicName: net.karlmartens.platform
 Bundle-Version: 1.0.0
-Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: net.karlmartens.platform.text,
  net.karlmartens.platform.util,

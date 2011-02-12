@@ -33,7 +33,7 @@ public final class GridChooserViewerColumn extends ViewerColumn {
 	}
 
 	public GridChooserViewerColumn(GridChooserViewer viewer, int style, int index) {
-		this(viewer, createColumn(viewer.getGridChooser(), style, index));
+		this(viewer, createColumn(viewer.getControl(), style, index));
 	}
 	
 	private GridChooserViewerColumn(GridChooserViewer viewer, GridChooserColumn column) {

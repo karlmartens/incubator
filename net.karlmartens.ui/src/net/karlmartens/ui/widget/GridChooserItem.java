@@ -19,6 +19,7 @@
  */
 package net.karlmartens.ui.widget;
 
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Rectangle;
 
 public final class GridChooserItem extends AbstractTableItem {
@@ -34,6 +35,18 @@ public final class GridChooserItem extends AbstractTableItem {
 		super(parent, style);
 		_parent = parent;
 		parent.createItem(this, rowIndex);
+	}
+	
+	@Override
+	public Color getBackground() {
+		checkWidget();
+		if (_background != null)
+			return _background;
+		
+		if (isSelected())
+			return _parent.getSelectedComposite().getBackground();
+		
+		return _parent.getAvailableComposite().getBackground();
 	}
 
 	public GridChooser getParent() {
