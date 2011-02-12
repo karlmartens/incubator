@@ -5,9 +5,7 @@ Bundle-SymbolicName: net.karlmartens.platform
 Bundle-Version: 1.0.0
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: net.karlmartens.platform.text,
- net.karlmartens.platform.util,
- org.joda.time,
- org.joda.time.base,
+ net.karlmartens.platform.util
+Bundle-ClassPath: .
+Import-Package: org.joda.time,
  org.joda.time.format
-Bundle-ClassPath: lib/joda-time-1.6.2.jar,
- .

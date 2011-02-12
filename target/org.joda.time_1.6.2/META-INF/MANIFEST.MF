@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Joda Time Plug-in
+Bundle-SymbolicName: org.joda.time
+Bundle-Version: 1.6.2
+Bundle-ClassPath: joda-time-1.6.2.jar
+Bundle-Vendor: karlmartens.net
+Bundle-Localization: plugin
+Export-Package: org.joda.time, org.joda.time.base, org.joda.time.chrono, org.joda.time.format
