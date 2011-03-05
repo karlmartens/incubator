@@ -19,6 +19,9 @@
  */
 package net.karlmartens.ui.widget;
 
+import static net.karlmartens.ui.Images.ARROW_LEFT;
+import static net.karlmartens.ui.Images.ARROW_RIGHT;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -39,16 +42,18 @@ import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.MouseTrackListener;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
@@ -63,9 +68,10 @@ public final class SparklineScrollBar extends Composite {
 	private Color _dataPointColor = ColorConstants.gray;
 	private Color _highlightColor = ColorConstants.blue;
 
-	private final Button _left;
+	private final Image[] _images;
+	private final org.eclipse.swt.widgets.Label _left;
 	private final FigureCanvas _track;
-	private final Button _right;
+	private final org.eclipse.swt.widgets.Label _right;
 	private Layer _sparkLineLayer;
 	private Layer _thumbLayer;
 	private Layer _highlightLayer;
@@ -82,8 +88,8 @@ public final class SparklineScrollBar extends Composite {
 	private boolean _inUpdate = false;
 	
 	
-	public SparklineScrollBar(Composite parent) {
-		super(parent, SWT.DOUBLE_BUFFERED);
+	public SparklineScrollBar(Composite parent, int style) {
+		super(parent, style | SWT.DOUBLE_BUFFERED);
 		
 		final GridLayout layout = new GridLayout(3, false);
 		layout.horizontalSpacing = 1;
@@ -99,13 +105,18 @@ public final class SparklineScrollBar extends Composite {
 		final Listener listener = new Listener();
 		final Display display = getShell().getDisplay();
 		
-		_left = new Button(this, SWT.ARROW | SWT.LEFT);
+		_images = new Image[] {
+				ARROW_LEFT.createImage(), //
+				ARROW_RIGHT.createImage(), //
+		};
+				
+		_left = new org.eclipse.swt.widgets.Label(this, SWT.CENTER);
+		_left.setImage(_images[0]);
 		_left.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, true, 1, 1));
-		_left.addSelectionListener(listener);
 		_left.addMouseListener(listener);
+		_left.addMouseTrackListener(listener);
 		
 		_track = new FigureCanvas(this);
-		_track.setBackground(display.getSystemColor(SWT.COLOR_WHITE));
 		_track.setScrollBarVisibility(FigureCanvas.NEVER);
 		_track.setContents(createContents(listener));
 		_track.getViewport().setContentsTracksHeight(true);
@@ -113,13 +124,18 @@ public final class SparklineScrollBar extends Composite {
 		_track.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		_track.addMouseListener(listener);
 		
-		_right = new Button(this, SWT.ARROW | SWT.RIGHT);
+		_right = new org.eclipse.swt.widgets.Label(this, SWT.CENTER);
+		_right.setImage(_images[1]);
 		_right.setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, true, 1, 1));
-		_right.addSelectionListener(listener);
 		_right.addMouseListener(listener);
+		_right.addMouseTrackListener(listener);
 		
+		setBackground(display.getSystemColor(SWT.COLOR_WHITE));
+		setForeground(display.getSystemColor(SWT.COLOR_WHITE));
+
 		refresh();
 		addControlListener(listener);
+		addDisposeListener(listener);
 	}
 	
 	private IFigure createContents(Listener listener) {
@@ -375,7 +391,9 @@ public final class SparklineScrollBar extends Composite {
 	@Override
 	public void setBackground(Color color) {
 		super.setBackground(color);
+		_left.setBackground(color);
 		_track.setBackground(color);
+		_right.setBackground(color);
 	}
 	
 	@Override
@@ -598,39 +616,34 @@ public final class SparklineScrollBar extends Composite {
 		}
 	}
 	
-	private final class Listener implements SelectionListener, MouseListener, org.eclipse.draw2d.MouseListener, MouseMotionListener, ControlListener {
+	private final class Listener implements DisposeListener, MouseListener, MouseTrackListener,  org.eclipse.draw2d.MouseListener, MouseMotionListener, ControlListener {
 
 		private Repeater _repeater;
 		private Point _startLocation;
 		private int _offset = 0;
 		
 		@Override
-		public void widgetSelected(SelectionEvent e) {
+		public void widgetDisposed(DisposeEvent e) {
+			for (int i = 0; i<_images.length; i++) {
+				_images[i].dispose();
+			}
+		}
+
+		@Override
+		public void mouseDown(MouseEvent e) {
 			if (isDisposed())
 				return;
 			
 			final Object source = e.getSource();
 			if (source == _left) {
 				incrementSelection(-1);
-				return;
-			}
-			
-			if (source == _right) {
-				incrementSelection(1);
-				return;
-			}
-		}
-		
-		@Override
-		public void mouseDown(MouseEvent e) {
-			final Object source = e.getSource();
-			if (source == _left) {
 				createRepeater(-1);
 				_labelFigure.setVisible(true);
 				return;
 			}
 			
 			if (source == _right) {
+				incrementSelection(1);
 				createRepeater(1);
 				_labelFigure.setVisible(true);
 				return;
@@ -649,6 +662,9 @@ public final class SparklineScrollBar extends Composite {
 		
 		@Override
 		public void mouseUp(MouseEvent e) {
+			if (isDisposed())
+				return;
+			
 			cancelRepeater();
 			final Object source = e.getSource();
 			if (source == _left || source == _right)
@@ -661,10 +677,39 @@ public final class SparklineScrollBar extends Composite {
 		}
 		
 		@Override
-		public void widgetDefaultSelected(SelectionEvent e) {
+		public void mouseEnter(MouseEvent e) {
+			if (isDisposed())
+				return;
+
+			final Display display = getShell().getDisplay();
+			final Object source = e.getSource();
+			if (source == _left) {
+				_left.setBackground(display.getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+			}
+			if (source == _right) {
+				_right.setBackground(display.getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+			}
+		}
+		
+		@Override
+		public void mouseExit(MouseEvent e) {
+			if (isDisposed())
+				return;
+
+			final Object source = e.getSource();
+			if (source == _left) {
+				_left.setBackground(getBackground());
+			}
+			if (source == _right) {
+				_right.setBackground(getBackground());
+			}
+		}
+		
+		@Override
+		public void mouseHover(MouseEvent e) {
 			// do nothing
 		}
-
+		
 		@Override
 		public void controlMoved(ControlEvent e) {
 			e.getSource();
@@ -694,6 +739,9 @@ public final class SparklineScrollBar extends Composite {
 
 		@Override
 		public void mouseDragged(org.eclipse.draw2d.MouseEvent e) {
+			if (isDisposed())
+				return;
+
 			if (_startLocation != null && e.getSource() == _thumbFigure) {
 				e.consume();
 				final int diff = e.getLocation().x - _startLocation.x;
@@ -709,6 +757,9 @@ public final class SparklineScrollBar extends Composite {
 
 		@Override
 		public void mouseEntered(org.eclipse.draw2d.MouseEvent e) {
+			if (isDisposed())
+				return;
+
 			if (e.getSource() == _thumbFigure) {
 				e.consume();
 				_thumbFigure.setAlpha(THUMB_ALPHA_OVER);
@@ -718,6 +769,9 @@ public final class SparklineScrollBar extends Composite {
 
 		@Override
 		public void mouseExited(org.eclipse.draw2d.MouseEvent e) {
+			if (isDisposed())
+				return;
+
 			if (e.getSource() == _thumbFigure) {
 				e.consume();
 				_thumbFigure.setAlpha(THUMB_ALPHA_DEFAULT);
@@ -742,6 +796,9 @@ public final class SparklineScrollBar extends Composite {
 
 		@Override
 		public void mousePressed(org.eclipse.draw2d.MouseEvent e) {
+			if (isDisposed())
+				return;
+
 			if (e.getSource() == _thumbFigure) {
 				e.consume();
 				_startLocation = e.getLocation();
@@ -751,11 +808,16 @@ public final class SparklineScrollBar extends Composite {
 
 		@Override
 		public void mouseReleased(org.eclipse.draw2d.MouseEvent e) {
+			if (isDisposed())
+				return;
+
 			if (e.getSource() == _thumbFigure) {
 				e.consume();
 				_startLocation = null;
 			}
 		}
+		
+		
 	}
 	
 	private class Repeater implements Runnable {

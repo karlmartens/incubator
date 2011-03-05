@@ -44,9 +44,9 @@ public final class SparklineScrollBarTest {
 		_shell = new Shell(_display);
 		_shell.setLayout(new FillLayout());
 		
-		_control = new SparklineScrollBar(_shell);
+		_control = new SparklineScrollBar(_shell, SWT.NONE);
 		_control.setBackground(_display.getSystemColor(SWT.COLOR_WHITE));
-		_control.setForeground(_display.getSystemColor(SWT.COLOR_BLACK));
+		_control.setForeground(_display.getSystemColor(SWT.COLOR_WHITE));
 		_control.setThumbColor(_display.getSystemColor(SWT.COLOR_YELLOW));
 		_control.setSparklineColor(_display.getSystemColor(SWT.COLOR_GRAY));
 		_control.setLabelColor(_display.getSystemColor(SWT.COLOR_BLACK));

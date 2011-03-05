@@ -108,7 +108,7 @@ public final class TimeSeriesTable extends Composite {
 		_table.setForeground(getForeground());
 		_table.setModel(new TimeSeriesTableModel());
 		
-		_hscroll = new SparklineScrollBar(this);
+		_hscroll = new SparklineScrollBar(this, SWT.BORDER);
 		_hscroll.setMinimum(0);
 		_hscroll.setMaximum(1);
 		_hscroll.setSelection(0);
