@@ -38,5 +38,58 @@ public final class ArraySupport {
 		
 		return result;
 	}
-	
+
+	public static void swap(long[] arr, int firstIndex, int secondIndex) {
+		final long t = arr[firstIndex];
+		arr[firstIndex] = arr[secondIndex];
+		arr[secondIndex] = t;
+	}
+
+	public static void swap(int[] arr, int firstIndex, int secondIndex) {
+		final int t = arr[firstIndex];
+		arr[firstIndex] = arr[secondIndex];
+		arr[secondIndex] = t;
+	}
+
+	public static void swap(short[] arr, int firstIndex, int secondIndex) {
+		final short t = arr[firstIndex];
+		arr[firstIndex] = arr[secondIndex];
+		arr[secondIndex] = t;
+	}
+
+	public static void swap(char[] arr, int firstIndex, int secondIndex) {
+		final char t = arr[firstIndex];
+		arr[firstIndex] = arr[secondIndex];
+		arr[secondIndex] = t;
+	}
+
+	public static void swap(byte[] arr, int firstIndex, int secondIndex) {
+		final byte t = arr[firstIndex];
+		arr[firstIndex] = arr[secondIndex];
+		arr[secondIndex] = t;
+	}
+
+	public static void swap(double[] arr, int firstIndex, int secondIndex) {
+		final double t = arr[firstIndex];
+		arr[firstIndex] = arr[secondIndex];
+		arr[secondIndex] = t;
+	}
+
+	public static void swap(float[] arr, int firstIndex, int secondIndex) {
+		final float t = arr[firstIndex];
+		arr[firstIndex] = arr[secondIndex];
+		arr[secondIndex] = t;
+	}
+
+	public static void swap(boolean[] arr, int firstIndex, int secondIndex) {
+		final boolean t = arr[firstIndex];
+		arr[firstIndex] = arr[secondIndex];
+		arr[secondIndex] = t;
+	}
+
+	public static void swap(Object[] arr, int firstIndex, int secondIndex) {
+		final Object t = arr[firstIndex];
+		arr[firstIndex] = arr[secondIndex];
+		arr[secondIndex] = t;
+	}
 }

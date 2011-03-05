@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.TypedListener;
 public final class TimeSeriesTableColumn extends Item {
 
 	private int _width = 0;
+	private boolean _moveable = true;
 
 	/**
 	 * <p><dl>
@@ -54,6 +55,14 @@ public final class TimeSeriesTableColumn extends Item {
 
 	public int getWidth() {
 		return _width;
+	}
+	
+	public void setMoveable(boolean moveable) {
+		_moveable = moveable;
+	}
+	
+	public boolean isMoveable() {
+		return _moveable;
 	}
 	
 	public void addControlListener(ControlListener listener) {

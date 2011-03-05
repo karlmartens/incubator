@@ -29,6 +29,9 @@ import net.karlmartens.platform.util.ArraySupport;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionEvent;
@@ -36,13 +39,17 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TypedListener;
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
@@ -65,8 +72,9 @@ public final class TimeSeriesTable extends Composite {
 
 	private final GC _gc;
 	private final TimeSeriesTableListener _listener;
+	private final MoveColumnTableListener _moveColumnListener;
 	private final Font _defaultFont;
-	private final KTable _table;
+	private final KTableImpl _table;
 	private final SparklineScrollBar _hscroll;
 
 	private boolean _showHeader = false;
@@ -89,12 +97,13 @@ public final class TimeSeriesTable extends Composite {
 		super(parent, SWT.NONE);
 		setLayout(new FormLayout());
 		
-		final PassthoughEventListener passthroughListener = new PassthoughEventListener(this);
-		
+		final PassthoughEventListener passthroughListener = new PassthoughEventListener(this);	
 		_gc = new GC(getShell());
 		_defaultFont = new Font(getDisplay(), "Arial", 10, SWT.BOLD);
 		_listener = new TimeSeriesTableListener();
-		_table = new KTable(this, SWT.FLAT | SWT.V_SCROLL | SWT.MULTI | SWTX.MARK_FOCUS_HEADERS);
+		_moveColumnListener = new MoveColumnTableListener();
+		
+		_table = new KTableImpl(this, SWT.FLAT | SWT.V_SCROLL | SWT.MULTI | SWTX.MARK_FOCUS_HEADERS);
 		_table.setBackground(getBackground());
 		_table.setForeground(getForeground());
 		_table.setModel(new TimeSeriesTableModel());
@@ -205,7 +214,7 @@ public final class TimeSeriesTable extends Composite {
 		final Point location = _table.getLocation();
 		final Point clientPoint = new Point(point.x - location.x, point.y - location.y);
 		final Point cell = _table.getCellForCoordinates(clientPoint.x, clientPoint.y);
-		final int row = computeActualRow(cell.y);
+		final int row = computeModelRow(cell.y);
 		if (row < 0)
 			return null;
 		
@@ -220,7 +229,7 @@ public final class TimeSeriesTable extends Composite {
 			if (_showHeader && selection.y == 0)
 				continue;
 			
-			selectedRows.set(computeActualRow(selection.y));
+			selectedRows.set(computeModelRow(selection.y));
 		}
 		
 		int index = 0;
@@ -247,8 +256,8 @@ public final class TimeSeriesTable extends Composite {
 	public Point getFocusCell() {
 		checkWidget();
 		
-		final int row = computeActualRow(_lastFocusRow);
-		final int col = _lastFocusColumn;
+		final int row = computeModelRow(_lastFocusRow);
+		final int col = computeModelColumn(_lastFocusColumn);
 		if (row < 0 || col < 0 || col >= (_columnCount + _periods.length))
 			return null;
 		
@@ -348,7 +357,7 @@ public final class TimeSeriesTable extends Composite {
 		final Point[] selections = new Point[indices.length * width];
 		for (int i=0; i<indices.length; i++) {
 			for (int j=0; j<width; j++) {
-				selections[i*width+j] = new Point(j, computeModelRow(indices[i]));
+				selections[i*width+j] = new Point(j, computeTableRow(indices[i]));
 			}
 		}
 		_table.setSelection(selections, false);
@@ -382,7 +391,7 @@ public final class TimeSeriesTable extends Composite {
 				|| row < 0 || row >= _itemCount)
 			SWT.error(SWT.ERROR_INVALID_RANGE);
 		
-		_table.setSelection(col, computeModelRow(row), true);
+		_table.setSelection(computeTableColumn(col), computeTableRow(row), true);
 	}
 	
 	public void showSelection() {
@@ -402,7 +411,7 @@ public final class TimeSeriesTable extends Composite {
 		if (index < 0)
 			return;
 		
-		_table.scroll(Math.max(0, _lastFocusColumn), computeModelRow(index));
+		_table.scroll(Math.max(0, _lastFocusColumn), computeTableRow(index));
 	}
 
 	public void scrollTo(LocalDate date) {
@@ -557,7 +566,7 @@ public final class TimeSeriesTable extends Composite {
 		if (index < 0 || index >= (_columnCount + _periods.length))
 			SWT.error(SWT.ERROR_INVALID_RANGE);
 				
-		final Rectangle r = _table.getCellRect(index, computeModelRow(indexOf(item)));
+		final Rectangle r = _table.getCellRect(computeTableColumn(index), computeTableRow(indexOf(item)));
 		final Point p = _table.getLocation();
 		return new Rectangle(r.x + p.x + 1, r.y + p.y + 2, r.width, r.height);
 	}
@@ -567,7 +576,7 @@ public final class TimeSeriesTable extends Composite {
 		if (item == null)
 			SWT.error(SWT.ERROR_NULL_ARGUMENT);
 		
-		final int row = computeModelRow(indexOf(item));
+		final int row = computeTableRow(indexOf(item));
 		final Point p = _table.getLocation();
 		final Rectangle bounds = new Rectangle(p.x, p.y, 0, 0);
 		for (int i=0; i<_columnCount; i++) {
@@ -601,31 +610,44 @@ public final class TimeSeriesTable extends Composite {
 		return _table;
 	}
     
-    private int computeModelRow(int row) {
+    private int computeTableRow(int row) {
     	if (_showHeader)
     		return row + _table.getModel().getFixedHeaderRowCount();
     	
     	return row;
     }
     
-    private int computeActualRow(int row) {
+    private int computeTableColumn(int modelColumn) {
+    	return modelColumn;
+    }
+    
+    private int computeModelRow(int row) {
     	if (_showHeader)
     		return row - _table.getModel().getFixedHeaderRowCount();
     	
     	return row;
+    }
+    
+    private int computeModelColumn(int column) {
+    	return column;
     }
 
 	private void hookControls() {
 		_table.addCellSelectionListener(_listener);
 		_table.addCellResizeListener(_listener);
 		_table.addPaintListener(_listener);
+		_table.addMouseListener(_moveColumnListener);
+		_table.addMouseMoveListener(_moveColumnListener);
 		_hscroll.addSelectionListener(_listener);
 		addDisposeListener(_listener);
 	}
 	
 	private void releaseControls() {
 		_table.removeCellSelectionListener(_listener);
+		_table.removeCellResizeListener(_listener);
 		_table.removePaintListener(_listener);
+		_table.removeMouseListener(_moveColumnListener);
+		_table.removeMouseMoveListener(_moveColumnListener);
 		_hscroll.removeSelectionListener(_listener);
 		removeDisposeListener(_listener);
 	}
@@ -691,7 +713,7 @@ public final class TimeSeriesTable extends Composite {
 		
 		if (ScrollDataMode.FOCUS_CELL.equals(_scrollDataMode)) {
 			if (_lastFocusRow >= 0 && (!_showHeader || _lastFocusRow > 0)) {
-				final int row = computeActualRow(_lastFocusRow);
+				final int row = computeModelRow(_lastFocusRow);
 				for (int j=0; j<data.length; j++) {
 					data[j] += _items[row].getValue(j);
 				}
@@ -717,7 +739,7 @@ public final class TimeSeriesTable extends Composite {
 				continue;
 			
 			final int width = doGetVisibleDataCells().width + _columnCount + 1;
-			_table.redraw(0, computeModelRow(index), width, 1);
+			_table.redraw(0, computeTableRow(index), width, 1);
 		}
 	}
 	
@@ -726,6 +748,24 @@ public final class TimeSeriesTable extends Composite {
 		
 		System.arraycopy(_items, index+1, _items, index, --_itemCount-index);
 		_items[_itemCount] = null;
+	}
+	
+	private void doSwapColumns(int firstIndex, int secondIndex) {
+		if (!_columns[firstIndex].isMoveable() || !_columns[secondIndex].isMoveable())
+			return;
+		
+		final TimeSeriesTableColumn t = _columns[firstIndex];
+		_columns[firstIndex] = _columns[secondIndex];
+		_columns[secondIndex] = t;
+		
+		for (int i=0; i<_itemCount; i++) {
+			_items[i].swapColumns(firstIndex, secondIndex);
+		}
+		
+		_columns[firstIndex].notifyListeners(SWT.Move, new Event());
+		_columns[secondIndex].notifyListeners(SWT.Move, new Event());
+		
+		_table.redraw();
 	}
 	
 	private final class TimeSeriesTableModel extends KTableDefaultModel {
@@ -785,11 +825,12 @@ public final class TimeSeriesTable extends Composite {
 				return _headerRenderer;
 			}
 			
-			final int actualRow = computeActualRow(row);
-			final TimeSeriesTableItem item = getItem(actualRow);
+			final int modelRow = computeModelRow(row);
+			final int modelCol = computeModelColumn(col);
+			final TimeSeriesTableItem item = getItem(modelRow);
 			final DefaultCellRenderer renderer;
-			if (col < _columnCount) {	
-				if ((SWT.CHECK & _columns[col].getStyle()) > 0) {
+			if (modelCol < _columnCount) {	
+				if ((SWT.CHECK & _columns[modelCol].getStyle()) > 0) {
 					renderer = _checkRenderer;
 					_checkRenderer.setAlignment(SWTX.ALIGN_HORIZONTAL_CENTER | SWTX.ALIGN_VERTICAL_CENTER);
 				} else {
@@ -797,9 +838,9 @@ public final class TimeSeriesTable extends Composite {
 					_renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_LEFT | SWTX.ALIGN_VERTICAL_CENTER);
 				}
 				
-				renderer.setDefaultBackground(item.getBackground(col));
-				renderer.setDefaultForeground(item.getForeground(col));
-				renderer.setFont(item.getFont(col));
+				renderer.setDefaultBackground(item.getBackground(modelCol));
+				renderer.setDefaultForeground(item.getForeground(modelCol));
+				renderer.setFont(item.getFont(modelCol));
 			} else {
 				renderer = _renderer;
 				_renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_RIGHT | SWTX.ALIGN_VERTICAL_CENTER);
@@ -810,7 +851,7 @@ public final class TimeSeriesTable extends Composite {
 			
 			if (ScrollDataMode.FOCUS_CELL.equals(_scrollDataMode) && row == _lastFocusRow) {
 				renderer.setBackground(_selectionColor);
-			} else if (ScrollDataMode.SELECTED_ROWS.equals(_scrollDataMode) && Arrays.binarySearch(_lastRowSelection, actualRow) >= 0) {
+			} else if (ScrollDataMode.SELECTED_ROWS.equals(_scrollDataMode) && Arrays.binarySearch(_lastRowSelection, modelRow) >= 0) {
 				renderer.setBackground(_selectionColor);
 			} else {
 				renderer.setBackground(null);
@@ -826,22 +867,23 @@ public final class TimeSeriesTable extends Composite {
 
 		@Override
 		public Object doGetContentAt(int col, int row) {
+			final int modelCol = computeModelColumn(col);
 			if (_showHeader && row == 0) {
-				if (col < _columnCount) {
-					return _columns[col].getText();
+				if (modelCol < _columnCount) {
+					return _columns[modelCol].getText();
 				}
 				
-				final LocalDate date = _periods[col - _columnCount];
+				final LocalDate date = _periods[modelCol - _columnCount];
 				if (date == null)
 					return "";
 				
 				return _dateFormat.format(date);
 			}
 			
-			final TimeSeriesTableItem item = _items[computeActualRow(row)];
-			if (col < _columnCount) {
-				final String text = item.getText(col);
-				if ((SWT.CHECK & _columns[col].getStyle()) > 0)
+			final TimeSeriesTableItem item = _items[computeModelRow(row)];
+			if (modelCol < _columnCount) {
+				final String text = item.getText(modelCol);
+				if ((SWT.CHECK & _columns[modelCol].getStyle()) > 0)
 					return Boolean.valueOf(text);
 				
 				if (text == null)
@@ -850,7 +892,7 @@ public final class TimeSeriesTable extends Composite {
 				return text;
 			}
 			
-			final double value = item.getValue(col - _columnCount);
+			final double value = item.getValue(modelCol - _columnCount);
 			if (value == 0.0)
 				return "";
 			
@@ -859,7 +901,7 @@ public final class TimeSeriesTable extends Composite {
 
 		@Override
 		public int doGetRowCount() {
-			return computeModelRow(_itemCount);
+			return computeTableRow(_itemCount);
 		}
 
 		@Override
@@ -869,8 +911,9 @@ public final class TimeSeriesTable extends Composite {
 
 		@Override
 		public int getInitialColumnWidth(int col) {
-			if (col < _columnCount) {
-				final TimeSeriesTableColumn column = getColumn(col);
+			final int modelCol = computeModelColumn(col);
+			if (modelCol < _columnCount) {
+				final TimeSeriesTableColumn column = getColumn(modelCol);
 				return column.getWidth();
 			}
 			
@@ -883,7 +926,7 @@ public final class TimeSeriesTable extends Composite {
 			if ((_showHeader && row == 0) || row < 0) {
 				_gc.setFont(getFont());
 			} else {
-				final TimeSeriesTableItem item = getItem(computeActualRow(row));
+				final TimeSeriesTableItem item = getItem(computeModelRow(row));
 				_gc.setFont(item.getFont());
 			}
 
@@ -891,22 +934,24 @@ public final class TimeSeriesTable extends Composite {
 		}		
 	}
 	
-	private final class TimeSeriesTableListener implements KTableCellSelectionListener, KTableCellResizeListener, SelectionListener, PaintListener, DisposeListener {
+	private final class TimeSeriesTableListener implements KTableCellSelectionListener, KTableCellResizeListener, 
+	  SelectionListener, PaintListener, DisposeListener {
 		
 		@Override
 		public void widgetSelected(SelectionEvent e) {
-			if (e.getSource() == _hscroll) {
-				final int selection = _hscroll.getSelection();
-				if (selection < 0 || selection >= _periods.length)
-					return;
-				
-				_hscroll.setLabel(_dateFormat.format(_periods[selection]));
-				
-				final Rectangle visible = doGetVisibleDataCells();
-				final int x = _hscroll.getSelection() + _columnCount; 
-				final int y = Math.max(0, Math.min(visible.y, _itemCount - _table.getVisibleRowCount()));
-				_table.scroll(x, y);
-			}
+			if (e.getSource() != _hscroll)
+				return;
+
+			final int selection = _hscroll.getSelection();
+			if (selection < 0 || selection >= _periods.length)
+				return;
+			
+			_hscroll.setLabel(_dateFormat.format(_periods[selection]));
+			
+			final Rectangle visible = doGetVisibleDataCells();
+			final int x = _hscroll.getSelection() + _columnCount; 
+			final int y = Math.max(0, Math.min(visible.y, _itemCount - _table.getVisibleRowCount()));
+			_table.scroll(x, y);
 		}
 		
 		@Override
@@ -941,29 +986,31 @@ public final class TimeSeriesTable extends Composite {
 		
 		@Override
 		public void paintControl(PaintEvent e) {
-			if (e.getSource() == _table) {
-				final Rectangle visible = doGetVisibleDataCells();
-				if (visible.width <= 0) {
-					_hscroll.setThumb(_hscroll.getMaximum() + 1);
-					_hscroll.setEnabled(false);
-					return;
-				}
-				
-				_hscroll.setThumb(Math.max(1, visible.width));
-				_hscroll.setEnabled(true);
+			if (e.getSource() != _table) 
+				return;
+
+			final Rectangle visible = doGetVisibleDataCells();
+			if (visible.width <= 0) {
+				_hscroll.setThumb(_hscroll.getMaximum() + 1);
+				_hscroll.setEnabled(false);
+				return;
 			}
+			
+			_hscroll.setThumb(Math.max(1, visible.width));
+			_hscroll.setEnabled(true);
 		}
 		
 		@Override
 		public void columnResized(int col, int newWidth) {
-			if (col < _columnCount) {
-				_columns[col].notifyListeners(SWT.Resize, new Event());
+			final int modelCol = computeModelColumn(col);
+			if (modelCol < _columnCount) {
+				_columns[modelCol].notifyListeners(SWT.Resize, new Event());
 			}
 		}
 		
 		@Override
 		public void rowResized(int row, int newHeight) {
-			_items[computeActualRow(row)].notifyListeners(SWT.Resize, new Event());
+			_items[computeModelRow(row)].notifyListeners(SWT.Resize, new Event());
 		}
 
 		@Override
@@ -972,5 +1019,147 @@ public final class TimeSeriesTable extends Composite {
 			_defaultFont.dispose();
 			_gc.dispose();
 		}
+	}
+
+	private final class MoveColumnTableListener implements MouseListener, MouseMoveListener {
+
+		private Integer _columnIndex;
+		private Image _image;
+		private Shell _shell;
+
+		@Override
+		public void mouseDoubleClick(MouseEvent e) {
+			// ignore
+		}
+		
+		@Override
+		public void mouseDown(MouseEvent e) {
+			if (_table != e.getSource())
+				return;
+
+			final Point cellCord = _table.getCellForCoordinates(e.x, e.y);
+			if (cellCord.y >= _table.getModel().getFixedHeaderRowCount())
+				return;
+			
+			final int colIndex = computeModelColumn(cellCord.x);
+			if (colIndex < 0 || colIndex >= _columnCount)
+				return;
+			
+			if (!_columns[colIndex].isMoveable())
+				return;
+			
+			initColumnMove(colIndex);
+		}
+
+		@Override
+		public void mouseUp(MouseEvent e) {
+			if (!isColumnMoveActive())
+				return;
+				
+			if (_table != e.getSource()) {
+				cancelColumnMove();
+				return;
+			}
+
+			final Point cellCord = _table.getCellForCoordinates(e.x, e.y);
+			final int newColIndex = computeModelColumn(cellCord.x);
+			final int oldColumnIndex = _columnIndex.intValue();
+			if (newColIndex < 0 || newColIndex >= _columnCount || oldColumnIndex == newColIndex) {
+				cancelColumnMove();
+				return;
+			}
+			
+			performColumnMove(oldColumnIndex, newColIndex);
+		}
+		
+		@Override
+		public void mouseMove(MouseEvent e) {
+			if (!isColumnMoveActive())
+				return;
+			
+			if (_table != e.getSource()) {
+				cancelColumnMove();
+				return;
+			}
+			
+			
+			if (_shell == null) {
+				openColumnWindow();
+			}
+			
+			final Rectangle rLastCol = _table.getCellRect(_columnCount - 1, 0);
+			final Point p = TimeSeriesTable.this.toDisplay(_table.getLocation());
+			p.x += Math.max(Math.min(e.x, rLastCol.x), 0);
+			_shell.setLocation(p);
+		}
+
+		private void initColumnMove(int colIndex) {
+			_columnIndex = colIndex;
+			_table._ignoreMouseMove = true;
+	
+			final GC gc = new GC(_table);
+			
+			final Rectangle cellCords = _table.getCellRect(computeTableColumn(colIndex), 0);
+			final int height = _table.getClientArea().height;
+			
+			if (_image != null)
+				_image.dispose();
+			_image = new Image(getDisplay(), new Rectangle(0, 0, cellCords.width, height));
+			_image.getImageData().alpha = 0;
+			gc.copyArea(_image, cellCords.x, cellCords.y);
+		}
+		
+		private void openColumnWindow() {
+			_shell = new Shell(getDisplay(), SWT.NO_TRIM);
+			_shell.setAlpha(200);
+			_shell.setLayout(new FillLayout());
+			_shell.setBounds(_image.getBounds());
+			
+			final Label l = new Label(_shell, SWT.NONE);
+			l.setImage(_image);
+			l.setBackground(getDisplay().getSystemColor(SWT.COLOR_DARK_GRAY));
+
+			_shell.open();
+		}
+		
+		private void cancelColumnMove() {
+			_columnIndex = null;
+			_table._ignoreMouseMove = false;
+			
+			if (_image != null && !_image.isDisposed())
+				_image.dispose();
+			_image = null;
+			
+			if (_shell != null  && !_shell.isDisposed())
+				_shell.dispose();
+			_shell = null;
+		}
+		
+		private void performColumnMove(int oldColumnIndex, int newColumnIndex) {
+			doSwapColumns(oldColumnIndex, newColumnIndex);
+			cancelColumnMove();
+		}
+		
+		private boolean isColumnMoveActive() {
+			return _columnIndex != null;
+		}
+	}
+
+	private final class KTableImpl extends KTable {
+		
+		private boolean _ignoreMouseMove = false;
+
+		public KTableImpl(Composite parent, int style) {
+			super(parent, style);
+		}
+		
+		@Override
+		protected void onMouseMove(MouseEvent e) {
+			if (_ignoreMouseMove)
+				return;
+			
+			super.onMouseMove(e);
+		}
+		
 	}
 }

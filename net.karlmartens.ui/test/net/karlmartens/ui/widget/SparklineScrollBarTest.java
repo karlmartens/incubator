@@ -74,7 +74,7 @@ public final class SparklineScrollBarTest {
 		_control.setHighlight(8);
 		_control.highlight(20, 39);
 		_control.highlight(new int[] {100, 101, 103});
-		_control.setHighlightColor(_display.getSystemColor(SWT.COLOR_RED));
+		_control.setHighlightColor(_display.getSystemColor(SWT.COLOR_LIST_SELECTION));
 		updateLabel();
 	}
 	

@@ -19,6 +19,8 @@
  */
 package net.karlmartens.ui.widget;
 
+import net.karlmartens.platform.util.ArraySupport;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
@@ -345,5 +347,18 @@ abstract class AbstractTableItem extends Item {
 	void release() {
 		_parent = null;
 		clear();
+	}
+
+	void swapColumns(int firstIndex, int secondIndex) {
+		ArraySupport.swap(_strings, firstIndex, secondIndex);
+		ArraySupport.swap(_images, firstIndex, secondIndex);
+		ArraySupport.swap(_cellFonts, firstIndex, secondIndex);
+		ArraySupport.swap(_cellBackgrounds, firstIndex, secondIndex);
+		ArraySupport.swap(_cellForegrounds, firstIndex, secondIndex);
+
+		if (firstIndex == 0 || secondIndex == 0) {
+			setText(_strings[0]);
+			setImage(_images[0]);
+		}
 	}
 }
