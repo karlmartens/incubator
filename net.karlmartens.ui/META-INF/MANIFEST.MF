@@ -2,18 +2,19 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Ui
 Bundle-SymbolicName: net.karlmartens.ui
-Bundle-Version: 1.0.0
+Bundle-Version: 1.0.0.vqualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Activator: net.karlmartens.ui.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.draw2d,
  de.kupzog.ktable,
- net.karlmartens.platform;bundle-version="1.0.0"
-Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+ net.karlmartens.platform
 Bundle-ClassPath: .
 Import-Package: au.com.bytecode.opencsv,
  org.joda.time,
  org.joda.time.base,
  org.joda.time.chrono,
  org.joda.time.format
+Export-Package: net.karlmartens.ui.viewer,
+ net.karlmartens.ui.widget
