@@ -55,6 +55,12 @@ final class TestBooleanEditingSupport extends EditingSupport {
 	@Override
 	protected void setValue(Object element, Object value) {
 		final Object[] data = (Object[])element;
-		data[_index] = value;
+		if (value instanceof Boolean) {
+			data[_index] = value;
+		} else if (value instanceof String) {
+			data[_index] = Boolean.valueOf((String)value);
+		} else {
+			throw new IllegalArgumentException();
+		}
 	}
 }

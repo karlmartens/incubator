@@ -20,21 +20,13 @@
 package net.karlmartens.ui.viewer;
 
 import java.text.NumberFormat;
-import java.util.Arrays;
-
-import org.joda.time.Interval;
-import org.joda.time.LocalDate;
-
-import net.karlmartens.ui.viewer.TimeSeriesEditingSupport;
 
 final class TestTimeSeriesEditingSupport implements TimeSeriesEditingSupport {
 
-	private final LocalDate[] _dates;
 	private final int _index;
 	private final NumberFormat _format;
 
-	public TestTimeSeriesEditingSupport(NumberFormat format, LocalDate[] dates, int index) {
-		_dates = dates;
+	public TestTimeSeriesEditingSupport(NumberFormat format, int index) {
 		_index = index;
 		_format = format;
 	}
@@ -50,9 +42,8 @@ final class TestTimeSeriesEditingSupport implements TimeSeriesEditingSupport {
 	}
 
 	@Override
-	public void setValue(Object element, Interval interval, double value) {
+	public void setValue(Object element, int index, double value) {
 		final double[] series = (double[])((Object[])element)[_index];
-		final int index = Arrays.binarySearch(_dates, interval.getStart().toLocalDate());
 		series[index] = value;
 	}
 

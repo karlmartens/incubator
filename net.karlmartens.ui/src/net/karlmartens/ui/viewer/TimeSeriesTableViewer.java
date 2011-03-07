@@ -26,14 +26,15 @@ import net.karlmartens.ui.widget.TimeSeriesTableItem;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.viewers.AbstractTableViewer;
+import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ColumnViewerEditor;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationStrategy;
 import org.eclipse.jface.viewers.IContentProvider;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Widget;
-import org.joda.time.Interval;
 import org.joda.time.LocalDate;
 
 public final class TimeSeriesTableViewer extends AbstractTableViewer {
@@ -48,9 +49,9 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 	}
 	
 	public TimeSeriesTableViewer(TimeSeriesTable control) {
-		_control = control;
+		_control = control;		
 		hookControl(control);
-	}
+	}	
 	
 	public void setEditingSupport(TimeSeriesEditingSupport editingSupport) {
 		_editingSupport = editingSupport;
@@ -218,40 +219,67 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 	
 	@Override
 	protected void inputChanged(Object input, Object oldInput) {
-		super.inputChanged(input, oldInput);
-		
 		final TimeSeriesContentProvider cp = (TimeSeriesContentProvider)getContentProvider();
 		if (cp == null)
-			return;
-		
-		final LocalDate[] dates = cp.getDates();
-		if (dates == null || dates.length < 2)
-			return;
-		
-		final LocalDate[] periods = new LocalDate[dates.length - 1];
-		System.arraycopy(dates, 0, periods, 0, periods.length);
-		_control.setPeriods(periods);
-		
+			throw new IllegalStateException();
+				
 		if (_periodColumn == null) {
 			_periodColumn = new TimeSeriesTableViewerColumn(this, _control.getColumn(_control.getColumnCount()));
+			_periodColumn.setLabelProvider(new PeriodLabelProvider(cp));
 			_periodColumn.setEditingSupport(new TimeSeriesTableValueEditingSupport(this));
 		}
-		
-		final Object[] elements = getSortedChildren(getRoot());
-		for (int i=0; i<elements.length; i++) {
-			final double[] values = new double[dates.length - 1];
-			for (int j=0; j<periods.length; j++) {
-				final Interval interval = new Interval(dates[j].toDateMidnight(), dates[j+1].toDateMidnight());
-				values[j] = cp.getValue(elements[i], interval);
-			}
-			
-			final TimeSeriesTableItem item = _control.getItem(i);
-			item.setValue(values);
+
+		super.inputChanged(input, oldInput);
+	}
+	
+	@Override
+	protected void preservingSelection(Runnable updateCode) {
+		final Point[] selection = _control.getCellSelection();
+		try {
+			updateCode.run();
+		} finally {
+			_control.setCellSelection(selection, false);
 		}
 	}
 	
 	@Override
+	protected void internalRefresh(Object element, boolean updateLabels) {
+		if (updateLabels) {
+			final TimeSeriesContentProvider cp = (TimeSeriesContentProvider)getContentProvider();
+			if (cp == null)
+				throw new IllegalStateException();
+
+			final LocalDate[] dates = cp.getDates();
+			if (dates == null || dates.length < 2) {
+				_control.setPeriods(new LocalDate[] {});
+			} else {
+				final LocalDate[] periods = new LocalDate[dates.length - 1];
+				System.arraycopy(dates, 0, periods, 0, periods.length);
+				_control.setPeriods(periods);
+			}
+		}
+		
+		super.internalRefresh(element, updateLabels);
+	}
+		
+	@Override
 	protected void assertContentProviderType(IContentProvider provider) {
 		Assert.isTrue(provider instanceof TimeSeriesContentProvider);
+	}
+	
+	private final class PeriodLabelProvider extends CellLabelProvider {
+
+		private final TimeSeriesContentProvider _base;
+
+		public PeriodLabelProvider(TimeSeriesContentProvider base) {
+			_base = base;
+		}
+
+		@Override
+		public void update(ViewerCell cell) {
+			final int index = cell.getColumnIndex() - _control.getColumnCount();	
+			final double value = _base.getValue(cell.getElement(), index);
+			((TimeSeriesTableItem)cell.getItem()).setValue(index, value);
+		}
 	}
 }
