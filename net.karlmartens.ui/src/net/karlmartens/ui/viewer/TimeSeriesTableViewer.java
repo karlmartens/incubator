@@ -250,12 +250,10 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 				throw new IllegalStateException();
 
 			final LocalDate[] dates = cp.getDates();
-			if (dates == null || dates.length < 2) {
-				_control.setPeriods(new LocalDate[] {});
+			if (dates != null) {
+				_control.setPeriods(dates);
 			} else {
-				final LocalDate[] periods = new LocalDate[dates.length - 1];
-				System.arraycopy(dates, 0, periods, 0, periods.length);
-				_control.setPeriods(periods);
+				_control.setPeriods(new LocalDate[] {});
 			}
 		}
 		
