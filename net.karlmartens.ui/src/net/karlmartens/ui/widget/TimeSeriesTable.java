@@ -955,7 +955,7 @@ public final class TimeSeriesTable extends Composite {
 
 		@Override
 		public int getInitialRowHeight(int row) {
-			if ((_showHeader && row == 0) || row < 0) {
+			if ((_showHeader && row == 0) || row < 0 || computeModelRow(row) >= _itemCount) {
 				_gc.setFont(getFont());
 			} else {
 				final TimeSeriesTableItem item = getItem(computeModelRow(row));
