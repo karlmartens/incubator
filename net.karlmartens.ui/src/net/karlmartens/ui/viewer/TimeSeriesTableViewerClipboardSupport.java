@@ -98,7 +98,7 @@ public final class TimeSeriesTableViewerClipboardSupport {
 		if (!isRegionValid(region))
 			return;
 		
-		final String[][] data = readFromClipboard();
+		String[][] data = readFromClipboard();
 		if (data.length == 0)
 			return;
 		
@@ -109,11 +109,26 @@ public final class TimeSeriesTableViewerClipboardSupport {
 		
 		final Rectangle targetRect;
 		if (region.width == 1 && region.height == 1) {
+			// Paste top-left anchor
 			final int width = Math.min(dataRect.width, _viewer.doGetColumnCount() - region.x);
 			final int height = Math.min(dataRect.height, _viewer.doGetItemCount() - region.y); 
 			targetRect = new Rectangle(region.x, region.y, width, height);
-		} else {
-			targetRect = new Rectangle(region.x, region.y, 0, 0);
+		} else if (dataRect.width == 1 && dataRect.height == 1) { 
+			// Fill
+			final int width = Math.min(region.width, _viewer.doGetColumnCount() - region.x);
+			final int height = Math.min(region.height, _viewer.doGetItemCount() - region.y);
+			targetRect = new Rectangle(region.x, region.y, width, height);
+			
+			final String[][] newData = new String[region.height][region.width];
+			for (String[] r : newData) {
+				Arrays.fill(r, data[0][0]);
+			}
+			data = newData;
+ 		} else {
+ 			// Paste into region
+			final int width = Math.min(region.width, _viewer.doGetColumnCount() - region.x);
+			final int height = Math.min(region.height, _viewer.doGetItemCount() - region.y);
+			targetRect = new Rectangle(region.x, region.y, width, height);
 		}
 		
 		if (!isRegionEditable(targetRect))
@@ -271,7 +286,7 @@ public final class TimeSeriesTableViewerClipboardSupport {
 			final int dy = cell.y - r.y;
 			if (dy < 0) {
 				r.y += dy;
-				r.height -= dx;
+				r.height -= dy;
 			}
 			
 			if (dy >= r.height) {
