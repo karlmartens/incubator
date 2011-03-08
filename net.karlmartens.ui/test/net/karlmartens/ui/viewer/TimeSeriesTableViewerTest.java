@@ -19,14 +19,15 @@
  */
 package net.karlmartens.ui.viewer;
 
+import static net.karlmartens.ui.viewer.TimeSeriesTableViewerClipboardSupport.OPERATION_COPY;
+import static net.karlmartens.ui.viewer.TimeSeriesTableViewerClipboardSupport.OPERATION_CUT;
+import static net.karlmartens.ui.viewer.TimeSeriesTableViewerClipboardSupport.OPERATION_PASTE;
+
 import java.text.DecimalFormat;
 import java.util.BitSet;
 
 import net.karlmartens.platform.text.LocalDateFormat;
 import net.karlmartens.platform.util.NumberStringComparator;
-import net.karlmartens.ui.viewer.TimeSeriesTableViewer;
-import net.karlmartens.ui.viewer.TimeSeriesTableViewerColumn;
-import net.karlmartens.ui.viewer.TimeSeriesTableViewerEditor;
 import net.karlmartens.ui.widget.TimeSeriesTable;
 import net.karlmartens.ui.widget.TimeSeriesTable.ScrollDataMode;
 
@@ -37,6 +38,7 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
@@ -74,7 +76,7 @@ public final class TimeSeriesTableViewerTest {
 		viewer.setContentProvider(new TestTimeSeriesContentProvider(dates, 3));
 		viewer.setLabelProvider(new TestColumnLabelProvider(0));
 		viewer.setComparator(new ViewerComparator(new NumberStringComparator()));
-		viewer.setEditingSupport(new TestTimeSeriesEditingSupport(new DecimalFormat("#,##0.0000"), dates, 3));
+		viewer.setEditingSupport(new TestTimeSeriesEditingSupport(new DecimalFormat("#,##0.0000"), 3));
 		
 		final TimeSeriesTable table = viewer.getControl();
 		table.setHeaderVisible(true);
@@ -91,14 +93,29 @@ public final class TimeSeriesTableViewerTest {
 			}
 		});
 		
+		final TimeSeriesTableViewerClipboardSupport clipboardSupport = new TimeSeriesTableViewerClipboardSupport(viewer, OPERATION_COPY | OPERATION_CUT | OPERATION_PASTE);
+		
 		final ColumnViewerEditorActivationStrategy activationStrategy = new ColumnViewerEditorActivationStrategy(viewer) {
 			@Override
 			protected boolean isEditorActivationEvent(
 					ColumnViewerEditorActivationEvent event) {
-				return event.eventType == ColumnViewerEditorActivationEvent.TRAVERSAL
-					|| event.eventType == ColumnViewerEditorActivationEvent.MOUSE_DOUBLE_CLICK_SELECTION
-					|| (event.eventType == ColumnViewerEditorActivationEvent.KEY_PRESSED && (!TRAVERSAL_KEYS.get(event.keyCode)))
-					|| event.eventType == ColumnViewerEditorActivationEvent.PROGRAMMATIC;
+				if (event.eventType != ColumnViewerEditorActivationEvent.TRAVERSAL
+					&& event.eventType != ColumnViewerEditorActivationEvent.MOUSE_DOUBLE_CLICK_SELECTION
+					&& event.eventType != ColumnViewerEditorActivationEvent.KEY_PRESSED
+					&& event.eventType != ColumnViewerEditorActivationEvent.PROGRAMMATIC)
+					return false;
+				
+				if (event.eventType == ColumnViewerEditorActivationEvent.KEY_PRESSED) {
+					if (clipboardSupport.isClipboardEvent((KeyEvent)event.sourceEvent)) {
+						return false;
+					}
+					
+					if (TRAVERSAL_KEYS.get(event.keyCode)) {
+						return false;
+					}
+				}
+				
+				return true;
 			}
 		};
 		

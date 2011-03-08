@@ -22,10 +22,7 @@ package net.karlmartens.ui.widget;
 import java.text.DecimalFormat;
 
 import net.karlmartens.platform.text.LocalDateFormat;
-import net.karlmartens.ui.widget.TimeSeriesTable;
 import net.karlmartens.ui.widget.TimeSeriesTable.ScrollDataMode;
-import net.karlmartens.ui.widget.TimeSeriesTableColumn;
-import net.karlmartens.ui.widget.TimeSeriesTableItem;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;

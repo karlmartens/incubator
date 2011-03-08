@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: opencsv Plug-in
+Bundle-SymbolicName: au.com.bytecode.opencsv
+Bundle-Version: 2.2.0
+Bundle-ClassPath: opencsv-2.2.jar
+Bundle-Vendor: opencsv.bytecode.com.au
+Bundle-Localization: plugin
+Export-Package: au.com.bytecode.opencsv,au.com.bytecode.opencsv.bean
+

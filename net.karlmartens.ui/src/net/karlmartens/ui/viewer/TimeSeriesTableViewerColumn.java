@@ -22,11 +22,13 @@ package net.karlmartens.ui.viewer;
 import net.karlmartens.ui.widget.TimeSeriesTable;
 import net.karlmartens.ui.widget.TimeSeriesTableColumn;
 
+import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.ViewerColumn;
 
 public final class TimeSeriesTableViewerColumn extends ViewerColumn {
 	
 	private final TimeSeriesTableColumn _column;
+	private EditingSupport _editingSupport;
 
 	public TimeSeriesTableViewerColumn(TimeSeriesTableViewer viewer, int style) {
 		this(viewer, style, -1);
@@ -43,6 +45,16 @@ public final class TimeSeriesTableViewerColumn extends ViewerColumn {
 	
 	public TimeSeriesTableColumn getColumn() {
 		return _column;
+	}
+	
+	@Override
+	public void setEditingSupport(EditingSupport editingSupport) {
+		super.setEditingSupport(editingSupport);
+		_editingSupport = editingSupport;
+	}
+	
+	EditingSupport doGetEditingSupport() {
+		return _editingSupport;
 	}
 	
 	private static TimeSeriesTableColumn createColumn(TimeSeriesTable table, int style, int index) {

@@ -264,6 +264,27 @@ public final class TimeSeriesTable extends Composite {
 		return new Point(col, row);
 	}
 	
+	public Point[] getCellSelection() {
+		checkWidget();
+		
+		final Point[] points = _table.getCellSelection();
+		final Point[] selection = new Point[points.length];
+		int j=0;
+		for (int i=0; i<selection.length; i++) {
+			final Point table = points[i];
+			final Point model = new Point(computeModelColumn(table.x), computeModelRow(table.y));
+			
+			if (model.x < 0 || model.y < 0)
+				continue;
+			
+			selection[j++] = model;
+		}
+		
+		final Point[] result = new Point[j];
+		System.arraycopy(selection, 0, result, 0, j);
+		return result;
+	}
+	
 	private TimeSeriesTableColumn _periodColumn = new TimeSeriesTableColumn(this);
 	
 	public TimeSeriesTableColumn getColumn(int index) {
@@ -392,6 +413,17 @@ public final class TimeSeriesTable extends Composite {
 			SWT.error(SWT.ERROR_INVALID_RANGE);
 		
 		_table.setSelection(computeTableColumn(col), computeTableRow(row), true);
+	}
+
+	public void setCellSelection(Point[] selection, boolean reveal) {
+		checkWidget();
+		
+		final Point[] tableSelection = new Point[selection.length];
+		for (int i=0; i<tableSelection.length; i++) {
+			final Point p = selection[i];
+			tableSelection[i] = new Point(computeTableColumn(p.x), computeTableRow(p.y));
+		}
+		_table.setSelection(tableSelection, reveal);
 	}
 	
 	public void showSelection() {

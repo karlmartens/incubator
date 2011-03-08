@@ -30,13 +30,10 @@ import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-import org.joda.time.Interval;
-import org.joda.time.LocalDate;
 
 class TimeSeriesTableValueEditingSupport extends EditingSupport {
 
 	private final TimeSeriesTableViewer _viewer;
-	private Interval _interval;
 
 	TimeSeriesTableValueEditingSupport(
 			TimeSeriesTableViewer viewer) {
@@ -71,7 +68,6 @@ class TimeSeriesTableValueEditingSupport extends EditingSupport {
 	@Override
 	protected void initializeCellEditorValue(CellEditor cellEditor,
 			ViewerCell cell) {
-		_interval = null;
 		cellEditor.setValue("");
 		
 		final TimeSeriesEditingSupport editingSupport = _viewer.getEditingSupport();
@@ -82,22 +78,15 @@ class TimeSeriesTableValueEditingSupport extends EditingSupport {
 		if (cp == null)
 			return;
 		
-		final int index = computePeriodIndex(cell);
-		final LocalDate[] dates = cp.getDates();
-		if (dates == null || dates.length < 2 || index < 0 || index >= dates.length - 1)
-			return;
-		
-		_interval = new Interval(dates[index].toDateMidnight(), dates[index+1].toDateMidnight());
-		
-		final double value = cp.getValue(cell.getElement(), _interval);
+		final double value = cp.getValue(cell.getElement(), computePeriodIndex(cell));
 		final NumberFormat format = getNumberFormat(editingSupport);
 		cellEditor.setValue(format.format(value));
 	}
-	
+
 	@Override
 	protected void saveCellEditorValue(CellEditor cellEditor, ViewerCell cell) {
 		final TimeSeriesEditingSupport editingSupport = _viewer.getEditingSupport();
-		if (editingSupport == null || _interval == null)
+		if (editingSupport == null)
 			return;
 					
 		final TimeSeriesContentProvider cp = (TimeSeriesContentProvider)_viewer.getContentProvider();
@@ -120,7 +109,7 @@ class TimeSeriesTableValueEditingSupport extends EditingSupport {
 	}
 	
 	private void update(ViewerCell cell, double value) {
-		_viewer.getEditingSupport().setValue(cell.getElement(), _interval, value);
+		_viewer.getEditingSupport().setValue(cell.getElement(), computePeriodIndex(cell), value);
 		
 		final TimeSeriesTableItem item = (TimeSeriesTableItem)cell.getItem();
 		item.setValue(computePeriodIndex(cell), value);
