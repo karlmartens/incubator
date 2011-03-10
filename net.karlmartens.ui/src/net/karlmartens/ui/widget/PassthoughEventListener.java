@@ -123,7 +123,6 @@ final class PassthoughEventListener {
 			event.character = e.character;
 			event.data = e.data;
 			event.keyCode = e.keyCode;
-			event.keyLocation = e.keyLocation;
 			event.stateMask = e.stateMask;
 			event.time = e.time;
 			return event;
