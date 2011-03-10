@@ -137,7 +137,7 @@ public final class TimeSeriesTableViewerTest {
 		c2.getColumn().setText("Test 2");
 		c2.getColumn().setWidth(60);
 		
-		final int seriesLength = dates.length - 1;
+		final int seriesLength = dates.length;
 		viewer.setInput(new Object[][] {
 				{"Rigs", Boolean.TRUE, "3", generateSeries(seriesLength)}, //
 				{"Capital", Boolean.FALSE, "3", generateSeries(seriesLength)}, //
