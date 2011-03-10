@@ -26,9 +26,12 @@ import java.util.BitSet;
 import net.karlmartens.platform.text.LocalDateFormat;
 import net.karlmartens.platform.util.ArraySupport;
 
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.MenuDetectEvent;
+import org.eclipse.swt.events.MenuDetectListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.MouseMoveListener;
@@ -49,6 +52,7 @@ import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TypedListener;
 import org.joda.time.LocalDate;
@@ -70,13 +74,16 @@ public final class TimeSeriesTable extends Composite {
 	
 	public enum ScrollDataMode {FOCUS_CELL, SELECTED_ROWS}; 
 
-	private final GC _gc;
 	private final TimeSeriesTableListener _listener;
 	private final MoveColumnTableListener _moveColumnListener;
+	private final MenuTableListener _menuListener;
 	private final Font _defaultFont;
+	private final MenuManager _columnMenu;
+	private final TimeSeriesTableColumn _periodColumn;
 	private final KTableImpl _table;
 	private final SparklineScrollBar _hscroll;
-
+	private final int _rowHeight;
+	
 	private boolean _showHeader = false;
 	private ScrollDataMode _scrollDataMode = ScrollDataMode.FOCUS_CELL;
 	private LocalDateFormat _dateFormat = new LocalDateFormat(DateTimeFormat.shortDate());
@@ -98,11 +105,19 @@ public final class TimeSeriesTable extends Composite {
 		setLayout(new FormLayout());
 		
 		final PassthoughEventListener passthroughListener = new PassthoughEventListener(this);	
-		_gc = new GC(getShell());
 		_defaultFont = new Font(getDisplay(), "Arial", 10, SWT.BOLD);
 		_listener = new TimeSeriesTableListener();
 		_moveColumnListener = new MoveColumnTableListener();
+		_menuListener = new MenuTableListener();
+		_columnMenu = new MenuManager();
 		
+		final GC gc = new GC(getShell());
+		gc.setFont(getFont());
+		_periodColumn = new TimeSeriesTableColumn(this);
+		_periodColumn.setWidth(gc.getCharWidth('W') * 8);
+		_rowHeight = gc.getFontMetrics().getHeight() + 10;
+		gc.dispose();
+	
 		_table = new KTableImpl(this, SWT.FLAT | SWT.V_SCROLL | SWT.MULTI | SWTX.MARK_FOCUS_HEADERS);
 		_table.setBackground(getBackground());
 		_table.setForeground(getForeground());
@@ -284,9 +299,7 @@ public final class TimeSeriesTable extends Composite {
 		System.arraycopy(selection, 0, result, 0, j);
 		return result;
 	}
-	
-	private TimeSeriesTableColumn _periodColumn = new TimeSeriesTableColumn(this);
-	
+		
 	public TimeSeriesTableColumn getColumn(int index) {
 		checkWidget();
 		if (index < 0 || index >= (_columnCount + _periods.length))
@@ -670,6 +683,7 @@ public final class TimeSeriesTable extends Composite {
 		_table.addPaintListener(_listener);
 		_table.addMouseListener(_moveColumnListener);
 		_table.addMouseMoveListener(_moveColumnListener);
+		_table.addMenuDetectListener(_menuListener);
 		_hscroll.addSelectionListener(_listener);
 		addDisposeListener(_listener);
 	}
@@ -680,6 +694,7 @@ public final class TimeSeriesTable extends Composite {
 		_table.removePaintListener(_listener);
 		_table.removeMouseListener(_moveColumnListener);
 		_table.removeMouseMoveListener(_moveColumnListener);
+		_table.removeMenuDetectListener(_menuListener);
 		_hscroll.removeSelectionListener(_listener);
 		removeDisposeListener(_listener);
 	}
@@ -829,7 +844,8 @@ public final class TimeSeriesTable extends Composite {
 
 		@Override
 		public boolean isColumnResizable(int col) {
-			return col < _columnCount;
+			final int modelCol = computeModelColumn(col);
+			return  (modelCol < _columnCount && _columns[modelCol].isVisible());
 		}
 
 		@Override
@@ -940,29 +956,41 @@ public final class TimeSeriesTable extends Composite {
 		public void doSetContentAt(int col, int row, Object newValue) {
 			// Not used
 		}
-
+		
 		@Override
-		public int getInitialColumnWidth(int col) {
+		public int getColumnWidth(int col) {
 			final int modelCol = computeModelColumn(col);
 			if (modelCol < _columnCount) {
 				final TimeSeriesTableColumn column = getColumn(modelCol);
+				if (!column.isVisible())
+					return 0;
+				
 				return column.getWidth();
 			}
+
+			return _periodColumn.getWidth();
+		}
+		
+		@Override
+		public void setColumnWidth(int col, int value) {
+			if (!isColumnResizable(col))
+				return;
 			
-			_gc.setFont(getFont());
-			return _gc.getCharWidth('W') * 8;
+			final int modelCol = computeModelColumn(col);
+			if (modelCol < _columnCount) {
+				final TimeSeriesTableColumn column = getColumn(modelCol);
+				column.setWidth(value);
+			}
+		}
+
+		@Override
+		public int getInitialColumnWidth(int col) {
+			throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public int getInitialRowHeight(int row) {
-			if ((_showHeader && row == 0) || row < 0 || computeModelRow(row) >= _itemCount) {
-				_gc.setFont(getFont());
-			} else {
-				final TimeSeriesTableItem item = getItem(computeModelRow(row));
-				_gc.setFont(item.getFont());
-			}
-
-			return _gc.getFontMetrics().getHeight() + 10;
+			return _rowHeight;
 		}		
 	}
 	
@@ -1049,13 +1077,14 @@ public final class TimeSeriesTable extends Composite {
 		public void widgetDisposed(DisposeEvent e) {
 			releaseControls();
 			_defaultFont.dispose();
-			_gc.dispose();
+			_columnMenu.dispose();
 		}
 	}
 
 	private final class MoveColumnTableListener implements MouseListener, MouseMoveListener {
 
 		private Integer _columnIndex;
+		private Point _offset;
 		private Image _image;
 		private Shell _shell;
 
@@ -1073,14 +1102,19 @@ public final class TimeSeriesTable extends Composite {
 			if (cellCord.y >= _table.getModel().getFixedHeaderRowCount())
 				return;
 			
+			final Rectangle r = _table.getCellRect(cellCord.x, cellCord.y);
+			if (e.x - r.x <= 5 || r.x + r.width - e.x <= 5)
+				return;
+			
 			final int colIndex = computeModelColumn(cellCord.x);
 			if (colIndex < 0 || colIndex >= _columnCount)
 				return;
 			
+			
 			if (!_columns[colIndex].isMoveable())
 				return;
 			
-			initColumnMove(colIndex);
+			initColumnMove(e, colIndex);
 		}
 
 		@Override
@@ -1121,24 +1155,27 @@ public final class TimeSeriesTable extends Composite {
 			
 			final Rectangle rLastCol = _table.getCellRect(_columnCount - 1, 0);
 			final Point p = TimeSeriesTable.this.toDisplay(_table.getLocation());
-			p.x += Math.max(Math.min(e.x, rLastCol.x), 0);
+			p.x += Math.max(Math.min(e.x + _offset.x, rLastCol.x), 0);
 			_shell.setLocation(p);
 		}
 
-		private void initColumnMove(int colIndex) {
+		private void initColumnMove(MouseEvent e, int colIndex) {
 			_columnIndex = colIndex;
 			_table._ignoreMouseMove = true;
 	
-			final GC gc = new GC(_table);
 			
 			final Rectangle cellCords = _table.getCellRect(computeTableColumn(colIndex), 0);
 			final int height = _table.getClientArea().height;
+			_offset = new Point(cellCords.x - e.x, cellCords.y - e.y);
 			
 			if (_image != null)
 				_image.dispose();
 			_image = new Image(getDisplay(), new Rectangle(0, 0, cellCords.width, height));
 			_image.getImageData().alpha = 0;
+
+			final GC gc = new GC(_table);
 			gc.copyArea(_image, cellCords.x, cellCords.y);
+			gc.dispose();
 		}
 		
 		private void openColumnWindow() {
@@ -1156,6 +1193,7 @@ public final class TimeSeriesTable extends Composite {
 		
 		private void cancelColumnMove() {
 			_columnIndex = null;
+			_offset = null;
 			_table._ignoreMouseMove = false;
 			
 			if (_image != null && !_image.isDisposed())
@@ -1174,6 +1212,27 @@ public final class TimeSeriesTable extends Composite {
 		
 		private boolean isColumnMoveActive() {
 			return _columnIndex != null;
+		}
+	}
+
+	private final class MenuTableListener implements MenuDetectListener {
+		@Override
+		public void menuDetected(MenuDetectEvent e) {
+			final Point cord = _table.toControl(e.x, e.y);
+			final Point cell = _table.getCellForCoordinates(cord.x, cord.y);
+			if (_table.isFixedCell(cell.x, cell.y)) {
+				_columnMenu.removeAll();
+				for (int i=0; i<_columnCount; i++) {
+					_columnMenu.add(new ToggleColumnVisibiltyAction(_columns[i]));
+				}
+				_columnMenu.update();
+				_columnMenu.createContextMenu(_table);
+				final Menu menu = _columnMenu.getMenu();
+				if (menu != null && !menu.isDisposed()) {
+					menu.setLocation(e.x, e.y);
+					menu.setVisible(true);
+				}
+			}
 		}
 	}
 

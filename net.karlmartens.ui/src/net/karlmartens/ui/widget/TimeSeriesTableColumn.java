@@ -26,8 +26,10 @@ import org.eclipse.swt.widgets.TypedListener;
 
 public final class TimeSeriesTableColumn extends Item {
 
+	private final TimeSeriesTable _parent;
 	private int _width = 0;
 	private boolean _moveable = true;
+	private boolean _visible = true;
 
 	/**
 	 * <p><dl>
@@ -43,10 +45,12 @@ public final class TimeSeriesTableColumn extends Item {
 	public TimeSeriesTableColumn(TimeSeriesTable table, int style, int index) {
 		super(table, style);
 		table.createItem(this, index);
+		_parent = table;
 	}
 	
 	TimeSeriesTableColumn(TimeSeriesTable table) {
 		super(table, SWT.NONE);
+		_parent = table;
 	}
 
 	public void setWidth(int width) {
@@ -63,6 +67,18 @@ public final class TimeSeriesTableColumn extends Item {
 	
 	public boolean isMoveable() {
 		return _moveable;
+	}
+
+	public void setVisible(boolean visible) {
+		_visible  = visible;
+	}
+	
+	public boolean isVisible() {
+		return _visible;
+	}
+	
+	TimeSeriesTable getParent() {
+		return _parent;
 	}
 	
 	public void addControlListener(ControlListener listener) {
