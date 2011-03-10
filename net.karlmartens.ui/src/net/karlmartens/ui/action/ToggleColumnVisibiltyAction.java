@@ -17,16 +17,18 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package net.karlmartens.ui.widget;
+package net.karlmartens.ui.action;
+
+import net.karlmartens.ui.widget.TimeSeriesTableColumn;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 
-class ToggleColumnVisibiltyAction extends Action implements IAction {
+public class ToggleColumnVisibiltyAction extends Action implements IAction {
 
 	private final TimeSeriesTableColumn _column;
 
-	ToggleColumnVisibiltyAction(TimeSeriesTableColumn column) {
+	public ToggleColumnVisibiltyAction(TimeSeriesTableColumn column) {
 		super(column.getText(), IAction.AS_CHECK_BOX);
 		setChecked(column.isVisible());
 		
@@ -36,6 +38,5 @@ class ToggleColumnVisibiltyAction extends Action implements IAction {
 	@Override
 	public void run() {
 		_column.setVisible(isChecked());
-		_column.getParent().redraw();
 	}
 }

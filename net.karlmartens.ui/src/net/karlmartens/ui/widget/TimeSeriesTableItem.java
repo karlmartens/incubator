@@ -56,6 +56,18 @@ public final class TimeSeriesTableItem extends AbstractTableItem {
 		checkWidget();
 		return _parent.getImageBounds(this, index);
 	}
+	
+	@Override
+	public String getText(int index) {
+		if (index < _parent.getColumnCount())
+			return super.getText(index);
+		
+		final double value = getValue(index - _parent.getColumnCount());
+		if (value == 0.0)
+			return "";
+		
+		return _parent.getNumberFormat().format(value);
+	}
 
 	public double getValue(int index) {
 		checkWidget();

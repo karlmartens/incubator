@@ -25,8 +25,12 @@ import java.util.BitSet;
 
 import net.karlmartens.platform.text.LocalDateFormat;
 import net.karlmartens.platform.util.ArraySupport;
+import net.karlmartens.ui.action.ResizeAllColumnsAction;
+import net.karlmartens.ui.action.ResizeColumnAction;
+import net.karlmartens.ui.action.ToggleColumnVisibiltyAction;
 
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -74,6 +78,9 @@ public final class TimeSeriesTable extends Composite {
 	
 	public enum ScrollDataMode {FOCUS_CELL, SELECTED_ROWS}; 
 
+	private final ResizeColumnAction _resizeColumnAction;
+	private final ResizeAllColumnsAction _resizeAllColumnsAction;
+	
 	private final TimeSeriesTableListener _listener;
 	private final MoveColumnTableListener _moveColumnListener;
 	private final MenuTableListener _menuListener;
@@ -82,6 +89,7 @@ public final class TimeSeriesTable extends Composite {
 	private final TimeSeriesTableColumn _periodColumn;
 	private final KTableImpl _table;
 	private final SparklineScrollBar _hscroll;
+	private final int _defaultWidth;
 	private final int _rowHeight;
 	
 	private boolean _showHeader = false;
@@ -94,7 +102,11 @@ public final class TimeSeriesTable extends Composite {
 	private TimeSeriesTableColumn[] _columns = {};
 	private TimeSeriesTableItem[] _items = {};
 	private LocalDate[] _periods = {};
+	private int[] _widths = {};
 	
+	
+	private boolean _inUpdate = false;
+	private int _lastPeriodColumnIndex = -1;
 	private int _lastFocusRow = -1;
 	private int _lastFocusColumn = -1;
 	private int[] _lastRowSelection = new int[0];
@@ -104,7 +116,10 @@ public final class TimeSeriesTable extends Composite {
 		super(parent, SWT.NONE);
 		setLayout(new FormLayout());
 		
-		final PassthoughEventListener passthroughListener = new PassthoughEventListener(this);	
+		 _resizeColumnAction = new ResizeColumnAction(this, -1);
+		 _resizeAllColumnsAction = new ResizeAllColumnsAction(this);
+
+		 final PassthoughEventListener passthroughListener = new PassthoughEventListener(this);	
 		_defaultFont = new Font(getDisplay(), "Arial", 10, SWT.BOLD);
 		_listener = new TimeSeriesTableListener();
 		_moveColumnListener = new MoveColumnTableListener();
@@ -114,7 +129,7 @@ public final class TimeSeriesTable extends Composite {
 		final GC gc = new GC(getShell());
 		gc.setFont(getFont());
 		_periodColumn = new TimeSeriesTableColumn(this);
-		_periodColumn.setWidth(gc.getCharWidth('W') * 8);
+		_defaultWidth = gc.getCharWidth('W') * 8;
 		_rowHeight = gc.getFontMetrics().getHeight() + 10;
 		gc.dispose();
 	
@@ -299,7 +314,7 @@ public final class TimeSeriesTable extends Composite {
 		System.arraycopy(selection, 0, result, 0, j);
 		return result;
 	}
-		
+	
 	public TimeSeriesTableColumn getColumn(int index) {
 		checkWidget();
 		if (index < 0 || index >= (_columnCount + _periods.length))
@@ -307,7 +322,23 @@ public final class TimeSeriesTable extends Composite {
 		
 		if (index < _columnCount)
 			return _columns[index];
-			
+		
+		final int periodIndex = index - _columnCount;
+		if (periodIndex == _lastPeriodColumnIndex)
+			return _periodColumn;
+		
+		if (_lastPeriodColumnIndex != -1)
+			_widths[_lastPeriodColumnIndex] = _periodColumn.getWidth();
+		
+		try {
+			_inUpdate = true;
+			final LocalDate date = _periods[periodIndex];
+			_periodColumn.setText(date == null ? "" : _dateFormat.format(date));
+			_periodColumn.setWidth(_widths[periodIndex]);
+			_lastPeriodColumnIndex = periodIndex;
+		} finally {
+			_inUpdate = false;
+		}
 		return _periodColumn;
 	}
 	
@@ -326,6 +357,10 @@ public final class TimeSeriesTable extends Composite {
 		System.arraycopy(periods, 0, newPeriods, 0, newPeriods.length);
 		Arrays.sort(newPeriods);
 		_periods = periods;
+		
+		_widths = new int[_periods.length];
+		Arrays.fill(_widths, _defaultWidth);
+		
 		_hscroll.setMaximum(Math.max(1, _periods.length - 1));
 		_table.redraw();
 	}
@@ -575,6 +610,14 @@ public final class TimeSeriesTable extends Composite {
 		removeListener(SWT.DefaultSelection, tListener);
 	}
 	
+	@Override
+	public void redraw() {
+		if (_inUpdate)
+			return;
+
+		super.redraw();
+	}
+	
 	void createItem(TimeSeriesTableColumn item, int index) {
 		if (index < 0 || index > _columnCount)
 			SWT.error(SWT.ERROR_INVALID_RANGE);
@@ -587,6 +630,10 @@ public final class TimeSeriesTable extends Composite {
 		
 		System.arraycopy(_columns, index, _columns, index+1, _columnCount++-index);
 		_columns[index] = item;
+	}
+	
+	NumberFormat getNumberFormat() {
+		return _numberFormat;
 	}
 	
 	void createItem(TimeSeriesTableItem item, int index) {
@@ -815,6 +862,21 @@ public final class TimeSeriesTable extends Composite {
 		_table.redraw();
 	}
 	
+	private Menu doBuildMenu(int columnIndex) {
+		_resizeColumnAction.setColumnIndex(columnIndex);
+		
+		_columnMenu.removeAll();
+		_columnMenu.add(_resizeColumnAction);
+		_columnMenu.add(_resizeAllColumnsAction);
+		_columnMenu.add(new Separator());
+		for (int i=0; i<_columnCount; i++) {
+			_columnMenu.add(new ToggleColumnVisibiltyAction(_columns[i]));
+		}
+		_columnMenu.update();
+		_columnMenu.createContextMenu(_table);
+		return _columnMenu.getMenu();
+	}
+	
 	private final class TimeSeriesTableModel extends KTableDefaultModel {
 
 		@Override
@@ -844,8 +906,7 @@ public final class TimeSeriesTable extends Composite {
 
 		@Override
 		public boolean isColumnResizable(int col) {
-			final int modelCol = computeModelColumn(col);
-			return  (modelCol < _columnCount && _columns[modelCol].isVisible());
+			return getColumn(computeModelColumn(col)).isVisible();
 		}
 
 		@Override
@@ -910,46 +971,31 @@ public final class TimeSeriesTable extends Composite {
 
 		@Override
 		public int doGetColumnCount() {
-			return _columnCount + _periods.length;
+			return getFixedColumnCount() + _columnCount + _periods.length;
 		}
 
 		@Override
 		public Object doGetContentAt(int col, int row) {
 			final int modelCol = computeModelColumn(col);
+			final TimeSeriesTableColumn column = getColumn(modelCol);
 			if (_showHeader && row == 0) {
-				if (modelCol < _columnCount) {
-					return _columns[modelCol].getText();
-				}
-				
-				final LocalDate date = _periods[modelCol - _columnCount];
-				if (date == null)
-					return "";
-				
-				return _dateFormat.format(date);
+				return column.getText();
 			}
 			
 			final TimeSeriesTableItem item = _items[computeModelRow(row)];
-			if (modelCol < _columnCount) {
-				final String text = item.getText(modelCol);
-				if ((SWT.CHECK & _columns[modelCol].getStyle()) > 0)
-					return Boolean.valueOf(text);
-				
-				if (text == null)
-					return "";
-				
-				return text;
-			}
+			final String text = item.getText(modelCol);
+			if ((SWT.CHECK & column.getStyle()) > 0)
+				return Boolean.valueOf(text);
 			
-			final double value = item.getValue(modelCol - _columnCount);
-			if (value == 0.0)
+			if (text == null)
 				return "";
 			
-			return _numberFormat.format(value);
+			return text;
 		}
 
 		@Override
 		public int doGetRowCount() {
-			return computeTableRow(_itemCount);
+			return getFixedRowCount() + _itemCount;
 		}
 
 		@Override
@@ -959,16 +1005,14 @@ public final class TimeSeriesTable extends Composite {
 		
 		@Override
 		public int getColumnWidth(int col) {
-			final int modelCol = computeModelColumn(col);
-			if (modelCol < _columnCount) {
-				final TimeSeriesTableColumn column = getColumn(modelCol);
-				if (!column.isVisible())
-					return 0;
-				
-				return column.getWidth();
-			}
-
-			return _periodColumn.getWidth();
+			if (col < 0 || col >= (_columnCount + _periods.length))
+				return 0;
+			
+			final TimeSeriesTableColumn column = getColumn(computeModelColumn(col));
+			if (!column.isVisible())
+				return 0;
+			
+			return column.getWidth();
 		}
 		
 		@Override
@@ -976,11 +1020,8 @@ public final class TimeSeriesTable extends Composite {
 			if (!isColumnResizable(col))
 				return;
 			
-			final int modelCol = computeModelColumn(col);
-			if (modelCol < _columnCount) {
-				final TimeSeriesTableColumn column = getColumn(modelCol);
-				column.setWidth(value);
-			}
+			final TimeSeriesTableColumn column = getColumn(computeModelColumn(col));
+			column.setWidth(value);
 		}
 
 		@Override
@@ -1097,9 +1138,12 @@ public final class TimeSeriesTable extends Composite {
 		public void mouseDown(MouseEvent e) {
 			if (_table != e.getSource())
 				return;
+			
+			if (e.button != 1)
+				return;
 
 			final Point cellCord = _table.getCellForCoordinates(e.x, e.y);
-			if (cellCord.y >= _table.getModel().getFixedHeaderRowCount())
+			if (cellCord.y < 0 || cellCord.y >= _table.getModel().getFixedHeaderRowCount())
 				return;
 			
 			final Rectangle r = _table.getCellRect(cellCord.x, cellCord.y);
@@ -1221,13 +1265,8 @@ public final class TimeSeriesTable extends Composite {
 			final Point cord = _table.toControl(e.x, e.y);
 			final Point cell = _table.getCellForCoordinates(cord.x, cord.y);
 			if (_table.isFixedCell(cell.x, cell.y)) {
-				_columnMenu.removeAll();
-				for (int i=0; i<_columnCount; i++) {
-					_columnMenu.add(new ToggleColumnVisibiltyAction(_columns[i]));
-				}
-				_columnMenu.update();
-				_columnMenu.createContextMenu(_table);
-				final Menu menu = _columnMenu.getMenu();
+				final int index = computeModelColumn(cell.x);
+				final Menu menu = doBuildMenu(index);
 				if (menu != null && !menu.isDisposed()) {
 					menu.setLocation(e.x, e.y);
 					menu.setVisible(true);
@@ -1252,5 +1291,9 @@ public final class TimeSeriesTable extends Composite {
 			super.onMouseMove(e);
 		}
 		
+		@Override
+		protected void onMouseDoubleClick(MouseEvent e) {
+			// Disable default double click event handling
+		}
 	}
 }

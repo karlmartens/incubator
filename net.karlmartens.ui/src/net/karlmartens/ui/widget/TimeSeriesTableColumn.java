@@ -55,6 +55,7 @@ public final class TimeSeriesTableColumn extends Item {
 
 	public void setWidth(int width) {
 		_width = width;
+		_parent.redraw();
 	}
 
 	public int getWidth() {
@@ -71,6 +72,7 @@ public final class TimeSeriesTableColumn extends Item {
 
 	public void setVisible(boolean visible) {
 		_visible  = visible;
+		_parent.redraw();
 	}
 	
 	public boolean isVisible() {
