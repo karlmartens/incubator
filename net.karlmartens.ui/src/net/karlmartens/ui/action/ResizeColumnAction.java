@@ -37,7 +37,7 @@ import de.kupzog.ktable.renderers.CheckableCellRenderer;
 public class ResizeColumnAction extends Action {
 	
 	private static final int IMAGE_SPACER = 6;
-	private static final int TEXT_SPACER = 8;
+	private static final int TEXT_SPACER = 12;
 	
 	private final TimeSeriesTable _table;
 	private int _columnIndex;
@@ -87,7 +87,7 @@ public class ResizeColumnAction extends Action {
 
 	private Font createColumnHeaderFont() {
 		final Display display = _table.getDisplay();
-		final FontData[] fontData = display.getSystemFont().getFontData();
+		final FontData[] fontData = _table.getFont().getFontData();
 		for (int i=0; i<fontData.length; i++) {
 			fontData[i].setStyle(SWT.BOLD);
 		}
