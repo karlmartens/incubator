@@ -218,21 +218,6 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 	}
 	
 	@Override
-	protected void inputChanged(Object input, Object oldInput) {
-		final TimeSeriesContentProvider cp = (TimeSeriesContentProvider)getContentProvider();
-		if (cp == null)
-			throw new IllegalStateException();
-				
-		if (_periodColumn == null) {
-			_periodColumn = new TimeSeriesTableViewerColumn(this, _control.getColumn(_control.getColumnCount()));
-			_periodColumn.setLabelProvider(new PeriodLabelProvider(cp));
-			_periodColumn.setEditingSupport(new TimeSeriesTableValueEditingSupport(this));
-		}
-
-		super.inputChanged(input, oldInput);
-	}
-	
-	@Override
 	protected void preservingSelection(Runnable updateCode) {
 		final Point[] selection = _control.getCellSelection();
 		try {
@@ -252,6 +237,12 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 			final LocalDate[] dates = cp.getDates();
 			if (dates != null) {
 				_control.setPeriods(dates);
+
+				if (_periodColumn == null) {
+					_periodColumn = new TimeSeriesTableViewerColumn(this, _control.getColumn(_control.getColumnCount()));
+					_periodColumn.setLabelProvider(new PeriodLabelProvider(cp));
+					_periodColumn.setEditingSupport(new TimeSeriesTableValueEditingSupport(this));
+				}
 			} else {
 				_control.setPeriods(new LocalDate[] {});
 			}
