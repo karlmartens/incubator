@@ -105,6 +105,7 @@ public final class TimeSeriesTable extends Composite {
 	private int[] _widths = {};
 	
 	
+	private boolean _requiresRedraw = true;
 	private boolean _inUpdate = false;
 	private int _lastPeriodColumnIndex = -1;
 	private int _lastFocusRow = -1;
@@ -615,6 +616,7 @@ public final class TimeSeriesTable extends Composite {
 		if (_inUpdate)
 			return;
 
+		_requiresRedraw = true;
 		super.redraw();
 	}
 	
@@ -732,6 +734,8 @@ public final class TimeSeriesTable extends Composite {
 		_table.addMouseMoveListener(_moveColumnListener);
 		_table.addMenuDetectListener(_menuListener);
 		_hscroll.addSelectionListener(_listener);
+
+		addPaintListener(_listener);
 		addDisposeListener(_listener);
 	}
 	
@@ -743,6 +747,8 @@ public final class TimeSeriesTable extends Composite {
 		_table.removeMouseMoveListener(_moveColumnListener);
 		_table.removeMenuDetectListener(_menuListener);
 		_hscroll.removeSelectionListener(_listener);
+		
+		removePaintListener(_listener);
 		removeDisposeListener(_listener);
 	}
 	
@@ -1087,6 +1093,11 @@ public final class TimeSeriesTable extends Composite {
 		
 		@Override
 		public void paintControl(PaintEvent e) {
+			if (e.getSource() == TimeSeriesTable.this && _requiresRedraw) {
+				_requiresRedraw = false;
+				_table.redraw();
+			}
+			
 			if (e.getSource() != _table) 
 				return;
 
@@ -1098,7 +1109,7 @@ public final class TimeSeriesTable extends Composite {
 			}
 			
 			_hscroll.setThumb(Math.max(1, visible.width));
-			_hscroll.setEnabled(true);
+			_hscroll.setEnabled(true);			
 		}
 		
 		@Override
