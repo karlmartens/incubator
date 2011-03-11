@@ -57,6 +57,12 @@ public final class GridChooserColumn extends Item {
 		}
 	}
 	
+	public void setMoveable(boolean moveable) {
+		for (TableColumn widget : _columns) {
+			widget.setMoveable(moveable);
+		}
+	}
+	
 	@Override
 	public String getText() {
 		return _columns[0].getText();
@@ -69,6 +75,10 @@ public final class GridChooserColumn extends Item {
 
 	public int getWidth() {
 		return _columns[0].getWidth() ;
+	}
+	
+	public boolean isMoveable() {
+		return _columns[0].getMoveable();
 	}
 
 	void registerWidgets(TableColumn[] widgets) {

@@ -82,11 +82,13 @@ public final class GridChooserViewerTest {
 		final GridChooserViewerColumn c1 = new GridChooserViewerColumn(viewer, SWT.NONE);
 		c1.setLabelProvider(new TestColumnLabelProvider(0));
 		c1.getColumn().setText("Test");
+		c1.getColumn().setMoveable(true);
 		
 		final GridChooserViewerColumn c2 = new GridChooserViewerColumn(viewer, SWT.NONE);
 		c2.setLabelProvider(new TestColumnLabelProvider(1));
 		c2.setEditingSupport(new TextEditingSupport(viewer, 1));
 		c2.getColumn().setText("Test 2");
+		c2.getColumn().setMoveable(true);
 		
 		new GridChooserColumnWeightedResize(viewer.getControl(), new int[] {1, 1});
 		
