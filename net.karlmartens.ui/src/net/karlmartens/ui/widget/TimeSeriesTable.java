@@ -559,7 +559,7 @@ public final class TimeSeriesTable extends Composite {
 		Arrays.sort(idxs);
 		
 		for (int i=idxs.length-1; i >= 0; i--) {
-			doRemove(i);
+			doRemove(idxs[i]);
 		}
 		_table.redraw();
 	}
