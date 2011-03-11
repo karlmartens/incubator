@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.ResourceBundle;
 
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -68,6 +69,7 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
@@ -94,6 +96,7 @@ public final class GridChooser extends Composite {
 
 	public GridChooser(Composite parent) {
 		super(parent, SWT.NONE);
+		final ResourceBundle bundle = ResourceBundle.getBundle("net.karlmartens.ui.locale.messages");
 		
 		_columnCount = 0;
 		_columns = new GridChooserColumn[0];
@@ -113,6 +116,9 @@ public final class GridChooser extends Composite {
 		setLayout(new FormLayout());
 		
 		_passthroughListener = new PassthoughEventListener(this);
+		
+		final Label availableLabel = new Label(this, SWT.NONE);
+		availableLabel.setText(bundle.getString("GridChooser.Available"));
 		
 		final int style = SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER;
 		_available = new TableViewer(this, style);
@@ -134,6 +140,9 @@ public final class GridChooser extends Composite {
 		_down = createButton(centerPart, _images[4], _changeSelectionListener);
 		_bottom = createButton(centerPart, _images[5], _changeSelectionListener);
 		
+		final Label selectedLabel = new Label(this, SWT.NONE);
+		selectedLabel.setText(bundle.getString("GridChooser.Selected"));
+				
 		_selected = new TableViewer(this, style);
 		_selected.setContentProvider(ArrayContentProvider.getInstance());
 		_selected.setLabelProvider(new TableLabelProviderImpl());
@@ -144,15 +153,23 @@ public final class GridChooser extends Composite {
 		new SelectedDropTargetListener(_selected, true);
 		_passthroughListener.addSource(_selected.getControl());
 		
+		final FormData availableLabelFormData = new FormData();
+		availableLabelFormData.top = new FormAttachment(0, 100, 10);
+		availableLabelFormData.left = new FormAttachment(0, 100, 10);
+		
 		final FormData availableFormData = new FormData();
-		availableFormData.top = new FormAttachment(0, 100, 10);
+		availableFormData.top = new FormAttachment(availableLabel, 5, SWT.BOTTOM);
 		availableFormData.bottom = new FormAttachment(100, 100, -10);
 		availableFormData.left = new FormAttachment(0, 100, 10);
-		availableFormData.right = new FormAttachment(centerPart, -10);
+		availableFormData.right = new FormAttachment(centerPart, -10, SWT.LEFT);
 		
 		final FormData centerFormData = new FormData();
 		centerFormData.top = new FormAttachment(_available.getControl(), 0, SWT.CENTER);
 		centerFormData.left = new FormAttachment(50, 100, -10);
+
+		final FormData selectedLabelFormData = new FormData();
+		selectedLabelFormData.top = new FormAttachment(availableLabel, 0, SWT.TOP);
+		selectedLabelFormData.left = new FormAttachment(_selected.getControl(), 0, SWT.LEFT);
 		
 		final FormData selectedFormData = new FormData();
 		selectedFormData.top = new FormAttachment(_available.getControl(), 0, SWT.TOP);
@@ -160,8 +177,10 @@ public final class GridChooser extends Composite {
 		selectedFormData.left = new FormAttachment(centerPart, 10);
 		selectedFormData.right = new FormAttachment(100, 100, -10);
 		
+		availableLabel.setLayoutData(availableLabelFormData);
 		_available.getControl().setLayoutData(availableFormData);
 		centerPart.setLayoutData(centerFormData);
+		selectedLabel.setLayoutData(selectedLabelFormData);
 		_selected.getControl().setLayoutData(selectedFormData);
 		
 		addDisposeListener(_disposeListener);
