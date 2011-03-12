@@ -439,7 +439,7 @@ public final class GridChooser extends Composite {
 		if (start < 0 || start > end || end >= _itemCount)
 			SWT.error(SWT.ERROR_INVALID_RANGE);
 		
-		for (int i=end; i>start; i--) {
+		for (int i=end; i>=start; i--) {
 			internalRemove(i);
 		}
 		

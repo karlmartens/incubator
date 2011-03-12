@@ -328,7 +328,7 @@ public final class TimeSeriesTable extends Composite {
 		if (periodIndex == _lastPeriodColumnIndex)
 			return _periodColumn;
 		
-		if (_lastPeriodColumnIndex != -1)
+		if (_lastPeriodColumnIndex != -1 && _lastPeriodColumnIndex < _widths.length)
 			_widths[_lastPeriodColumnIndex] = _periodColumn.getWidth();
 		
 		try {
@@ -541,7 +541,7 @@ public final class TimeSeriesTable extends Composite {
 		if (start < 0 || start > end || end >= _itemCount)
 			SWT.error(SWT.ERROR_INVALID_RANGE);
 		
-		for (int i=end; i>start; i--) {
+		for (int i=end; i>=start; i--) {
 			doRemove(i);
 		}
 		_table.redraw();
@@ -983,6 +983,9 @@ public final class TimeSeriesTable extends Composite {
 		@Override
 		public Object doGetContentAt(int col, int row) {
 			final int modelCol = computeModelColumn(col);
+			if (modelCol < 0 || modelCol >= (_columnCount + _periods.length))
+				return "";
+			
 			final TimeSeriesTableColumn column = getColumn(modelCol);
 			if (_showHeader && row == 0) {
 				return column.getText();
