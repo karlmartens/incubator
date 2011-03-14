@@ -19,26 +19,21 @@
  */
 package net.karlmartens.ui.viewer;
 
-import static net.karlmartens.ui.viewer.TimeSeriesTableViewerClipboardSupport.OPERATION_COPY;
-import static net.karlmartens.ui.viewer.TimeSeriesTableViewerClipboardSupport.OPERATION_CUT;
-import static net.karlmartens.ui.viewer.TimeSeriesTableViewerClipboardSupport.OPERATION_PASTE;
+import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_COPY;
+import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_CUT;
+import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_PASTE;
 
 import java.text.DecimalFormat;
-import java.util.BitSet;
 
 import net.karlmartens.platform.text.LocalDateFormat;
 import net.karlmartens.platform.util.NumberStringComparator;
 import net.karlmartens.ui.widget.TimeSeriesTable;
 import net.karlmartens.ui.widget.TimeSeriesTable.ScrollDataMode;
 
-import org.eclipse.jface.viewers.ColumnViewerEditor;
-import org.eclipse.jface.viewers.ColumnViewerEditorActivationEvent;
-import org.eclipse.jface.viewers.ColumnViewerEditorActivationStrategy;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
@@ -47,23 +42,6 @@ import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 
 public final class TimeSeriesTableViewerTest {
-	private static BitSet TRAVERSAL_KEYS = new BitSet();
-	
-	static {
-		TRAVERSAL_KEYS.set(SWT.HOME);
-		TRAVERSAL_KEYS.set(SWT.END);
-		TRAVERSAL_KEYS.set(SWT.ARROW_LEFT);
-		TRAVERSAL_KEYS.set(SWT.ARROW_RIGHT);
-		TRAVERSAL_KEYS.set(SWT.ARROW_DOWN);
-		TRAVERSAL_KEYS.set(SWT.ARROW_UP);
-		TRAVERSAL_KEYS.set(SWT.PAGE_UP);
-		TRAVERSAL_KEYS.set(SWT.PAGE_DOWN);
-		TRAVERSAL_KEYS.set(SWT.TAB);		
-		TRAVERSAL_KEYS.set(SWT.SHIFT);		
-		TRAVERSAL_KEYS.set(SWT.CONTROL);		
-		TRAVERSAL_KEYS.set(SWT.ALT);		
-		TRAVERSAL_KEYS.set(SWT.COMMAND);		
-	}
 
 	public static void main(String[] args) throws Exception {
 		final Shell shell = new Shell();
@@ -93,38 +71,6 @@ public final class TimeSeriesTableViewerTest {
 			}
 		});
 		
-		final TimeSeriesTableViewerClipboardSupport clipboardSupport = new TimeSeriesTableViewerClipboardSupport(viewer, OPERATION_COPY | OPERATION_CUT | OPERATION_PASTE);
-		
-		final ColumnViewerEditorActivationStrategy activationStrategy = new ColumnViewerEditorActivationStrategy(viewer) {
-			@Override
-			protected boolean isEditorActivationEvent(
-					ColumnViewerEditorActivationEvent event) {
-				if (event.eventType != ColumnViewerEditorActivationEvent.TRAVERSAL
-					&& event.eventType != ColumnViewerEditorActivationEvent.MOUSE_DOUBLE_CLICK_SELECTION
-					&& event.eventType != ColumnViewerEditorActivationEvent.KEY_PRESSED
-					&& event.eventType != ColumnViewerEditorActivationEvent.PROGRAMMATIC)
-					return false;
-				
-				if (event.eventType == ColumnViewerEditorActivationEvent.KEY_PRESSED) {
-					if (clipboardSupport.isClipboardEvent((KeyEvent)event.sourceEvent)) {
-						return false;
-					}
-					
-					if (TRAVERSAL_KEYS.get(event.keyCode)) {
-						return false;
-					}
-				}
-				
-				return true;
-			}
-		};
-		
-		TimeSeriesTableViewerEditor.create(viewer, activationStrategy, 
-					ColumnViewerEditor.TABBING_HORIZONTAL | 
-					ColumnViewerEditor.TABBING_MOVE_TO_ROW_NEIGHBOR | 
-					ColumnViewerEditor.TABBING_VERTICAL | 
-					ColumnViewerEditor.KEYBOARD_ACTIVATION);
-		
 		final TimeSeriesTableViewerColumn c1 = new TimeSeriesTableViewerColumn(viewer, SWT.NONE);
 		c1.setLabelProvider(new TestColumnLabelProvider(0));
 		c1.setEditingSupport(new TestTextEditingSupport(viewer, 0));
@@ -136,15 +82,19 @@ public final class TimeSeriesTableViewerTest {
 		c2.setEditingSupport(new TestBooleanEditingSupport(viewer, 1));
 		c2.getColumn().setText("Test 2");
 		c2.getColumn().setWidth(60);
+
 		
+		new ViewerClipboardManager(viewer, OPERATION_COPY | OPERATION_CUT | OPERATION_PASTE);
+				
 		final int seriesLength = dates.length;
-		viewer.setInput(new Object[][] {
-				{"Rigs", Boolean.TRUE, "3", generateSeries(seriesLength)}, //
-				{"Capital", Boolean.FALSE, "3", generateSeries(seriesLength)}, //
-				{"Oil", Boolean.TRUE, "3", generateSeries(seriesLength)}, //
-				{"Water", Boolean.TRUE, "3", generateSeries(seriesLength)}, //
-				{"Custom", Boolean.TRUE, "3", generateSeries(seriesLength)}, //
-		});
+		final Object[][] input = new Object[500][];
+		for (int i=0; i<input.length; i++) {
+			input[i] = new Object[] {"Item " + Integer.toString(i), 
+					Boolean.valueOf(i % 3 == 0), 
+					"stuff", 
+					generateSeries(seriesLength)};
+		}
+		viewer.setInput(input);
 		
 		shell.open();
 		while (!shell.isDisposed()) {

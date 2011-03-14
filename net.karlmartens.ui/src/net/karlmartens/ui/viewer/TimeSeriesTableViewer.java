@@ -186,9 +186,12 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 
 	@Override
 	protected TimeSeriesTableViewerEditor createViewerEditor() {
-		return new TimeSeriesTableViewerEditor(this, 
+		return new TimeSeriesTableViewerEditor(this, //
 				new ColumnViewerEditorActivationStrategy(this), 
-				ColumnViewerEditor.DEFAULT);
+					ColumnViewerEditor.TABBING_HORIZONTAL | 
+					ColumnViewerEditor.TABBING_MOVE_TO_ROW_NEIGHBOR | 
+					ColumnViewerEditor.TABBING_VERTICAL | 
+					ColumnViewerEditor.KEYBOARD_ACTIVATION);
 	}
 
 	@Override
@@ -216,14 +219,14 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 	public TimeSeriesTable getControl() {
 		return _control;
 	}
-	
+		
 	@Override
 	protected void preservingSelection(Runnable updateCode) {
-		final Point[] selection = _control.getCellSelection();
+		final Point[] selection = _control.getCellSelections();
 		try {
 			updateCode.run();
 		} finally {
-			_control.setCellSelection(selection, false);
+			_control.setCellSelections(selection);
 		}
 	}
 	

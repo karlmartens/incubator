@@ -19,22 +19,22 @@
  */
 package net.karlmartens.ui.viewer;
 
+import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_COPY;
+import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_CUT;
+import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_PASTE;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 
+import net.karlmartens.ui.widget.ClipboardStrategy;
 import net.karlmartens.ui.widget.TimeSeriesTableColumn;
 import net.karlmartens.ui.widget.TimeSeriesTableItem;
 
 import org.eclipse.jface.util.Policy;
-import org.eclipse.jface.viewers.CellEditor;
-import org.eclipse.jface.viewers.EditingSupport;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
@@ -45,35 +45,25 @@ import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 
-public final class TimeSeriesTableViewerClipboardSupport {
+public final class ViewerClipboardManager {
 	
-	public static final int OPERATION_COPY = 1;
-	public static final int OPERATION_CUT = 2;
-	public static final int OPERATION_PASTE = 4;
-
 	private final TimeSeriesTableViewer _viewer;
 	private final int _operations;
+	private final ClipboardStrategy _clipboardStrategy;
 	private final EditingSupportProxy _editingSupportCache;
 
-	public TimeSeriesTableViewerClipboardSupport(TimeSeriesTableViewer viewer, int operations) {
+	public ViewerClipboardManager(TimeSeriesTableViewer viewer, int operations) {
 		_viewer = viewer;
-		_editingSupportCache = new EditingSupportProxy(viewer);
 		_operations = operations;
+		_editingSupportCache = new EditingSupportProxy(viewer);
+		_clipboardStrategy = new ClipboardStrategy();
 		hookControl(viewer.getControl());
 	}
-
-	public boolean isClipboardEvent(KeyEvent e) {
-		if ((e.stateMask & SWT.MOD1) == 0)
-			return false;
-		
-		return ('c' == e.keyCode && (_operations & OPERATION_COPY) > 0) 
-			|| ('v' == e.keyCode && (_operations & OPERATION_PASTE) > 0) 
-			|| ('x' == e.keyCode && (_operations & OPERATION_CUT) > 0);
-	}	
 	
 	private void hookControl(Control control) {
 		control.addKeyListener(_listener);
@@ -87,14 +77,20 @@ public final class TimeSeriesTableViewerClipboardSupport {
 	}
 	
 	private void handleCopy() {
-		final Rectangle region = computeRegion(_viewer.getControl().getCellSelection());		
+		if ((_operations & OPERATION_COPY) == 0)
+			return;
+		final Rectangle region = computeRegion(_viewer.getControl().getCellSelections());		
 		if (!isRegionValid(region))
 			return;
+		
 		doCopy(region);
 	}
 
 	private void handlePaste() {
-		final Rectangle region = computeRegion(_viewer.getControl().getCellSelection());
+		if ((_operations & OPERATION_COPY) == 0)
+			return;
+		
+		final Rectangle region = computeRegion(_viewer.getControl().getCellSelections());
 		if (!isRegionValid(region))
 			return;
 		
@@ -142,7 +138,10 @@ public final class TimeSeriesTableViewerClipboardSupport {
 	}
 
 	private void handleCut() {
-		final Rectangle region = computeRegion(_viewer.getControl().getCellSelection());		
+		if ((_operations & OPERATION_COPY) == 0)
+			return;
+		
+		final Rectangle region = computeRegion(_viewer.getControl().getCellSelections());		
 		if (!isRegionValid(region))
 			return;
 
@@ -172,7 +171,7 @@ public final class TimeSeriesTableViewerClipboardSupport {
 		if (text == null || text.isEmpty())
 			return new String[0][0];
 
-		final CSVReader reader = new CSVReader(new StringReader(text));
+		final CSVReader reader = new CSVReader(new StringReader(text), '\t');
 		try {
 			final List<String[]> rows = reader.readAll();
 			return rows.toArray(new String[][] {});
@@ -182,14 +181,14 @@ public final class TimeSeriesTableViewerClipboardSupport {
 			try {
 				reader.close();
 			} catch (IOException e) {
-				// ignnore
+				// ignore
 			}
 		}
 	}
 
 	private void doCopy(Rectangle region) {
 		final StringWriter sw = new StringWriter();
-		final CSVWriter writer = new CSVWriter(sw);
+		final CSVWriter writer = new CSVWriter(sw, '\t');
 		for (int y=region.y; y < (region.y + region.height); y++) {
 			final String[] row = new String[region.width];
 			for (int i=0; i < row.length; i++) {
@@ -212,10 +211,10 @@ public final class TimeSeriesTableViewerClipboardSupport {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-		
+
 		final Clipboard cb = new Clipboard(_viewer.getControl().getDisplay());
 		cb.setContents(new String[] { sw.toString() }, new Transfer[] { TextTransfer.getInstance() });
-		cb.dispose();
+		cb.dispose();		
 	}
 	
 	private void doSet(Rectangle region, String[] values) {
@@ -315,73 +314,24 @@ public final class TimeSeriesTableViewerClipboardSupport {
 		
 		@Override
 		public void keyPressed(KeyEvent e) {
-			if (!isClipboardEvent(e))
+			final Event event = new Event();
+			event.stateMask = e.stateMask;
+			event.keyCode = e.keyCode;
+			if (!_clipboardStrategy.isClipboardEvent(event))
 				return;
 
-			switch(e.keyCode) {
-				case 'c':
+			switch(_clipboardStrategy.getOperation(event)) {
+				case OPERATION_COPY:
 					handleCopy();
 					break;
 					
-				case 'v':
+				case OPERATION_PASTE:
 					handlePaste();
 					break;
 					
-				case 'x':
+				case OPERATION_CUT:
 					handleCut();
 					break;
-			}
-		}
-	}
-	
-	private class EditingSupportProxy extends EditingSupport {
-		
-		private EditingSupport _base;
-		
-		public EditingSupportProxy(TimeSeriesTableViewer viewer) {
-			super(viewer);
-		}
-
-		@Override
-		protected CellEditor getCellEditor(Object element) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		protected boolean canEdit(Object element) {
-			if (_base == null)
-				return false;
-			
-			try {
-				final Method method = _base.getClass().getDeclaredMethod("canEdit", Object.class);
-				method.setAccessible(true);
-				return Boolean.TRUE.equals(method.invoke(_base, element));
-			} catch (NoSuchMethodException e) {
-				throw new RuntimeException(e);
-			} catch (InvocationTargetException e) {
-				throw new RuntimeException(e);
-			} catch (IllegalAccessException e) {
-				throw new RuntimeException(e);
-			}
-		}
-
-		@Override
-		protected Object getValue(Object element) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		protected void setValue(Object element, Object value) {
-			try {
-				final Method method = _base.getClass().getDeclaredMethod("setValue",  new Class[] { Object.class, Object.class });
-				method.setAccessible(true);
-				method.invoke(_base, element, value);
-			} catch (NoSuchMethodException e) {
-				throw new RuntimeException(e);
-			} catch (InvocationTargetException e) {
-				throw new RuntimeException(e);
-			} catch (IllegalAccessException e) {
-				throw new RuntimeException(e);
 			}
 		}
 	}

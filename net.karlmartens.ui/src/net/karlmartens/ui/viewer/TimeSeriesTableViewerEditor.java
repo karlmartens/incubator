@@ -99,10 +99,13 @@ public final class TimeSeriesTableViewerEditor extends ColumnViewerEditor {
 	@Override
 	protected void updateFocusCell(ViewerCell focusCell,
 			ColumnViewerEditorActivationEvent event) {
-		final TimeSeriesTable table = _viewer.getControl();
-		final int row = table.indexOf((TimeSeriesTableItem)focusCell.getItem());
-		final int col = focusCell.getColumnIndex();
-		table.setCellSelection(col, row);
+		if (event.eventType == ColumnViewerEditorActivationEvent.PROGRAMMATIC
+				|| event.eventType == ColumnViewerEditorActivationEvent.TRAVERSAL) {
+			final TimeSeriesTable table = _viewer.getControl();
+			final int row = table.indexOf((TimeSeriesTableItem)focusCell.getItem());
+			final int col = focusCell.getColumnIndex();
+			table.setFocusCell(new Point(col, row));
+		}
 	}
 	
 	private final ColumnViewerEditorActivationListener _listener = new ColumnViewerEditorActivationListener() {

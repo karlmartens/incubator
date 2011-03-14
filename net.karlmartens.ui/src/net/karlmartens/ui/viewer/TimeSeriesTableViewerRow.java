@@ -162,4 +162,14 @@ final class TimeSeriesTableViewerRow extends ViewerRow {
 		return true;
 	}
 
+	@Override
+	protected boolean scrollCellIntoView(int columnIndex) {
+		final TimeSeriesTable parent = _item.getParent();
+		parent.showItem(_item);
+		if (parent.getPeriodCount() > 0) {
+			parent.showColumn(columnIndex);
+		}
+		
+		return true;
+	}
 }

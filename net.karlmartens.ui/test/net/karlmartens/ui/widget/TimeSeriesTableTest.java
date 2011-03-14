@@ -91,7 +91,7 @@ public class TimeSeriesTableTest {
 			items[i].setValue(data);
 		}
 
-		table.scrollTo(new LocalDate(2000, 2, 1));
+		table.scrollColumnTo(new LocalDate(2000, 2, 1));
 
 		shell.open();
 		while (!shell.isDisposed()) {
