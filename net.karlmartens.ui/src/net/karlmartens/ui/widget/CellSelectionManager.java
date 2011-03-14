@@ -35,6 +35,7 @@ final class CellSelectionManager {
 	private final TableListener _listener;
 	private final ItemListener _itemListener;
 	private Point _focusCell;
+	private Point _expansionCell;
 
 	public CellSelectionManager(TimeSeriesTable table, 
 			CellNavigationStrategy navigationStrategy) {
@@ -59,6 +60,7 @@ final class CellSelectionManager {
 		}
 		
 		_focusCell = cell;
+		_expansionCell = cell;
 
 		final TimeSeriesTableItem newItem = getItemAtIndex(_focusCell);
 		if (newItem != null && !newItem.isDisposed()) {
@@ -74,7 +76,7 @@ final class CellSelectionManager {
 	}
 	
 	void expandSelection(Point cell) {
-		if (cell == null || NullSafe.equals(cell, _focusCell))
+		if (cell == null)
 			return;
 
 		if (_focusCell == null) {
@@ -92,7 +94,8 @@ final class CellSelectionManager {
 				selection[y*dx+x] = new Point(_focusCell.x + (x * dirX), _focusCell.y + (y * dirY));
 			}
 		}
-		
+
+		_expansionCell = cell;
 		_table.setCellSelections(selection);
 	}
 	
@@ -144,7 +147,7 @@ final class CellSelectionManager {
 		}
 		
 		if (_navigationStrategy.isExpandEvent(e)) {
-			final Point cell = _navigationStrategy.findSelectedCell(_table, _focusCell, e);
+			final Point cell = _navigationStrategy.findSelectedCell(_table, _expansionCell, e);
 			expandSelection(cell);
 		}
 	}
