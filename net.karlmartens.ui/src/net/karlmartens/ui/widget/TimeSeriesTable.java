@@ -468,7 +468,7 @@ public final class TimeSeriesTable extends Composite {
 			tSelected[i] = new Point(selected[i].x,
 					computeTableRow(selected[i].y));
 		}
-		_table.setSelection(null, false);
+		_table.clearSelection();
 		_table.setSelection(tSelected, false);
 
 		final int[] selectedRows = getSelectionIndices();
