@@ -68,6 +68,7 @@ import de.kupzog.ktable.KTableCellEditor;
 import de.kupzog.ktable.KTableCellRenderer;
 import de.kupzog.ktable.KTableCellResizeListener;
 import de.kupzog.ktable.KTableDefaultModel;
+import de.kupzog.ktable.KTableModel;
 import de.kupzog.ktable.SWTX;
 import de.kupzog.ktable.renderers.CheckableCellRenderer;
 import de.kupzog.ktable.renderers.DefaultCellRenderer;
@@ -517,7 +518,7 @@ public final class TimeSeriesTable extends Composite {
 			return;
 		}
 
-		_table.scroll(r.x, tIndex - r.height + 1);
+		_table.scroll(r.x, tIndex - r.height + 2);
 	}
 
 	public void showColumn(int index) {
@@ -763,6 +764,18 @@ public final class TimeSeriesTable extends Composite {
 
 	Composite getTableComposite() {
 		return _table;
+	}
+	
+	int getVisibleRowCount() {
+		checkWidget();
+		final KTableModel model = _table.getModel();
+		return _table.getVisibleRowCount() - model.getFixedHeaderRowCount() 
+			- model.getFixedSelectableRowCount();
+	}
+	
+	int getVisibleColumnCount() {
+		checkWidget();
+		return doGetVisibleDataCells().width;
 	}
 
 	private int computeTableRow(int row) {

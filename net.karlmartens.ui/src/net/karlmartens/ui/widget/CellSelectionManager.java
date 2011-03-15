@@ -162,11 +162,13 @@ final class CellSelectionManager {
 	}
 
 	private void handleFocusIn(Event e) {
-		if (_focusCell != null)
+		if (_focusCell != null || 
+				_table.isDisposed() || 
+				_table.getItemCount() <= 0 || 
+				_table.getColumnCount() + _table.getPeriodCount() <= 0)
 			return;
 		
-		// TODO implement
-		
+		setFocusCell(new Point(0, 0));
 	}
 	
 	private final class TableListener implements Listener {
