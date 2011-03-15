@@ -108,7 +108,7 @@ public final class TimeSeriesTable extends Composite {
 	private TimeSeriesTableItem[] _items = {};
 	private LocalDate[] _periods = {};
 	private int[] _widths = {};
-	
+
 	private boolean _requiresRedraw = true;
 	private boolean _inUpdate = false;
 	private int _lastPeriodColumnIndex = -1;
@@ -308,8 +308,9 @@ public final class TimeSeriesTable extends Composite {
 		final int periodIndex = index - _columnCount;
 		if (periodIndex == _lastPeriodColumnIndex)
 			return _periodColumn;
-		
-		if (_lastPeriodColumnIndex != -1 && _lastPeriodColumnIndex < _widths.length)
+
+		if (_lastPeriodColumnIndex != -1
+				&& _lastPeriodColumnIndex < _widths.length)
 			_widths[_lastPeriodColumnIndex] = _periodColumn.getWidth();
 
 		try {
@@ -447,11 +448,11 @@ public final class TimeSeriesTable extends Composite {
 	public Point[] getCellSelections() {
 		final Point[] pts = _table.getCellSelection();
 		final Point[] selection = new Point[pts.length];
-		for (int i=0; i<selection.length; i++) {
+		for (int i = 0; i < selection.length; i++) {
 			final Point pt = pts[i];
 			selection[i] = new Point(pt.x, computeModelRow(pt.y));
 		}
-		
+
 		return selection;
 	}
 
@@ -601,8 +602,8 @@ public final class TimeSeriesTable extends Composite {
 		checkWidget();
 		if (start < 0 || start > end || end >= _itemCount)
 			SWT.error(SWT.ERROR_INVALID_RANGE);
-		
-		for (int i=end; i>=start; i--) {
+
+		for (int i = end; i >= start; i--) {
 			doRemove(i);
 		}
 		_table.redraw();
@@ -765,14 +766,14 @@ public final class TimeSeriesTable extends Composite {
 	Composite getTableComposite() {
 		return _table;
 	}
-	
+
 	int getVisibleRowCount() {
 		checkWidget();
 		final KTableModel model = _table.getModel();
-		return _table.getVisibleRowCount() - model.getFixedHeaderRowCount() 
-			- model.getFixedSelectableRowCount();
+		return _table.getVisibleRowCount() - model.getFixedHeaderRowCount()
+				- model.getFixedSelectableRowCount();
 	}
-	
+
 	int getVisibleColumnCount() {
 		checkWidget();
 		return doGetVisibleDataCells().width;
@@ -811,7 +812,7 @@ public final class TimeSeriesTable extends Composite {
 		_table.removeMouseMoveListener(_moveColumnListener);
 		_table.removeMenuDetectListener(_menuListener);
 		_hscroll.removeSelectionListener(_listener);
-		
+
 		removePaintListener(_listener);
 		removeDisposeListener(_listener);
 	}
@@ -1141,8 +1142,8 @@ public final class TimeSeriesTable extends Composite {
 				_requiresRedraw = false;
 				_table.redraw();
 			}
-			
-			if (e.getSource() != _table) 
+
+			if (e.getSource() != _table)
 				return;
 
 			final Rectangle visible = doGetVisibleDataCells();
@@ -1153,7 +1154,7 @@ public final class TimeSeriesTable extends Composite {
 			}
 
 			_hscroll.setThumb(Math.max(1, visible.width));
-			_hscroll.setEnabled(true);			
+			_hscroll.setEnabled(true);
 		}
 
 		@Override
@@ -1353,6 +1354,19 @@ public final class TimeSeriesTable extends Composite {
 		@Override
 		protected void onMouseDown(MouseEvent e) {
 			// Disable default event handling
+
+			if (e.button == 1) {
+				setCapture(true);
+				m_Capture = true;
+
+				// Resize column?
+				int columnIndex = getColumnForResize(e.x, e.y);
+				if (columnIndex >= 0) {
+					m_ResizeColumnIndex = columnIndex;
+					m_ResizeColumnLeft = getColumnLeft(columnIndex);
+					return;
+				}
+			}
 		}
 
 		@Override
