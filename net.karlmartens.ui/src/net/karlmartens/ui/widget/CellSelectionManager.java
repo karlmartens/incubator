@@ -50,7 +50,7 @@ final class CellSelectionManager {
 	}
 
 	void setFocusCell(Point cell) {
-		if (cell == null || NullSafe.equals(cell, _focusCell))
+		if (NullSafe.equals(cell, _focusCell))
 			return;
 
 		final TimeSeriesTableItem oldItem = getItemAtIndex(_focusCell);
@@ -71,7 +71,8 @@ final class CellSelectionManager {
 			_table.showColumn(_focusCell.x);
 		}
 
-		_table.setCellSelections(new Point[] { _focusCell });
+		_table.setCellSelections(_focusCell == null ? new Point[0]
+				: new Point[] { _focusCell });
 	}
 
 	void expandSelection(Point cell) {
@@ -79,7 +80,9 @@ final class CellSelectionManager {
 			return;
 
 		if (_focusCell == null) {
-			setFocusCell(cell);
+			if (cell != null) {
+				setFocusCell(cell);
+			}
 			return;
 		}
 
@@ -139,7 +142,7 @@ final class CellSelectionManager {
 				final Point cell = new Point(i, _table.indexOf(item));
 				if ((e.stateMask & SWT.SHIFT) > 0) {
 					expandSelection(cell);
-				} else {
+				} else if (cell != null) {
 					setFocusCell(cell);
 				}
 				return;
@@ -151,7 +154,9 @@ final class CellSelectionManager {
 		if (_navigationStrategy.isNavigationEvent(e)) {
 			final Point cell = _navigationStrategy.findSelectedCell(_table,
 					_focusCell, e);
-			setFocusCell(cell);
+			if (cell != null) {
+				setFocusCell(cell);
+			}
 		}
 
 		if (_navigationStrategy.isExpandEvent(e)) {

@@ -22,6 +22,7 @@ package net.karlmartens.ui.viewer;
 import net.karlmartens.ui.widget.TimeSeriesTable;
 import net.karlmartens.ui.widget.TimeSeriesTableEditor;
 import net.karlmartens.ui.widget.TimeSeriesTableItem;
+import net.karlmartens.ui.widget.ViewerCellSelectionManager;
 
 import org.eclipse.jface.viewers.CellEditor.LayoutData;
 import org.eclipse.jface.viewers.CellLabelProvider;
@@ -44,12 +45,14 @@ public final class TimeSeriesTableViewerEditor extends ColumnViewerEditor {
 
 	private final TimeSeriesTableViewer _viewer;
 	private final TimeSeriesTableEditor _editor;
+	private final ViewerCellSelectionManager _selectionManager;
 
 	public TimeSeriesTableViewerEditor(TimeSeriesTableViewer viewer,
 			ColumnViewerEditorActivationStrategy strategy, int feature) {
 		super(viewer, strategy, feature);
 		_viewer = viewer;
 		_editor = new TimeSeriesTableEditor(viewer.getControl());
+		_selectionManager = new ViewerCellSelectionManager(viewer);
 		addEditorActivationListener(_listener);
 	}
 
@@ -64,12 +67,11 @@ public final class TimeSeriesTableViewerEditor extends ColumnViewerEditor {
 
 	@Override
 	public ViewerCell getFocusCell() {
-		final TimeSeriesTable table = _viewer.getControl();
-		final Point p = table.getFocusCell();
+		final Point p = _selectionManager.getFocusCell();
 		if (p == null)
 			return null;
 
-		final TimeSeriesTableItem item = table.getItem(p.y);
+		final TimeSeriesTableItem item = _viewer.getControl().getItem(p.y);
 		if (_cachedRow == null) {
 			_cachedRow = new TimeSeriesTableViewerRow(item);
 		} else {
@@ -105,7 +107,7 @@ public final class TimeSeriesTableViewerEditor extends ColumnViewerEditor {
 			final int row = table.indexOf((TimeSeriesTableItem) focusCell
 					.getItem());
 			final int col = focusCell.getColumnIndex();
-			table.setFocusCell(new Point(col, row));
+			_selectionManager.setFocusCell(new Point(col, row));
 		}
 	}
 

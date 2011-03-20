@@ -253,7 +253,7 @@ public final class TimeSeriesTable extends Composite {
 		final int[] indices = getSelectionIndices();
 		final TimeSeriesTableItem[] selected = new TimeSeriesTableItem[indices.length];
 		for (int i = 0; i < indices.length; i++) {
-			selected[i] = _items[i];
+			selected[i] = _items[indices[i]];
 		}
 
 		return selected;
@@ -412,14 +412,8 @@ public final class TimeSeriesTable extends Composite {
 		return selection;
 	}
 
-	public Point getFocusCell() {
-		checkWidget();
-		return _cellSelectionManager.getFocusCell();
-	}
-
-	public void setFocusCell(Point pt) {
-		checkWidget();
-		_cellSelectionManager.setFocusCell(pt);
+	public CellSelectionManager getCellSelectionManager() {
+		return _cellSelectionManager;
 	}
 
 	public void setCellSelections(Point[] selected) {
@@ -838,7 +832,7 @@ public final class TimeSeriesTable extends Composite {
 	}
 
 	private void doUpdateScrollSelection() {
-		final Point focus = getFocusCell();
+		final Point focus = _cellSelectionManager.getFocusCell();
 		if (focus == null || focus.x < _columnCount)
 			return;
 
@@ -875,7 +869,7 @@ public final class TimeSeriesTable extends Composite {
 		final int[] indices;
 		switch (_scrollDataMode) {
 		case FOCUS_CELL:
-			final Point focus = getFocusCell();
+			final Point focus = _cellSelectionManager.getFocusCell();
 			if (focus != null && focus.y >= 0 && (!_showHeader || focus.y > 0)) {
 				indices = new int[] { focus.y };
 			} else {
