@@ -38,12 +38,12 @@ public final class SparklineScrollBarTest {
 	private final Display _display;
 	private final Shell _shell;
 	private final SparklineScrollBar _control;
-	
+
 	public SparklineScrollBarTest() {
 		_display = Display.getDefault();
 		_shell = new Shell(_display);
 		_shell.setLayout(new FillLayout());
-		
+
 		_control = new SparklineScrollBar(_shell, SWT.NONE);
 		_control.setBackground(_display.getSystemColor(SWT.COLOR_WHITE));
 		_control.setForeground(_display.getSystemColor(SWT.COLOR_WHITE));
@@ -58,26 +58,27 @@ public final class SparklineScrollBarTest {
 			public void widgetSelected(SelectionEvent e) {
 				updateLabel();
 			}
-			
+
 			@Override
 			public void widgetDefaultSelected(SelectionEvent e) {
 				// Do nothing
 			}
 		});
-		
-		final double[] data = new double[_control.getMaximum()+1];
-		for (int i=0; i<data.length; i++) {
+
+		final double[] data = new double[_control.getMaximum() + 1];
+		for (int i = 0; i < data.length; i++) {
 			data[i] = Math.random();
 		}
-		_control.setDataPoints(data);		
+		_control.setDataPoints(data);
 		_control.setSelection(0);
 		_control.setHighlight(8);
 		_control.highlight(20, 39);
-		_control.highlight(new int[] {100, 101, 103});
-		_control.setHighlightColor(_display.getSystemColor(SWT.COLOR_LIST_SELECTION));
+		_control.highlight(new int[] { 100, 101, 103 });
+		_control.setHighlightColor(_display
+				.getSystemColor(SWT.COLOR_LIST_SELECTION));
 		updateLabel();
 	}
-	
+
 	private void run() {
 		_shell.open();
 		_shell.layout();
@@ -86,14 +87,14 @@ public final class SparklineScrollBarTest {
 				_display.sleep();
 		}
 	}
-	
+
 	private void updateLabel() {
 		final int idx = _control.getSelection();
 		final String message = new StringBuilder() //
-			.append(idx) //
-			.append(":") //
-			.append(_control.getDataPoints()[idx]) //
-			.toString();
+				.append(idx) //
+				.append(":") //
+				.append(_control.getDataPoints()[idx]) //
+				.toString();
 		_control.setLabel(message);
 	}
 

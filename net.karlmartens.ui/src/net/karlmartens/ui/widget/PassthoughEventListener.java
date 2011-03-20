@@ -34,7 +34,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 
 final class PassthoughEventListener {
-	
+
 	private final Control _target;
 	private final Collection<Control> _sources = new ArrayList<Control>();
 	private final ListenerImpl _listener = new ListenerImpl();
@@ -43,30 +43,31 @@ final class PassthoughEventListener {
 		_target = target;
 		_target.addDisposeListener(_listener);
 	}
-	
+
 	void addSource(Control source) {
 		_sources.add(source);
 		hookControl(source);
 	}
-	
+
 	void removeSource(Control source) {
 		_sources.remove(source);
 		releaseControl(source);
 	}
-	
+
 	private void hookControl(Control control) {
 		control.addMouseListener(_listener);
 		control.addKeyListener(_listener);
 		control.addDisposeListener(_listener);
 	}
-	
+
 	private void releaseControl(Control control) {
 		control.removeMouseListener(_listener);
 		control.removeKeyListener(_listener);
 		control.removeDisposeListener(_listener);
 	}
-	
-	private class ListenerImpl implements MouseListener, KeyListener, DisposeListener {
+
+	private class ListenerImpl implements MouseListener, KeyListener,
+			DisposeListener {
 
 		@Override
 		public void widgetDisposed(DisposeEvent e) {
@@ -76,7 +77,7 @@ final class PassthoughEventListener {
 				}
 				_sources.clear();
 			} else {
-				removeSource((Control)e.getSource());
+				removeSource((Control) e.getSource());
 			}
 		}
 
@@ -102,7 +103,7 @@ final class PassthoughEventListener {
 
 		@Override
 		public void mouseUp(MouseEvent e) {
-			_target.notifyListeners(SWT.MouseUp, convertEvent(e));			
+			_target.notifyListeners(SWT.MouseUp, convertEvent(e));
 		}
 
 		private Event convertEvent(MouseEvent e) {
@@ -112,12 +113,12 @@ final class PassthoughEventListener {
 			event.data = e.data;
 			event.stateMask = e.stateMask;
 			event.time = e.time;
-			final Rectangle r = ((Control)e.getSource()).getBounds();
+			final Rectangle r = ((Control) e.getSource()).getBounds();
 			event.x = e.x + r.x;
 			event.y = e.y + r.y;
 			return event;
 		}
-		
+
 		private Event convertEvent(KeyEvent e) {
 			final Event event = new Event();
 			event.character = e.character;
@@ -126,6 +127,6 @@ final class PassthoughEventListener {
 			event.stateMask = e.stateMask;
 			event.time = e.time;
 			return event;
-		}		
+		}
 	}
 }

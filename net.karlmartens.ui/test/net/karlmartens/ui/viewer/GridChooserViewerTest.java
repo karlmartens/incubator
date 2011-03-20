@@ -47,69 +47,72 @@ public final class GridChooserViewerTest {
 		final Shell shell = new Shell();
 		final Display display = shell.getDisplay();
 		shell.setLayout(new FillLayout());
-		
+
 		final GridChooserViewer viewer = new GridChooserViewer(shell);
 		viewer.setContentProvider(new ArrayContentProvider());
 		viewer.setLabelProvider(new TestColumnLabelProvider(0));
 		viewer.setComparator(new ViewerComparator(new NumberStringComparator()));
 
 		viewer.getControl().setHeaderVisible(true);
-		
+
 		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
 				System.out.println("Selection changed event");
 			}
 		});
-		
-		final ColumnViewerEditorActivationStrategy activationStrategy = new ColumnViewerEditorActivationStrategy(viewer) {
+
+		final ColumnViewerEditorActivationStrategy activationStrategy = new ColumnViewerEditorActivationStrategy(
+				viewer) {
 			@Override
 			protected boolean isEditorActivationEvent(
 					ColumnViewerEditorActivationEvent event) {
 				return event.eventType == ColumnViewerEditorActivationEvent.TRAVERSAL
-					|| event.eventType == ColumnViewerEditorActivationEvent.MOUSE_DOUBLE_CLICK_SELECTION
-					|| (event.eventType == ColumnViewerEditorActivationEvent.KEY_PRESSED && event.keyCode == SWT.CR)
-					|| event.eventType == ColumnViewerEditorActivationEvent.PROGRAMMATIC;
+						|| event.eventType == ColumnViewerEditorActivationEvent.MOUSE_DOUBLE_CLICK_SELECTION
+						|| (event.eventType == ColumnViewerEditorActivationEvent.KEY_PRESSED && event.keyCode == SWT.CR)
+						|| event.eventType == ColumnViewerEditorActivationEvent.PROGRAMMATIC;
 			}
 		};
-		
-		GridChooserViewerEditor.create(viewer, activationStrategy, 
-					ColumnViewerEditor.TABBING_HORIZONTAL | 
-					ColumnViewerEditor.TABBING_MOVE_TO_ROW_NEIGHBOR | 
-					ColumnViewerEditor.TABBING_VERTICAL | 
-					ColumnViewerEditor.KEYBOARD_ACTIVATION);
-		
-		final GridChooserViewerColumn c1 = new GridChooserViewerColumn(viewer, SWT.NONE);
+
+		GridChooserViewerEditor.create(viewer, activationStrategy,
+				ColumnViewerEditor.TABBING_HORIZONTAL
+						| ColumnViewerEditor.TABBING_MOVE_TO_ROW_NEIGHBOR
+						| ColumnViewerEditor.TABBING_VERTICAL
+						| ColumnViewerEditor.KEYBOARD_ACTIVATION);
+
+		final GridChooserViewerColumn c1 = new GridChooserViewerColumn(viewer,
+				SWT.NONE);
 		c1.setLabelProvider(new TestColumnLabelProvider(0));
 		c1.getColumn().setText("Test");
 		c1.getColumn().setMoveable(true);
-		
-		final GridChooserViewerColumn c2 = new GridChooserViewerColumn(viewer, SWT.NONE);
+
+		final GridChooserViewerColumn c2 = new GridChooserViewerColumn(viewer,
+				SWT.NONE);
 		c2.setLabelProvider(new TestColumnLabelProvider(1));
 		c2.setEditingSupport(new TextEditingSupport(viewer, 1));
 		c2.getColumn().setText("Test 2");
 		c2.getColumn().setMoveable(true);
-		
-		new GridChooserColumnWeightedResize(viewer.getControl(), new int[] {1, 1});
-		
-		viewer.setInput(new String[][] {
-				{"Andrew", "2", "3"}, //
-				{"Bill", "2", "3"}, //
-				{"C", "2", "3"}, //
-				{"bob", "2", "3"}, //
-				{"1", "2", "3"}, //
-				{"11", "2", "3"}, //
-				{"2", "2", "3"}, //
-				{"1.1", "2", "3"} //
+
+		new GridChooserColumnWeightedResize(viewer.getControl(), new int[] { 1,
+				1 });
+
+		viewer.setInput(new String[][] { { "Andrew", "2", "3" }, //
+				{ "Bill", "2", "3" }, //
+				{ "C", "2", "3" }, //
+				{ "bob", "2", "3" }, //
+				{ "1", "2", "3" }, //
+				{ "11", "2", "3" }, //
+				{ "2", "2", "3" }, //
+				{ "1.1", "2", "3" } //
 		});
-		
+
 		shell.open();
 		while (!shell.isDisposed()) {
 			if (!display.readAndDispatch())
 				display.sleep();
 		}
 	}
-	
+
 	private static class TextEditingSupport extends EditingSupport {
 
 		private final GridChooserViewer _viewer;
@@ -133,13 +136,13 @@ public final class GridChooserViewerTest {
 
 		@Override
 		protected Object getValue(Object element) {
-			final String[] data = (String[])element;
+			final String[] data = (String[]) element;
 			return data[_index];
 		}
 
 		@Override
 		protected void setValue(Object element, Object value) {
-			final String[] data = (String[])element;
+			final String[] data = (String[]) element;
 			data[_index] = NullSafe.toString(value);
 		}
 	}

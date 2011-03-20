@@ -32,22 +32,24 @@ public final class TimeSeriesTableColumn extends Item {
 	private boolean _visible = true;
 
 	/**
-	 * <p><dl>
-     * <dt><b>Styles:</b></dt>
-     * <dd>CHECK</dd>
-     * </dl></p>
-     * 
+	 * <p>
+	 * <dl>
+	 * <dt><b>Styles:</b></dt>
+	 * <dd>CHECK</dd>
+	 * </dl>
+	 * </p>
+	 * 
 	 */
 	public TimeSeriesTableColumn(TimeSeriesTable table, int style) {
 		this(table, style, table.getColumnCount());
 	}
-	
+
 	public TimeSeriesTableColumn(TimeSeriesTable table, int style, int index) {
 		super(table, style);
 		table.createItem(this, index);
 		_parent = table;
 	}
-	
+
 	TimeSeriesTableColumn(TimeSeriesTable table) {
 		super(table, SWT.NONE);
 		_parent = table;
@@ -61,28 +63,28 @@ public final class TimeSeriesTableColumn extends Item {
 	public int getWidth() {
 		return _width;
 	}
-	
+
 	public void setMoveable(boolean moveable) {
 		_moveable = moveable;
 	}
-	
+
 	public boolean isMoveable() {
 		return _moveable;
 	}
 
 	public void setVisible(boolean visible) {
-		_visible  = visible;
+		_visible = visible;
 		_parent.redraw();
 	}
-	
+
 	public boolean isVisible() {
 		return _visible;
 	}
-	
+
 	TimeSeriesTable getParent() {
 		return _parent;
 	}
-	
+
 	public void addControlListener(ControlListener listener) {
 		final TypedListener tListener = new TypedListener(listener);
 		addListener(SWT.Resize, tListener);

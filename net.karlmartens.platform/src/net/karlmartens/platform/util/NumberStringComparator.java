@@ -24,7 +24,7 @@ import java.text.ParseException;
 import java.util.Comparator;
 
 public final class NumberStringComparator implements Comparator<String> {
-	
+
 	private final NumberFormat _format;
 	private final Comparator<String> _comparator;
 	private final double _tolerance;
@@ -37,8 +37,8 @@ public final class NumberStringComparator implements Comparator<String> {
 		this(format, new StringComparator(true), 0.00001);
 	}
 
-	public NumberStringComparator(NumberFormat format,
-			Comparator<String> base, double tolerance) {
+	public NumberStringComparator(NumberFormat format, Comparator<String> base,
+			double tolerance) {
 		_format = format;
 		_comparator = base;
 		_tolerance = tolerance;
@@ -48,13 +48,13 @@ public final class NumberStringComparator implements Comparator<String> {
 	public int compare(String o1, String o2) {
 		if (o1 == o2)
 			return 0;
-		
+
 		if (o1 == null)
 			return -1;
-		
+
 		if (o2 == null)
 			return 1;
-		
+
 		try {
 			final double n1 = _format.parse(o1).doubleValue();
 			final double n2 = _format.parse(o2).doubleValue();
@@ -62,7 +62,7 @@ public final class NumberStringComparator implements Comparator<String> {
 				if (n1 < n2) {
 					return -1;
 				}
-				
+
 				return 1;
 			}
 		} catch (ParseException e) {

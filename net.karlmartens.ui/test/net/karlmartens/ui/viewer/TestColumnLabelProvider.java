@@ -22,7 +22,7 @@ package net.karlmartens.ui.viewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 
 class TestColumnLabelProvider extends ColumnLabelProvider {
-	
+
 	private final int _index;
 
 	TestColumnLabelProvider(int index) {
@@ -32,9 +32,9 @@ class TestColumnLabelProvider extends ColumnLabelProvider {
 	@Override
 	public String getText(Object element) {
 		final Object o = ((Object[]) element)[_index];
-		if (o==null)
+		if (o == null)
 			return "";
-		
+
 		return o.toString();
 	}
 }

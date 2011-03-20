@@ -35,23 +35,23 @@ class TimeSeriesTableValueEditingSupport extends EditingSupport {
 
 	private final TimeSeriesTableViewer _viewer;
 
-	TimeSeriesTableValueEditingSupport(
-			TimeSeriesTableViewer viewer) {
+	TimeSeriesTableValueEditingSupport(TimeSeriesTableViewer viewer) {
 		super(viewer);
 		_viewer = viewer;
 	}
 
 	@Override
 	protected CellEditor getCellEditor(Object element) {
-		return new TextCellEditor((Composite)_viewer.getControl(), SWT.RIGHT);
+		return new TextCellEditor((Composite) _viewer.getControl(), SWT.RIGHT);
 	}
 
 	@Override
 	protected boolean canEdit(Object element) {
-		final TimeSeriesEditingSupport editingSupport = _viewer.getEditingSupport();
+		final TimeSeriesEditingSupport editingSupport = _viewer
+				.getEditingSupport();
 		if (editingSupport == null)
 			return false;
-		
+
 		return editingSupport.canEdit(element);
 	}
 
@@ -69,36 +69,41 @@ class TimeSeriesTableValueEditingSupport extends EditingSupport {
 	protected void initializeCellEditorValue(CellEditor cellEditor,
 			ViewerCell cell) {
 		cellEditor.setValue("");
-		
-		final TimeSeriesEditingSupport editingSupport = _viewer.getEditingSupport();
+
+		final TimeSeriesEditingSupport editingSupport = _viewer
+				.getEditingSupport();
 		if (editingSupport == null)
 			return;
-		
-		final TimeSeriesContentProvider cp = (TimeSeriesContentProvider)_viewer.getContentProvider();
+
+		final TimeSeriesContentProvider cp = (TimeSeriesContentProvider) _viewer
+				.getContentProvider();
 		if (cp == null)
 			return;
-		
-		final double value = cp.getValue(cell.getElement(), computePeriodIndex(cell));
+
+		final double value = cp.getValue(cell.getElement(),
+				computePeriodIndex(cell));
 		final NumberFormat format = getNumberFormat(editingSupport);
 		cellEditor.setValue(format.format(value));
 	}
 
 	@Override
 	protected void saveCellEditorValue(CellEditor cellEditor, ViewerCell cell) {
-		final TimeSeriesEditingSupport editingSupport = _viewer.getEditingSupport();
+		final TimeSeriesEditingSupport editingSupport = _viewer
+				.getEditingSupport();
 		if (editingSupport == null)
 			return;
-					
-		final TimeSeriesContentProvider cp = (TimeSeriesContentProvider)_viewer.getContentProvider();
+
+		final TimeSeriesContentProvider cp = (TimeSeriesContentProvider) _viewer
+				.getContentProvider();
 		if (cp == null)
 			return;
 
-		final String source = (String)cellEditor.getValue();
+		final String source = (String) cellEditor.getValue();
 		if (source == null || source.trim().length() == 0) {
 			update(cell, 0.0);
 			return;
 		}
-		
+
 		try {
 			final NumberFormat format = getNumberFormat(editingSupport);
 			final Number n = format.parse(source);
@@ -107,16 +112,17 @@ class TimeSeriesTableValueEditingSupport extends EditingSupport {
 			// ignore
 		}
 	}
-	
+
 	private void update(ViewerCell cell, double value) {
-		_viewer.getEditingSupport().setValue(cell.getElement(), computePeriodIndex(cell), value);
-		
-		final TimeSeriesTableItem item = (TimeSeriesTableItem)cell.getItem();
+		_viewer.getEditingSupport().setValue(cell.getElement(),
+				computePeriodIndex(cell), value);
+
+		final TimeSeriesTableItem item = (TimeSeriesTableItem) cell.getItem();
 		item.setValue(computePeriodIndex(cell), value);
-		
+
 		_viewer.getControl().redraw();
 	}
-	
+
 	private int computePeriodIndex(ViewerCell cell) {
 		return cell.getColumnIndex() - _viewer.getControl().getColumnCount();
 	}
@@ -125,7 +131,7 @@ class TimeSeriesTableValueEditingSupport extends EditingSupport {
 		NumberFormat format = editingSupport.getNumberFormat();
 		if (format != null)
 			return format;
-		
+
 		return NumberFormat.getNumberInstance();
 	}
 }

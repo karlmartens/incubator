@@ -35,21 +35,22 @@ import org.eclipse.swt.widgets.Display;
 import de.kupzog.ktable.renderers.CheckableCellRenderer;
 
 public class ResizeColumnAction extends Action {
-	
+
 	private static final int IMAGE_SPACER = 6;
 	private static final int TEXT_SPACER = 12;
-	
+
 	private final TimeSeriesTable _table;
 	private int _columnIndex;
-	
+
 	public ResizeColumnAction(TimeSeriesTable table, int columnIndex) {
 		_table = table;
 		setColumnIndex(columnIndex);
-		
-		final ResourceBundle bundle = ResourceBundle.getBundle("net.karlmartens.ui.locale.messages"); 
+
+		final ResourceBundle bundle = ResourceBundle
+				.getBundle("net.karlmartens.ui.locale.messages");
 		setText(bundle.getString("ResizeColumnAction.TEXT"));
 	}
-	
+
 	public void setColumnIndex(int index) {
 		_columnIndex = index;
 		updateEnablement();
@@ -59,7 +60,7 @@ public class ResizeColumnAction extends Action {
 	public void run() {
 		if (!isEnabled())
 			return;
-		
+
 		final GC gc = new GC(_table);
 		final Font font = createColumnHeaderFont();
 		gc.setFont(font);
@@ -68,35 +69,40 @@ public class ResizeColumnAction extends Action {
 		int width = gc.textExtent(column.getText()).x + TEXT_SPACER;
 
 		if ((column.getStyle() & SWT.CHECK) > 0) {
-			width = Math.max(width, CheckableCellRenderer.IMAGE_CHECKED.getImageData().width + IMAGE_SPACER);
-		} else { 
-			for (int i=0; i<_table.getItemCount(); i++) {
+			width = Math.max(width,
+					CheckableCellRenderer.IMAGE_CHECKED.getImageData().width
+							+ IMAGE_SPACER);
+		} else {
+			for (int i = 0; i < _table.getItemCount(); i++) {
 				final TimeSeriesTableItem item = _table.getItem(i);
 				gc.setFont(item.getFont(i));
-				width = Math.max(width, gc.textExtent(item.getText(_columnIndex)).x + TEXT_SPACER);
+				width = Math.max(width,
+						gc.textExtent(item.getText(_columnIndex)).x
+								+ TEXT_SPACER);
 			}
 		}
 		gc.dispose();
 		font.dispose();
-		
+
 		if (width <= 0)
 			return;
-		
+
 		column.setWidth(width);
 	}
 
 	private Font createColumnHeaderFont() {
 		final Display display = _table.getDisplay();
 		final FontData[] fontData = _table.getFont().getFontData();
-		for (int i=0; i<fontData.length; i++) {
+		for (int i = 0; i < fontData.length; i++) {
 			fontData[i].setStyle(SWT.BOLD);
 		}
 		return new Font(display, fontData);
 	}
 
 	private void updateEnablement() {
-		setEnabled(_columnIndex >= 0 && // 
-				_columnIndex < (_table.getColumnCount() + _table.getPeriodCount()) && //
+		setEnabled(_columnIndex >= 0 && //
+				_columnIndex < (_table.getColumnCount() + _table
+						.getPeriodCount()) && //
 				_table.getColumn(_columnIndex).isVisible());
 	}
 }

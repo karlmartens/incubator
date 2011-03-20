@@ -38,7 +38,7 @@ final class GridChooserViewerRow extends ViewerRow {
 	GridChooserViewerRow(GridChooserItem item) {
 		_item = item;
 	}
-	
+
 	void setItem(GridChooserItem item) {
 		_item = item;
 	}
@@ -122,19 +122,19 @@ final class GridChooserViewerRow extends ViewerRow {
 	public ViewerRow getNeighbor(int direction, boolean sameLevel) {
 		final GridChooserItem item;
 		if (ViewerRow.ABOVE == direction) {
-			 item = getNeighbor(-1);
+			item = getNeighbor(-1);
 		} else if (ViewerRow.BELOW == direction) {
 			item = getNeighbor(1);
 		} else {
 			throw new IllegalArgumentException();
 		}
-		
+
 		if (item == null)
 			return null;
-		
+
 		return new GridChooserViewerRow(item);
 	}
-	
+
 	private GridChooserItem getNeighbor(int direction) {
 		final GridChooser parent = _item.getParent();
 		if (_item.isSelected()) {
@@ -143,16 +143,16 @@ final class GridChooserViewerRow extends ViewerRow {
 			if (index < 0 || index >= selection.length) {
 				return null;
 			}
-		return selection[index];
+			return selection[index];
 		}
-		
+
 		int index = parent.indexOf(_item);
-		for(;;) {
+		for (;;) {
 			index += direction;
 			if (index < 0 || index >= parent.getItemCount()) {
 				return null;
 			}
-			
+
 			final GridChooserItem item = parent.getItem(index);
 			if (!item.isSelected()) {
 				return item;
@@ -162,7 +162,7 @@ final class GridChooserViewerRow extends ViewerRow {
 
 	@Override
 	public TreePath getTreePath() {
-		return new TreePath(new Object[] {_item.getData()});
+		return new TreePath(new Object[] { _item.getData() });
 	}
 
 	@Override

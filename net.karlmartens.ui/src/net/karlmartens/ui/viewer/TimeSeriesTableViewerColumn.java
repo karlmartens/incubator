@@ -26,7 +26,7 @@ import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.ViewerColumn;
 
 public final class TimeSeriesTableViewerColumn extends ViewerColumn {
-	
+
 	private final TimeSeriesTableColumn _column;
 	private EditingSupport _editingSupport;
 
@@ -34,33 +34,36 @@ public final class TimeSeriesTableViewerColumn extends ViewerColumn {
 		this(viewer, style, -1);
 	}
 
-	public TimeSeriesTableViewerColumn(TimeSeriesTableViewer viewer, int style, int index) {
+	public TimeSeriesTableViewerColumn(TimeSeriesTableViewer viewer, int style,
+			int index) {
 		this(viewer, createColumn(viewer.getControl(), style, index));
 	}
-	
-	TimeSeriesTableViewerColumn(TimeSeriesTableViewer viewer, TimeSeriesTableColumn column) {
+
+	TimeSeriesTableViewerColumn(TimeSeriesTableViewer viewer,
+			TimeSeriesTableColumn column) {
 		super(viewer, column);
 		_column = column;
 	}
-	
+
 	public TimeSeriesTableColumn getColumn() {
 		return _column;
 	}
-	
+
 	@Override
 	public void setEditingSupport(EditingSupport editingSupport) {
 		super.setEditingSupport(editingSupport);
 		_editingSupport = editingSupport;
 	}
-	
+
 	EditingSupport doGetEditingSupport() {
 		return _editingSupport;
 	}
-	
-	private static TimeSeriesTableColumn createColumn(TimeSeriesTable table, int style, int index) {
+
+	private static TimeSeriesTableColumn createColumn(TimeSeriesTable table,
+			int style, int index) {
 		if (index >= 0)
 			return new TimeSeriesTableColumn(table, style, index);
-		
+
 		return new TimeSeriesTableColumn(table, style);
 	}
 }

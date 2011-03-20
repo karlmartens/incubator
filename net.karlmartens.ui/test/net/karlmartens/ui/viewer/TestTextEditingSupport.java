@@ -40,7 +40,7 @@ final class TestTextEditingSupport extends EditingSupport {
 
 	@Override
 	protected CellEditor getCellEditor(Object element) {
-		return new TextCellEditor((Composite)_viewer.getControl());
+		return new TextCellEditor((Composite) _viewer.getControl());
 	}
 
 	@Override
@@ -50,13 +50,13 @@ final class TestTextEditingSupport extends EditingSupport {
 
 	@Override
 	protected Object getValue(Object element) {
-		final Object[] data = (Object[])element;
-		return (String)data[_index];
+		final Object[] data = (Object[]) element;
+		return (String) data[_index];
 	}
 
 	@Override
 	protected void setValue(Object element, Object value) {
-		final Object[] data = (Object[])element;
+		final Object[] data = (Object[]) element;
 		data[_index] = NullSafe.toString(value);
 	}
 }

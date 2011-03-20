@@ -23,9 +23,9 @@ import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.joda.time.LocalDate;
 
 public interface TimeSeriesContentProvider extends IStructuredContentProvider {
-	
+
 	LocalDate[] getDates();
-	
+
 	double getValue(Object element, int index);
 
 }

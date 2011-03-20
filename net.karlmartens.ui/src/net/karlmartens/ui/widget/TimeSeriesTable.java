@@ -222,10 +222,10 @@ public final class TimeSeriesTable extends Composite {
 		checkWidget();
 		checkNull(point);
 
-        final Point dPoint = this.toDisplay(point);
-        final Point tPoint = _table.toControl(dPoint);
-        final Point cell = _table.getCellForCoordinates(tPoint.x, tPoint.y);
-        final int row = computeModelRow(cell.y);
+		final Point dPoint = this.toDisplay(point);
+		final Point tPoint = _table.toControl(dPoint);
+		final Point cell = _table.getCellForCoordinates(tPoint.x, tPoint.y);
+		final int row = computeModelRow(cell.y);
 		if (row < 0)
 			return null;
 
@@ -237,7 +237,8 @@ public final class TimeSeriesTable extends Composite {
 
 		final BitSet selectedRows = new BitSet();
 		for (Point selection : _table.getCellSelection()) {
-			if (_showHeader && selection.y < _table.getModel().getFixedHeaderRowCount())
+			if (_showHeader
+					&& selection.y < _table.getModel().getFixedHeaderRowCount())
 				continue;
 
 			selectedRows.set(computeModelRow(selection.y));
@@ -368,7 +369,7 @@ public final class TimeSeriesTable extends Composite {
 						computeTableRow(indices[i]));
 			}
 		}
-		
+
 		_table.clearSelection();
 		_table.setSelection(selections, false);
 
@@ -424,7 +425,7 @@ public final class TimeSeriesTable extends Composite {
 	public void setCellSelections(Point[] selected) {
 		checkWidget();
 		checkNull(selected);
-		
+
 		final BitSet rSelected = new BitSet();
 		final Point[] tSelected = new Point[selected.length];
 		for (int i = 0; i < tSelected.length; i++) {
@@ -432,12 +433,13 @@ public final class TimeSeriesTable extends Composite {
 			tSelected[i] = new Point(pt.x, computeTableRow(pt.y));
 			rSelected.set(selected[i].y);
 		}
-		
+
 		_table.clearSelection();
 		_table.setSelection(tSelected, false);
 
 		final int[] selectedRows = ArraySupport.toArray(rSelected);
-		final int[] update = ArraySupport.minus(selectedRows, _lastRowSelection);
+		final int[] update = ArraySupport
+				.minus(selectedRows, _lastRowSelection);
 		if (update.length > 0) {
 			_lastRowSelection = selectedRows;
 			doUpdateRows(update);
@@ -607,30 +609,30 @@ public final class TimeSeriesTable extends Composite {
 		_table.redraw();
 	}
 
-    public void moveColumn(int fromIndex, int toIndex) {
-        checkWidget();
-        checkColumnIndex(fromIndex);
-        checkColumnIndex(toIndex);
-        if (fromIndex == toIndex)
-            return;
+	public void moveColumn(int fromIndex, int toIndex) {
+		checkWidget();
+		checkColumnIndex(fromIndex);
+		checkColumnIndex(toIndex);
+		if (fromIndex == toIndex)
+			return;
 
-        if (!_columns[fromIndex].isMoveable()
-                || !_columns[toIndex].isMoveable())
-            return;
+		if (!_columns[fromIndex].isMoveable()
+				|| !_columns[toIndex].isMoveable())
+			return;
 
-        final TimeSeriesTableColumn t = _columns[fromIndex];
-        _columns[fromIndex] = _columns[toIndex];
-        _columns[toIndex] = t;
+		final TimeSeriesTableColumn t = _columns[fromIndex];
+		_columns[fromIndex] = _columns[toIndex];
+		_columns[toIndex] = t;
 
-        for (int i = 0; i < _itemCount; i++) {
-            _items[i].swapColumns(fromIndex, toIndex);
-        }
+		for (int i = 0; i < _itemCount; i++) {
+			_items[i].swapColumns(fromIndex, toIndex);
+		}
 
-        _columns[fromIndex].notifyListeners(SWT.Move, new Event());
-        _columns[toIndex].notifyListeners(SWT.Move, new Event());
+		_columns[fromIndex].notifyListeners(SWT.Move, new Event());
+		_columns[toIndex].notifyListeners(SWT.Move, new Event());
 
-        _table.redraw();
-    }
+		_table.redraw();
+	}
 
 	public void addSelectionListener(SelectionListener listener) {
 		checkWidget();
@@ -702,7 +704,7 @@ public final class TimeSeriesTable extends Composite {
 		checkNull(item);
 		checkColumnIndex(index);
 
-	    final int mRow = indexOf(item);
+		final int mRow = indexOf(item);
 		final int tRow = computeTableRow(mRow);
 		final Rectangle r = _table.getCellRect(index, tRow);
 		final Point dPoint = _table.toDisplay(r.x, r.y);
@@ -819,22 +821,22 @@ public final class TimeSeriesTable extends Composite {
 		removePaintListener(_listener);
 		removeDisposeListener(_listener);
 	}
-	
-    private void checkNull(Object o) {
-        if (o == null)
-            SWT.error(SWT.ERROR_NULL_ARGUMENT);
-    }
 
-    private void checkColumnIndex(int index) {
-        if (index < 0 || index >= (_columnCount + _periods.length))
-            SWT.error(SWT.ERROR_INVALID_RANGE);
-    }
-    
-    private void checkRowIndex(int index) {
-        if (index < 0 || index >= _itemCount)
-            SWT.error(SWT.ERROR_INVALID_RANGE);
-     }
-    
+	private void checkNull(Object o) {
+		if (o == null)
+			SWT.error(SWT.ERROR_NULL_ARGUMENT);
+	}
+
+	private void checkColumnIndex(int index) {
+		if (index < 0 || index >= (_columnCount + _periods.length))
+			SWT.error(SWT.ERROR_INVALID_RANGE);
+	}
+
+	private void checkRowIndex(int index) {
+		if (index < 0 || index >= _itemCount)
+			SWT.error(SWT.ERROR_INVALID_RANGE);
+	}
+
 	private void doUpdateScrollSelection() {
 		final Point focus = getFocusCell();
 		if (focus == null || focus.x < _columnCount)
@@ -870,30 +872,30 @@ public final class TimeSeriesTable extends Composite {
 	}
 
 	private void doUpdateScrollData() {
-        final int[] indices;
-        switch (_scrollDataMode) {
-        case FOCUS_CELL:
+		final int[] indices;
+		switch (_scrollDataMode) {
+		case FOCUS_CELL:
 			final Point focus = getFocusCell();
 			if (focus != null && focus.y >= 0 && (!_showHeader || focus.y > 0)) {
-               indices = new int[] { focus.y };
-            } else {
-                indices = new int[] {};
+				indices = new int[] { focus.y };
+			} else {
+				indices = new int[] {};
 			}
 			break;
 
-        case SELECTED_ROWS:
-            indices = getSelectionIndices();
-            break;
+		case SELECTED_ROWS:
+			indices = getSelectionIndices();
+			break;
 
-        default:
-            indices = new int[] {};
+		default:
+			indices = new int[] {};
 		}
 
-        final double[] data = new double[_periods.length];
-        Arrays.fill(data, 0.0);
-        for (int index : indices) {
-            for (int j = 0; j < data.length; j++) {
-                data[j] += _items[index].getValue(j);
+		final double[] data = new double[_periods.length];
+		Arrays.fill(data, 0.0);
+		for (int index : indices) {
+			for (int j = 0; j < data.length; j++) {
+				data[j] += _items[index].getValue(j);
 			}
 		}
 		_hscroll.setDataPoints(data);
@@ -901,27 +903,27 @@ public final class TimeSeriesTable extends Composite {
 
 	private void doUpdateRows(int[] indices) {
 		if (indices.length <= 0)
-            return;
+			return;
 
-        final int width = doGetVisibleDataCells().width + _columnCount + 1;
+		final int width = doGetVisibleDataCells().width + _columnCount + 1;
 		Arrays.sort(indices);
 
-        int previous = computeTableRow(indices[0]);
-        int height = 1;
-        for (int i = 1; i < indices.length; i++) {
-            final int index = computeTableRow(indices[i]);
-            final int delta = index - previous;
-            if (delta <= 1) {
-                height += delta;
-                previous = index;
+		int previous = computeTableRow(indices[0]);
+		int height = 1;
+		for (int i = 1; i < indices.length; i++) {
+			final int index = computeTableRow(indices[i]);
+			final int delta = index - previous;
+			if (delta <= 1) {
+				height += delta;
+				previous = index;
 				continue;
-            }
+			}
 
-            _table.redraw(0, previous - height + 1, width, height);
-            previous = index;
+			_table.redraw(0, previous - height + 1, width, height);
+			previous = index;
 		}
-        
-        _table.redraw(0, previous - height + 1, width, height);
+
+		_table.redraw(0, previous - height + 1, width, height);
 	}
 
 	private void doRemove(int index) {
@@ -1157,11 +1159,11 @@ public final class TimeSeriesTable extends Composite {
 		private KTableImpl(Composite parent, int style) {
 			super(parent, style);
 		}
-		
+
 		void setIgnoreMouseMove(boolean b) {
-            _ignoreMouseMove = b;
-        }
-		
+			_ignoreMouseMove = b;
+		}
+
 		@Override
 		protected void onMouseMove(MouseEvent e) {
 			if (_ignoreMouseMove)

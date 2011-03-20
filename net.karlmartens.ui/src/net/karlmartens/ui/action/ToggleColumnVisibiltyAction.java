@@ -31,10 +31,10 @@ public class ToggleColumnVisibiltyAction extends Action implements IAction {
 	public ToggleColumnVisibiltyAction(TimeSeriesTableColumn column) {
 		super(column.getText(), IAction.AS_CHECK_BOX);
 		setChecked(column.isVisible());
-		
+
 		_column = column;
 	}
-	
+
 	@Override
 	public void run() {
 		_column.setVisible(isChecked());

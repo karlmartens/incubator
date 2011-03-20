@@ -46,20 +46,20 @@ public final class TimeSeriesTableEditor extends ControlEditor {
 			public void controlResized(ControlEvent e) {
 				layout();
 			}
-			
+
 			@Override
 			public void controlMoved(ControlEvent e) {
 				layout();
 			}
 		};
-		
-		_timer = new Runnable () {
+
+		_timer = new Runnable() {
 			public void run() {
-				layout ();
+				layout();
 			}
 		};
-		
-		grabVertical=true;
+
+		grabVertical = true;
 	}
 
 	public void setEditor(Control editor, TimeSeriesTableItem item,
@@ -68,7 +68,7 @@ public final class TimeSeriesTableEditor extends ControlEditor {
 		setColumn(columnIndex);
 		setEditor(editor);
 	}
-	
+
 	@Override
 	public void setEditor(Control editor) {
 		final TimeSeriesTableItem item = getItem();
@@ -78,42 +78,48 @@ public final class TimeSeriesTableEditor extends ControlEditor {
 		super.setEditor(editor);
 		resize();
 	}
-	
+
 	public TimeSeriesTableItem getItem() {
 		return _item;
 	}
+
 	@Override
 	public void layout() {
 		if (_table == null || _table.isDisposed())
 			return;
-		
-		if (_item == null || _item.isDisposed()) 
+
+		if (_item == null || _item.isDisposed())
 			return;
-		
-		final int columnCount = _table.getColumnCount() + _table.getPeriodCount();
-		if (columnCount == 0 && _column != 0) 
+
+		final int columnCount = _table.getColumnCount()
+				+ _table.getPeriodCount();
+		if (columnCount == 0 && _column != 0)
 			return;
-		
+
 		if (columnCount > 0 && (_column < 0 || _column >= columnCount))
 			return;
-		
+
 		final Control editor = getEditor();
-		if (editor == null || editor.isDisposed()) return;
-		
+		if (editor == null || editor.isDisposed())
+			return;
+
 		final boolean hadFocus = editor.isVisible() && editor.isFocusControl();
-		
-		editor.setBounds (computeCellBounds());
-		
+
+		editor.setBounds(computeCellBounds());
+
 		if (hadFocus) {
-			if (editor == null || editor.isDisposed()) return;
-			editor.setFocus ();
+			if (editor == null || editor.isDisposed())
+				return;
+			editor.setFocus();
 		}
 	}
-	
+
 	@Override
 	public void dispose() {
 		if (_table != null && !_table.isDisposed()) {
-			if (_column > -1 && _column < (_table.getColumnCount() + _table.getPeriodCount())) {
+			if (_column > -1
+					&& _column < (_table.getColumnCount() + _table
+							.getPeriodCount())) {
 				final TimeSeriesTableColumn column = _table.getColumn(_column);
 				column.removeControlListener(_columnListener);
 			}
@@ -126,44 +132,46 @@ public final class TimeSeriesTableEditor extends ControlEditor {
 		_column = -1;
 		super.dispose();
 	}
-	
+
 	private void setItem(TimeSeriesTableItem item) {
 		_item = item;
 		resize();
 	}
-	
+
 	private void setColumn(int column) {
-		final int columnCount = _table.getColumnCount() + _table.getPeriodCount();
-		
+		final int columnCount = _table.getColumnCount()
+				+ _table.getPeriodCount();
+
 		if (columnCount == 0) {
 			_column = column == 0 ? 0 : -1;
 			resize();
 			return;
 		}
-		
+
 		if (_column > -1 && _column < columnCount) {
 			final TimeSeriesTableColumn tableColumn = _table.getColumn(_column);
 			tableColumn.removeControlListener(_columnListener);
 			_column = -1;
 		}
-		
-	    if (column < -1 || column >= columnCount)
-	    	return;
-	    
-	    _column = column;
-	    final TimeSeriesTableColumn tableColumn = _table.getColumn(_column);
-	    tableColumn.addControlListener(_columnListener);
-	    resize();
+
+		if (column < -1 || column >= columnCount)
+			return;
+
+		_column = column;
+		final TimeSeriesTableColumn tableColumn = _table.getColumn(_column);
+		tableColumn.addControlListener(_columnListener);
+		resize();
 	}
-	
+
 	private void resize() {
 		layout();
-		
+
 		if (_table != null) {
 			final Display display = _table.getDisplay();
 			display.timerExec(TIMEOUT, _timer);
 		}
 	}
+
 	private Rectangle computeCellBounds() {
 		if (_item == null || _column <= -1 || _item.isDisposed())
 			return new Rectangle(0, 0, 0, 0);
@@ -180,7 +188,7 @@ public final class TimeSeriesTableEditor extends ControlEditor {
 		final Rectangle table = parent.getBounds();
 		cell.x -= table.x;
 		cell.y -= table.y;
-		
+
 		// Reduce cell width to compensate for trimming
 		final Rectangle area = parent.getClientArea();
 		if (cell.x < area.x + area.width) {
@@ -188,13 +196,14 @@ public final class TimeSeriesTableEditor extends ControlEditor {
 				cell.width = area.x + area.width - cell.x;
 			}
 		}
-		
-		final Rectangle editor = new Rectangle(cell.x, cell.y, minimumWidth, minimumHeight);
-		
+
+		final Rectangle editor = new Rectangle(cell.x, cell.y, minimumWidth,
+				minimumHeight);
+
 		if (grabHorizontal) {
 			editor.width = Math.max(cell.width, minimumWidth);
 		}
-		
+
 		if (grabVertical) {
 			editor.height = Math.max(cell.height, minimumHeight);
 		}
@@ -206,7 +215,7 @@ public final class TimeSeriesTableEditor extends ControlEditor {
 		} else {
 			editor.x += (cell.width - editor.width) / 2;
 		}
-		
+
 		return editor;
 	}
 }

@@ -36,7 +36,7 @@ final class TimeSeriesTableViewerRow extends ViewerRow {
 	public TimeSeriesTableViewerRow(TimeSeriesTableItem item) {
 		_item = item;
 	}
-	
+
 	public void setItem(TimeSeriesTableItem item) {
 		_item = item;
 	}
@@ -58,7 +58,8 @@ final class TimeSeriesTableViewerRow extends ViewerRow {
 
 	@Override
 	public int getColumnCount() {
-		return _item.getParent().getColumnCount() + _item.getParent().getPeriodCount();
+		return _item.getParent().getColumnCount()
+				+ _item.getParent().getPeriodCount();
 	}
 
 	@Override
@@ -120,16 +121,16 @@ final class TimeSeriesTableViewerRow extends ViewerRow {
 	public ViewerRow getNeighbor(int direction, boolean sameLevel) {
 		final TimeSeriesTableItem item;
 		if (ViewerRow.ABOVE == direction) {
-			 item = getNeighbor(-1);
+			item = getNeighbor(-1);
 		} else if (ViewerRow.BELOW == direction) {
 			item = getNeighbor(1);
 		} else {
 			throw new IllegalArgumentException();
 		}
-		
+
 		if (item == null)
 			return null;
-		
+
 		return new TimeSeriesTableViewerRow(item);
 	}
 
@@ -138,13 +139,13 @@ final class TimeSeriesTableViewerRow extends ViewerRow {
 		final int index = table.indexOf(_item) + delta;
 		if (index < 0 || index >= table.getItemCount())
 			return null;
-		
+
 		return table.getItem(index);
 	}
 
 	@Override
 	public TreePath getTreePath() {
-		return new TreePath(new Object[] {_item.getData()});
+		return new TreePath(new Object[] { _item.getData() });
 	}
 
 	@Override
@@ -156,7 +157,7 @@ final class TimeSeriesTableViewerRow extends ViewerRow {
 	public Object getElement() {
 		return _item.getData();
 	}
-	
+
 	@Override
 	protected boolean isColumnVisible(int columnIndex) {
 		return true;
@@ -169,7 +170,7 @@ final class TimeSeriesTableViewerRow extends ViewerRow {
 		if (parent.getPeriodCount() > 0) {
 			parent.showColumn(columnIndex);
 		}
-		
+
 		return true;
 	}
 }

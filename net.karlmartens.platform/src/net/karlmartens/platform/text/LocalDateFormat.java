@@ -39,20 +39,20 @@ public final class LocalDateFormat extends Format {
 	public StringBuffer format(Object obj, StringBuffer toAppendTo,
 			FieldPosition pos) {
 		if (obj instanceof LocalDate) {
-			return format((LocalDate)obj, toAppendTo);
+			return format((LocalDate) obj, toAppendTo);
 		}
-		
+
 		throw new IllegalArgumentException();
 	}
-	
+
 	public StringBuffer format(LocalDate date, StringBuffer toAppendTo) {
 		if (date != null) {
 			_formatter.printTo(toAppendTo, date);
 		}
-		
+
 		return toAppendTo;
 	}
-	
+
 	public String format(LocalDate date) {
 		return format(date, new StringBuffer()).toString();
 	}

@@ -40,11 +40,11 @@ public final class GridChooserViewer extends AbstractTableViewer {
 
 	private final GridChooser _chooser;
 	private GridChooserViewerRow _cachedRow;
-	
+
 	public GridChooserViewer(Composite parent) {
 		this(new GridChooser(parent));
 	}
-	
+
 	public GridChooserViewer(GridChooser chooser) {
 		_chooser = chooser;
 		hookControl(chooser);
@@ -54,41 +54,43 @@ public final class GridChooserViewer extends AbstractTableViewer {
 	public GridChooser getControl() {
 		return _chooser;
 	}
-	
-	public void refresh(final Object element, final boolean updateLabels, boolean reveal) {
+
+	public void refresh(final Object element, final boolean updateLabels,
+			boolean reveal) {
 		if (checkBusy())
 			return;
-		
+
 		if (isCellEditorActive()) {
 			cancelEditing();
 		}
-		
+
 		preservingSelection(new Runnable() {
 			@Override
 			public void run() {
 				internalRefresh(element, updateLabels);
 			}
 		});
-		
+
 		if (reveal) {
 			reveal(element);
 		}
 	}
-	
+
 	public void refresh(boolean updateLabels, boolean reveal) {
 		refresh(getRoot(), updateLabels, reveal);
 	}
-	
+
 	public void remove(Object[] elements) {
 		if (checkBusy())
 			return;
-		
+
 		if (elements.length == 0)
 			return;
-		
+
 		final Set<ElementHashtableEntry> elementsToRemove = new HashSet<ElementHashtableEntry>();
 		for (Object element : elements) {
-			elementsToRemove.add(new ElementHashtableEntry(element, getComparer()));
+			elementsToRemove.add(new ElementHashtableEntry(element,
+					getComparer()));
 		}
 
 		boolean deselectedItems = false;
@@ -96,22 +98,23 @@ public final class GridChooserViewer extends AbstractTableViewer {
 			final Object o = item.getData();
 			if (o == null)
 				continue;
-			
-			if (elementsToRemove.contains(new ElementHashtableEntry(o, getComparer()))) {
+
+			if (elementsToRemove.contains(new ElementHashtableEntry(o,
+					getComparer()))) {
 				deselectedItems = true;
 				break;
 			}
 		}
-		
+
 		super.remove(elements);
-		
+
 		if (deselectedItems) {
 			final ISelection selection = getSelection();
 			updateSelection(selection);
 			firePostSelectionChanged(new SelectionChangedEvent(this, selection));
 		}
 	}
-	
+
 	@Override
 	protected ViewerRow internalCreateNewRowPart(int style, int rowIndex) {
 		final GridChooserItem item;
@@ -126,7 +129,7 @@ public final class GridChooserViewer extends AbstractTableViewer {
 
 	@Override
 	protected int doIndexOf(Item item) {
-		return _chooser.indexOf((GridChooserItem)item);
+		return _chooser.indexOf((GridChooserItem) item);
 	}
 
 	@Override
@@ -171,9 +174,9 @@ public final class GridChooserViewer extends AbstractTableViewer {
 
 	@Override
 	protected void doResetItem(Item item) {
-		final GridChooserItem chooserItem = (GridChooserItem)item;
+		final GridChooserItem chooserItem = (GridChooserItem) item;
 		final int columnCount = Math.max(1, _chooser.getColumnCount());
-		for (int i=0; i<columnCount; i++) {
+		for (int i = 0; i < columnCount; i++) {
 			chooserItem.setText(i, "");
 			if (chooserItem.getImage(i) != null) {
 				chooserItem.setImage(i, null);
@@ -198,7 +201,7 @@ public final class GridChooserViewer extends AbstractTableViewer {
 
 	@Override
 	protected void doShowItem(Item item) {
-		_chooser.showItem((GridChooserItem)item);
+		_chooser.showItem((GridChooserItem) item);
 	}
 
 	@Override
@@ -235,17 +238,17 @@ public final class GridChooserViewer extends AbstractTableViewer {
 
 	@Override
 	protected ColumnViewerEditor createViewerEditor() {
-		return new GridChooserViewerEditor(this, 
-				new ColumnViewerEditorActivationStrategy(this), 
+		return new GridChooserViewerEditor(this,
+				new ColumnViewerEditorActivationStrategy(this),
 				ColumnViewerEditor.DEFAULT);
 	}
 
 	@Override
 	protected ViewerRow getViewerRowFromItem(Widget item) {
 		if (_cachedRow == null) {
-			_cachedRow = new GridChooserViewerRow((GridChooserItem)item);
+			_cachedRow = new GridChooserViewerRow((GridChooserItem) item);
 		} else {
-			_cachedRow.setItem((GridChooserItem)item);
+			_cachedRow.setItem((GridChooserItem) item);
 		}
 
 		return _cachedRow;
@@ -256,7 +259,7 @@ public final class GridChooserViewer extends AbstractTableViewer {
 		final GridChooserItem[] selection = _chooser.getSelection();
 		if (selection.length == 1) {
 			final int columnCount = _chooser.getColumnCount();
-			for (int i=0; i<columnCount; i++) {
+			for (int i = 0; i < columnCount; i++) {
 				if (selection[0].getBounds(i).contains(point)) {
 					return selection[0];
 				}

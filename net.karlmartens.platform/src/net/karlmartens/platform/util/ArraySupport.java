@@ -27,10 +27,10 @@ public final class ArraySupport {
 		final BitSet set = new BitSet();
 		for (int i : first)
 			set.set(i);
-		
+
 		for (int i : second)
 			set.flip(i);
-		
+
 		return toArray(set);
 	}
 

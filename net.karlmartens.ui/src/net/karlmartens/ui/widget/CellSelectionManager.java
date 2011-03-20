@@ -29,7 +29,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
 final class CellSelectionManager {
-	
+
 	private final TimeSeriesTable _table;
 	private final CellNavigationStrategy _navigationStrategy;
 	private final TableListener _listener;
@@ -44,20 +44,20 @@ final class CellSelectionManager {
 		_itemListener = new ItemListener();
 		hookListener();
 	}
-	
+
 	public Point getFocusCell() {
 		return _focusCell;
 	}
-	
+
 	void setFocusCell(Point cell) {
 		if (cell == null || NullSafe.equals(cell, _focusCell))
 			return;
-		
+
 		final TimeSeriesTableItem oldItem = getItemAtIndex(_focusCell);
 		if (oldItem != null && !oldItem.isDisposed()) {
 			oldItem.removeDisposeListener(_itemListener);
 		}
-		
+
 		_focusCell = cell;
 		_expansionCell = cell;
 
@@ -65,15 +65,15 @@ final class CellSelectionManager {
 		if (newItem != null && !newItem.isDisposed()) {
 			newItem.addDisposeListener(_itemListener);
 		}
-		
+
 		if (newItem != null) {
 			_table.showItem(newItem);
 			_table.showColumn(_focusCell.x);
 		}
 
-		_table.setCellSelections(new Point[] { _focusCell});
+		_table.setCellSelections(new Point[] { _focusCell });
 	}
-	
+
 	void expandSelection(Point cell) {
 		if (cell == null)
 			return;
@@ -82,36 +82,35 @@ final class CellSelectionManager {
 			setFocusCell(cell);
 			return;
 		}
-		
-        final Point vFocusCell = new Point(_focusCell.x, _focusCell.y);
-        final Point vCell = new Point(cell.x, cell.y);
-        
-        final int dirX = vFocusCell.x > vCell.x ? -1 : 1;
-        final int dirY = vFocusCell.y > vCell.y ? -1 : 1;
-        final int dx = Math.abs(vFocusCell.x - vCell.x) + 1;
-        final int dy = Math.abs(vFocusCell.y - vCell.y) + 1;
-        
-		final Point[] selection = new Point[dx *dy];
+
+		final Point vFocusCell = new Point(_focusCell.x, _focusCell.y);
+		final Point vCell = new Point(cell.x, cell.y);
+
+		final int dirX = vFocusCell.x > vCell.x ? -1 : 1;
+		final int dirY = vFocusCell.y > vCell.y ? -1 : 1;
+		final int dx = Math.abs(vFocusCell.x - vCell.x) + 1;
+		final int dy = Math.abs(vFocusCell.y - vCell.y) + 1;
+
+		final Point[] selection = new Point[dx * dy];
 		int index = 0;
-		for (int y=0; y<dy; y++) {
+		for (int y = 0; y < dy; y++) {
 			final int row = vFocusCell.y;
-            vFocusCell.y += dirY;
-            vFocusCell.x = _focusCell.x;
-			for (int x=0; x<dx; x++) {
+			vFocusCell.y += dirY;
+			vFocusCell.x = _focusCell.x;
+			for (int x = 0; x < dx; x++) {
 				selection[index++] = new Point(vFocusCell.x, row);
-                vFocusCell.x += dirX;
+				vFocusCell.x += dirX;
 			}
 		}
 
 		_expansionCell = cell;
 		_table.setCellSelections(selection);
 	}
-	
-	
+
 	private TimeSeriesTableItem getItemAtIndex(Point pt) {
 		if (pt == null)
 			return null;
-		
+
 		return _table.getItem(pt.y);
 	}
 
@@ -121,92 +120,93 @@ final class CellSelectionManager {
 		_table.addListener(SWT.Selection, _listener);
 		_table.addListener(SWT.Dispose, _listener);
 	}
-	
+
 	private void handleDispose() {
 		_table.removeListener(SWT.Dispose, _listener);
 		_table.removeListener(SWT.MouseDown, _listener);
 		_table.removeListener(SWT.KeyDown, _listener);
 		_table.removeListener(SWT.Selection, _listener);
 	}
-	
+
 	private void handleMouseDown(Event e) {
 		final Point p = new Point(e.x, e.y);
 		final TimeSeriesTableItem item = _table.getItem(p);
 		if (item == null)
 			return;
-		
-		for (int i=0; i< _table.getColumnCount() + _table.getPeriodCount(); i++) {
+
+		for (int i = 0; i < _table.getColumnCount() + _table.getPeriodCount(); i++) {
 			if (_table.getBounds(item, i).contains(p)) {
 				final Point cell = new Point(i, _table.indexOf(item));
 				if ((e.stateMask & SWT.SHIFT) > 0) {
 					expandSelection(cell);
-				} else { 
+				} else {
 					setFocusCell(cell);
 				}
 				return;
 			}
 		}
 	}
-	
+
 	private void handleKeyDown(Event e) {
 		if (_navigationStrategy.isNavigationEvent(e)) {
-			final Point cell = _navigationStrategy.findSelectedCell(_table, _focusCell, e);
+			final Point cell = _navigationStrategy.findSelectedCell(_table,
+					_focusCell, e);
 			setFocusCell(cell);
 		}
-		
+
 		if (_navigationStrategy.isExpandEvent(e)) {
-			final Point cell = _navigationStrategy.findSelectedCell(_table, _expansionCell, e);
+			final Point cell = _navigationStrategy.findSelectedCell(_table,
+					_expansionCell, e);
 			expandSelection(cell);
 		}
 	}
-	
+
 	private void handleSelection(Event e) {
-		if (_focusCell == null || getItemAtIndex(_focusCell) == e.item || 
-				e.item == null || e.item.isDisposed())
+		if (_focusCell == null || getItemAtIndex(_focusCell) == e.item
+				|| e.item == null || e.item.isDisposed())
 			return;
-		
+
 		final int row = _table.indexOf((TimeSeriesTableItem) e.item);
 		setFocusCell(new Point(_focusCell.x, row));
 	}
 
 	private void handleFocusIn(Event e) {
-		if (_focusCell != null || 
-				_table.isDisposed() || 
-				_table.getItemCount() <= 0 || 
-				_table.getColumnCount() + _table.getPeriodCount() <= 0)
+		if (_focusCell != null || _table.isDisposed()
+				|| _table.getItemCount() <= 0
+				|| _table.getColumnCount() + _table.getPeriodCount() <= 0)
 			return;
-		
+
 		setFocusCell(new Point(0, 0));
 	}
-	
+
 	private final class TableListener implements Listener {
-		
+
 		@Override
 		public void handleEvent(Event event) {
-			switch(event.type) {
-				case SWT.MouseDown:
-					handleMouseDown(event);
-					break;
-					
-				case SWT.KeyDown:
-					handleKeyDown(event);
-					break;
-					
-				case SWT.Selection:
-					handleSelection(event);
-					break;
-					
-				case SWT.FocusIn:
-					handleFocusIn(event);
-					break;
-					
-				case SWT.Dispose:
-					handleDispose();
-					break;
+			switch (event.type) {
+			case SWT.MouseDown:
+				handleMouseDown(event);
+				break;
+
+			case SWT.KeyDown:
+				handleKeyDown(event);
+				break;
+
+			case SWT.Selection:
+				handleSelection(event);
+				break;
+
+			case SWT.FocusIn:
+				handleFocusIn(event);
+				break;
+
+			case SWT.Dispose:
+				handleDispose();
+				break;
 			}
 		}
 	}
-	
+
 	private final class ItemListener implements DisposeListener {
 		@Override
 		public void widgetDisposed(DisposeEvent e) {

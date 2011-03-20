@@ -38,7 +38,7 @@ final class TestBooleanEditingSupport extends EditingSupport {
 
 	@Override
 	protected CellEditor getCellEditor(Object element) {
-		return new CheckboxCellEditor((Composite)_viewer.getControl());
+		return new CheckboxCellEditor((Composite) _viewer.getControl());
 	}
 
 	@Override
@@ -48,17 +48,17 @@ final class TestBooleanEditingSupport extends EditingSupport {
 
 	@Override
 	protected Object getValue(Object element) {
-		final Object[] data = (Object[])element;
-		return (Boolean)data[_index];
+		final Object[] data = (Object[]) element;
+		return (Boolean) data[_index];
 	}
 
 	@Override
 	protected void setValue(Object element, Object value) {
-		final Object[] data = (Object[])element;
+		final Object[] data = (Object[]) element;
 		if (value instanceof Boolean) {
 			data[_index] = value;
 		} else if (value instanceof String) {
-			data[_index] = Boolean.valueOf((String)value);
+			data[_index] = Boolean.valueOf((String) value);
 		} else {
 			throw new IllegalArgumentException();
 		}

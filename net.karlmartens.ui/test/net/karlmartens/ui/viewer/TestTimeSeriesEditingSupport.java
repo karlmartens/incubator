@@ -43,7 +43,7 @@ final class TestTimeSeriesEditingSupport implements TimeSeriesEditingSupport {
 
 	@Override
 	public void setValue(Object element, int index, double value) {
-		final double[] series = (double[])((Object[])element)[_index];
+		final double[] series = (double[]) ((Object[]) element)[_index];
 		series[index] = value;
 	}
 

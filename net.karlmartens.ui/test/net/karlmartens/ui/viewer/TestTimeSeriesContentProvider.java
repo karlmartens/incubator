@@ -22,11 +22,12 @@ package net.karlmartens.ui.viewer;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.joda.time.LocalDate;
 
-final class TestTimeSeriesContentProvider extends ArrayContentProvider implements TimeSeriesContentProvider {
+final class TestTimeSeriesContentProvider extends ArrayContentProvider
+		implements TimeSeriesContentProvider {
 
 	private final LocalDate[] _dates;
 	private final int _index;
-	
+
 	public TestTimeSeriesContentProvider(LocalDate[] dates, int index) {
 		_dates = dates;
 		_index = index;
@@ -36,10 +37,10 @@ final class TestTimeSeriesContentProvider extends ArrayContentProvider implement
 	public LocalDate[] getDates() {
 		return _dates;
 	}
-	
+
 	@Override
 	public double getValue(Object element, int index) {
-		final double[] series = (double[])((Object[])element)[_index];
+		final double[] series = (double[]) ((Object[]) element)[_index];
 		return series[index];
 	}
 }

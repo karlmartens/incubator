@@ -19,7 +19,6 @@
  */
 package net.karlmartens.ui.viewer;
 
-
 import net.karlmartens.ui.widget.TimeSeriesTable;
 import net.karlmartens.ui.widget.TimeSeriesTableColumn;
 import net.karlmartens.ui.widget.TimeSeriesTableItem;
@@ -46,22 +45,23 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 	public TimeSeriesTableViewer(Composite parent) {
 		this(new TimeSeriesTable(parent));
 	}
-	
+
 	public TimeSeriesTableViewer(TimeSeriesTable control) {
-		_control = control;		
+		_control = control;
 		hookControl(control);
-	}	
-	
+	}
+
 	public void setEditingSupport(TimeSeriesEditingSupport editingSupport) {
 		_editingSupport = editingSupport;
 	}
-	
+
 	TimeSeriesEditingSupport getEditingSupport() {
 		return _editingSupport;
 	}
 
 	@Override
-	protected TimeSeriesTableViewerRow internalCreateNewRowPart(int style, int rowIndex) {
+	protected TimeSeriesTableViewerRow internalCreateNewRowPart(int style,
+			int rowIndex) {
 		final TimeSeriesTableItem item;
 		if (rowIndex >= 0) {
 			item = new TimeSeriesTableItem(_control, rowIndex);
@@ -74,7 +74,7 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 
 	@Override
 	protected int doIndexOf(Item item) {
-		return _control.indexOf((TimeSeriesTableItem)item);
+		return _control.indexOf((TimeSeriesTableItem) item);
 	}
 
 	@Override
@@ -119,14 +119,14 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 
 	@Override
 	protected void doResetItem(Item item) {
-		final TimeSeriesTableItem tableItem = (TimeSeriesTableItem)item;
+		final TimeSeriesTableItem tableItem = (TimeSeriesTableItem) item;
 		final int columnCount = Math.max(1, _control.getColumnCount());
-		for (int i=0; i<columnCount; i++) {
+		for (int i = 0; i < columnCount; i++) {
 			tableItem.setText(i, "");
 		}
-		
+
 		final int periodCount = Math.max(1, _control.getPeriodCount());
-		for (int i=0; i<periodCount; i++) {
+		for (int i = 0; i < periodCount; i++) {
 			tableItem.setValue(i, 0.0);
 		}
 	}
@@ -148,7 +148,7 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 
 	@Override
 	protected void doShowItem(Item item) {
-		_control.showItem((TimeSeriesTableItem)item);
+		_control.showItem((TimeSeriesTableItem) item);
 	}
 
 	@Override
@@ -185,20 +185,22 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 
 	@Override
 	protected TimeSeriesTableViewerEditor createViewerEditor() {
-		return new TimeSeriesTableViewerEditor(this, //
-				new TimeSeriesEditorActivationStrategy(this), 
-					ColumnViewerEditor.TABBING_HORIZONTAL | 
-					ColumnViewerEditor.TABBING_MOVE_TO_ROW_NEIGHBOR | 
-					ColumnViewerEditor.TABBING_VERTICAL | 
-					ColumnViewerEditor.KEYBOARD_ACTIVATION);
+		return new TimeSeriesTableViewerEditor(
+				this, //
+				new TimeSeriesEditorActivationStrategy(this),
+				ColumnViewerEditor.TABBING_HORIZONTAL
+						| ColumnViewerEditor.TABBING_MOVE_TO_ROW_NEIGHBOR
+						| ColumnViewerEditor.TABBING_VERTICAL
+						| ColumnViewerEditor.KEYBOARD_ACTIVATION);
 	}
 
 	@Override
 	protected TimeSeriesTableViewerRow getViewerRowFromItem(Widget item) {
 		if (_cachedRow == null) {
-			_cachedRow = new TimeSeriesTableViewerRow((TimeSeriesTableItem)item);
+			_cachedRow = new TimeSeriesTableViewerRow(
+					(TimeSeriesTableItem) item);
 		} else {
-			_cachedRow.setItem((TimeSeriesTableItem)item);
+			_cachedRow.setItem((TimeSeriesTableItem) item);
 		}
 
 		return _cachedRow;
@@ -218,7 +220,7 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 	public TimeSeriesTable getControl() {
 		return _control;
 	}
-		
+
 	@Override
 	protected void preservingSelection(Runnable updateCode) {
 		final Point[] selection = _control.getCellSelections();
@@ -228,11 +230,11 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 			_control.setCellSelections(selection);
 		}
 	}
-	
+
 	@Override
 	protected void internalRefresh(Object element, boolean updateLabels) {
 		if (updateLabels) {
-			final TimeSeriesContentProvider cp = (TimeSeriesContentProvider)getContentProvider();
+			final TimeSeriesContentProvider cp = (TimeSeriesContentProvider) getContentProvider();
 			if (cp == null)
 				throw new IllegalStateException();
 
@@ -241,23 +243,26 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 				_control.setPeriods(dates);
 
 				if (_periodColumn == null) {
-					_periodColumn = new TimeSeriesTableViewerColumn(this, _control.getColumn(_control.getColumnCount()));
+					_periodColumn = new TimeSeriesTableViewerColumn(this,
+							_control.getColumn(_control.getColumnCount()));
 					_periodColumn.setLabelProvider(new PeriodLabelProvider(cp));
-					_periodColumn.setEditingSupport(new TimeSeriesTableValueEditingSupport(this));
+					_periodColumn
+							.setEditingSupport(new TimeSeriesTableValueEditingSupport(
+									this));
 				}
 			} else {
 				_control.setPeriods(new LocalDate[] {});
 			}
 		}
-		
+
 		super.internalRefresh(element, updateLabels);
 	}
-		
+
 	@Override
 	protected void assertContentProviderType(IContentProvider provider) {
 		Assert.isTrue(provider instanceof TimeSeriesContentProvider);
 	}
-	
+
 	private final class PeriodLabelProvider extends CellLabelProvider {
 
 		private final TimeSeriesContentProvider _base;
@@ -268,9 +273,9 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 
 		@Override
 		public void update(ViewerCell cell) {
-			final int index = cell.getColumnIndex() - _control.getColumnCount();	
+			final int index = cell.getColumnIndex() - _control.getColumnCount();
 			final double value = _base.getValue(cell.getElement(), index);
-			((TimeSeriesTableItem)cell.getItem()).setValue(index, value);
+			((TimeSeriesTableItem) cell.getItem()).setValue(index, value);
 		}
 	}
 }

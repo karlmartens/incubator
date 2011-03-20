@@ -37,7 +37,7 @@ public final class GridChooserViewerEditor extends ColumnViewerEditor {
 
 	private final GridChooserViewer _viewer;
 	private final GridChooserEditor _editor;
-	
+
 	public GridChooserViewerEditor(GridChooserViewer viewer,
 			ColumnViewerEditorActivationStrategy activationStrategy, int feature) {
 		super(viewer, activationStrategy, feature);
@@ -48,10 +48,10 @@ public final class GridChooserViewerEditor extends ColumnViewerEditor {
 
 	@Override
 	protected void setEditor(Control w, Item item, int columnIndex) {
-		final GridChooserItem chooserItem = (GridChooserItem)item;
+		final GridChooserItem chooserItem = (GridChooserItem) item;
 		_editor.setEditor(w, chooserItem, columnIndex);
 	}
-	
+
 	@Override
 	protected void setLayoutData(LayoutData layoutData) {
 		_editor.grabHorizontal = layoutData.grabHorizontal;
@@ -67,15 +67,17 @@ public final class GridChooserViewerEditor extends ColumnViewerEditor {
 	@Override
 	protected void updateFocusCell(ViewerCell focusCell,
 			ColumnViewerEditorActivationEvent event) {
-		
+
 		// Nothing to do
 	}
 
-	public static void create(GridChooserViewer viewer, ColumnViewerEditorActivationStrategy activationStrategy, int feature) {
-		final GridChooserViewerEditor editor = new GridChooserViewerEditor(viewer, activationStrategy, feature);
+	public static void create(GridChooserViewer viewer,
+			ColumnViewerEditorActivationStrategy activationStrategy, int feature) {
+		final GridChooserViewerEditor editor = new GridChooserViewerEditor(
+				viewer, activationStrategy, feature);
 		viewer.setColumnViewerEditor(editor);
 	}
-	
+
 	private final ColumnViewerEditorActivationListener _listener = new ColumnViewerEditorActivationListener() {
 		@Override
 		public void beforeEditorActivated(

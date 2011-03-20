@@ -23,15 +23,17 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public final class ReflectSupport {
-	
-	public static Object invoke(String methodName, Object instance, Object... args) {
+
+	public static Object invoke(String methodName, Object instance,
+			Object... args) {
 		try {
 			final Class<?>[] argTypes = new Class[args.length];
-			for (int i=0; i<args.length; i++) {
+			for (int i = 0; i < args.length; i++) {
 				argTypes[i] = args[i].getClass().getComponentType();
 			}
-			
-			final Method method = instance.getClass().getDeclaredMethod(methodName,  argTypes);
+
+			final Method method = instance.getClass().getDeclaredMethod(
+					methodName, argTypes);
 			method.setAccessible(true);
 			return method.invoke(instance, args);
 		} catch (NoSuchMethodException e) {

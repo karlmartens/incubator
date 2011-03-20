@@ -26,9 +26,9 @@ import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.EditingSupport;
 
 class EditingSupportProxy extends EditingSupport {
-	
+
 	EditingSupport _base;
-	
+
 	EditingSupportProxy(ColumnViewer viewer) {
 		super(viewer);
 	}
@@ -42,8 +42,9 @@ class EditingSupportProxy extends EditingSupport {
 	protected boolean canEdit(Object element) {
 		if (_base == null)
 			return false;
-		
-		return Boolean.TRUE.equals(ReflectSupport.invoke("canEdit", _base, element));
+
+		return Boolean.TRUE.equals(ReflectSupport.invoke("canEdit", _base,
+				element));
 	}
 
 	@Override

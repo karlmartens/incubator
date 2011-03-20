@@ -27,18 +27,18 @@ public final class CellNavigationStrategy {
 
 	public boolean isNavigationEvent(Event event) {
 		switch (event.keyCode) {
-			case SWT.ARROW_LEFT:
-			case SWT.ARROW_RIGHT:
-			case SWT.ARROW_DOWN:
-			case SWT.ARROW_UP:
-			case SWT.HOME:
-			case SWT.END:
-			case SWT.PAGE_DOWN:
-			case SWT.PAGE_UP:
-				return (event.stateMask & SWT.SHIFT) == 0;
-	
-			case SWT.TAB:
-				return true;
+		case SWT.ARROW_LEFT:
+		case SWT.ARROW_RIGHT:
+		case SWT.ARROW_DOWN:
+		case SWT.ARROW_UP:
+		case SWT.HOME:
+		case SWT.END:
+		case SWT.PAGE_DOWN:
+		case SWT.PAGE_UP:
+			return (event.stateMask & SWT.SHIFT) == 0;
+
+		case SWT.TAB:
+			return true;
 		}
 
 		return false;
@@ -46,15 +46,15 @@ public final class CellNavigationStrategy {
 
 	public boolean isExpandEvent(Event event) {
 		switch (event.keyCode) {
-			case SWT.ARROW_LEFT:
-			case SWT.ARROW_RIGHT:
-			case SWT.ARROW_DOWN:
-			case SWT.ARROW_UP:
-			case SWT.HOME:
-			case SWT.END:
-			case SWT.PAGE_DOWN:
-			case SWT.PAGE_UP:
-				return (event.stateMask & SWT.SHIFT) > 0;
+		case SWT.ARROW_LEFT:
+		case SWT.ARROW_RIGHT:
+		case SWT.ARROW_DOWN:
+		case SWT.ARROW_UP:
+		case SWT.HOME:
+		case SWT.END:
+		case SWT.PAGE_DOWN:
+		case SWT.PAGE_UP:
+			return (event.stateMask & SWT.SHIFT) > 0;
 		}
 
 		return false;
@@ -66,69 +66,69 @@ public final class CellNavigationStrategy {
 			return null;
 
 		switch (event.keyCode) {
-			case SWT.TAB:
-				if ((event.stateMask & SWT.CTRL) == 0) {
-					if ((event.stateMask & SWT.SHIFT) == 0) {
-						return getNeighbor(table, currentSelectedCell, new Point(1,
-								0));
-					}
-	
-					return getNeighbor(table, currentSelectedCell, new Point(-1, 0));
-				}
-	
+		case SWT.TAB:
+			if ((event.stateMask & SWT.CTRL) == 0) {
 				if ((event.stateMask & SWT.SHIFT) == 0) {
-					return getNeighbor(table, currentSelectedCell, new Point(0, 1));
+					return getNeighbor(table, currentSelectedCell, new Point(1,
+							0));
 				}
-	
-				return getNeighbor(table, currentSelectedCell, new Point(0, -1));
-	
-			case SWT.ARROW_LEFT:
-				if ((event.stateMask & SWT.CTRL) > 0) {
-					return doPageLeft(table, currentSelectedCell, event);
-				}
-	
-				if ((event.stateMask & SWT.MOD1) > 0) {
-					return doHome(table, currentSelectedCell, event);
-				}
-	
+
 				return getNeighbor(table, currentSelectedCell, new Point(-1, 0));
-	
-			case SWT.ARROW_RIGHT:
-				if ((event.stateMask & SWT.CTRL) > 0) {
-					return doPageRight(table, currentSelectedCell, event);
-				}
-	
-				if ((event.stateMask & SWT.MOD1) > 0) {
-					return doEnd(table, currentSelectedCell, event);
-				}
-	
-				return getNeighbor(table, currentSelectedCell, new Point(1, 0));
-	
-			case SWT.ARROW_UP:
-				if ((event.stateMask & SWT.MOD1) > 0) {
-					return doPageUp(table, currentSelectedCell, event);
-				}
-	
-				return getNeighbor(table, currentSelectedCell, new Point(0, -1));
-	
-			case SWT.ARROW_DOWN:
-				if ((event.stateMask & SWT.MOD1) > 0) {
-					return doPageDown(table, currentSelectedCell, event);
-				}
-	
+			}
+
+			if ((event.stateMask & SWT.SHIFT) == 0) {
 				return getNeighbor(table, currentSelectedCell, new Point(0, 1));
-	
-			case SWT.HOME:
+			}
+
+			return getNeighbor(table, currentSelectedCell, new Point(0, -1));
+
+		case SWT.ARROW_LEFT:
+			if ((event.stateMask & SWT.CTRL) > 0) {
+				return doPageLeft(table, currentSelectedCell, event);
+			}
+
+			if ((event.stateMask & SWT.MOD1) > 0) {
 				return doHome(table, currentSelectedCell, event);
-	
-			case SWT.END:
+			}
+
+			return getNeighbor(table, currentSelectedCell, new Point(-1, 0));
+
+		case SWT.ARROW_RIGHT:
+			if ((event.stateMask & SWT.CTRL) > 0) {
+				return doPageRight(table, currentSelectedCell, event);
+			}
+
+			if ((event.stateMask & SWT.MOD1) > 0) {
 				return doEnd(table, currentSelectedCell, event);
-	
-			case SWT.PAGE_UP:
+			}
+
+			return getNeighbor(table, currentSelectedCell, new Point(1, 0));
+
+		case SWT.ARROW_UP:
+			if ((event.stateMask & SWT.MOD1) > 0) {
 				return doPageUp(table, currentSelectedCell, event);
-	
-			case SWT.PAGE_DOWN:
+			}
+
+			return getNeighbor(table, currentSelectedCell, new Point(0, -1));
+
+		case SWT.ARROW_DOWN:
+			if ((event.stateMask & SWT.MOD1) > 0) {
 				return doPageDown(table, currentSelectedCell, event);
+			}
+
+			return getNeighbor(table, currentSelectedCell, new Point(0, 1));
+
+		case SWT.HOME:
+			return doHome(table, currentSelectedCell, event);
+
+		case SWT.END:
+			return doEnd(table, currentSelectedCell, event);
+
+		case SWT.PAGE_UP:
+			return doPageUp(table, currentSelectedCell, event);
+
+		case SWT.PAGE_DOWN:
+			return doPageDown(table, currentSelectedCell, event);
 		}
 
 		return null;

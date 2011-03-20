@@ -26,7 +26,7 @@ import net.karlmartens.ui.widget.TimeSeriesTable;
 import org.eclipse.jface.action.Action;
 
 public final class ResizeAllColumnsAction extends Action {
-	
+
 	private final TimeSeriesTable _table;
 	private final ResizeColumnAction _delegateAction;
 
@@ -34,13 +34,14 @@ public final class ResizeAllColumnsAction extends Action {
 		_table = table;
 		_delegateAction = new ResizeColumnAction(_table, -1);
 
-		final ResourceBundle bundle = ResourceBundle.getBundle("net.karlmartens.ui.locale.messages"); 
+		final ResourceBundle bundle = ResourceBundle
+				.getBundle("net.karlmartens.ui.locale.messages");
 		setText(bundle.getString("ResizeAllColumnsAction.TEXT"));
 	}
-	
+
 	@Override
 	public void run() {
-		for (int i=0; i<_table.getColumnCount() + _table.getPeriodCount(); i++) {
+		for (int i = 0; i < _table.getColumnCount() + _table.getPeriodCount(); i++) {
 			_delegateAction.setColumnIndex(i);
 			_delegateAction.run();
 		}

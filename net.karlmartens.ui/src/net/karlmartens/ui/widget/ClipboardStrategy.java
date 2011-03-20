@@ -32,28 +32,28 @@ public class ClipboardStrategy {
 	public boolean isClipboardEvent(Event e) {
 		if ((e.stateMask & SWT.MOD1) == 0)
 			return false;
-		
-		return 'c' == e.keyCode // 
-			|| 'v' == e.keyCode //
-			|| 'x' == e.keyCode;
+
+		return 'c' == e.keyCode //
+				|| 'v' == e.keyCode //
+				|| 'x' == e.keyCode;
 	}
 
 	public int getOperation(Event e) {
 		if ((e.stateMask & SWT.MOD1) == 0)
 			return OPERATION_NONE;
 
-		switch(e.keyCode) {
-			case 'c':
-				return OPERATION_COPY;
-				
-			case 'v':
-				return OPERATION_PASTE;
-				
-			case 'x':
-				return OPERATION_CUT;
+		switch (e.keyCode) {
+		case 'c':
+			return OPERATION_COPY;
+
+		case 'v':
+			return OPERATION_PASTE;
+
+		case 'x':
+			return OPERATION_CUT;
 		}
-		
+
 		return OPERATION_NONE;
 	}
-	
+
 }
