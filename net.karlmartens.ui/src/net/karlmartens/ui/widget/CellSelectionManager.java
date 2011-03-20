@@ -37,10 +37,9 @@ final class CellSelectionManager {
 	private Point _focusCell;
 	private Point _expansionCell;
 
-	public CellSelectionManager(TimeSeriesTable table, 
-			CellNavigationStrategy navigationStrategy) {
+	public CellSelectionManager(TimeSeriesTable table) {
 		_table = table;
-		_navigationStrategy = navigationStrategy;
+		_navigationStrategy = new CellNavigationStrategy();
 		_listener = new TableListener();
 		_itemListener = new ItemListener();
 		hookListener();
@@ -84,14 +83,23 @@ final class CellSelectionManager {
 			return;
 		}
 		
-		final int dirX = _focusCell.x > cell.x ? -1 : 1;
-		final int dirY = _focusCell.y > cell.y ? -1 : 1;
-		final int dx = Math.abs(_focusCell.x - cell.x) + 1;
-		final int dy = Math.abs(_focusCell.y - cell.y) + 1;
+        final Point vFocusCell = new Point(_focusCell.x, _focusCell.y);
+        final Point vCell = new Point(cell.x, cell.y);
+        
+        final int dirX = vFocusCell.x > vCell.x ? -1 : 1;
+        final int dirY = vFocusCell.y > vCell.y ? -1 : 1;
+        final int dx = Math.abs(vFocusCell.x - vCell.x) + 1;
+        final int dy = Math.abs(vFocusCell.y - vCell.y) + 1;
+        
 		final Point[] selection = new Point[dx *dy];
+		int index = 0;
 		for (int y=0; y<dy; y++) {
+			final int row = vFocusCell.y;
+            vFocusCell.y += dirY;
+            vFocusCell.x = _focusCell.x;
 			for (int x=0; x<dx; x++) {
-				selection[y*dx+x] = new Point(_focusCell.x + (x * dirX), _focusCell.y + (y * dirY));
+				selection[index++] = new Point(vFocusCell.x, row);
+                vFocusCell.x += dirX;
 			}
 		}
 
