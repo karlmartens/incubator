@@ -31,12 +31,7 @@ public final class ArraySupport {
 		for (int i : second)
 			set.flip(i);
 		
-		final int[] result = new int[set.cardinality()];
-		int i=0;
-		for (int value=set.nextSetBit(0); value>=0; value=set.nextSetBit(value+1))
-			result[i++] = value;
-		
-		return result;
+		return toArray(set);
 	}
 
 	public static void swap(long[] arr, int firstIndex, int secondIndex) {
@@ -91,5 +86,14 @@ public final class ArraySupport {
 		final Object t = arr[firstIndex];
 		arr[firstIndex] = arr[secondIndex];
 		arr[secondIndex] = t;
+	}
+
+	public static int[] toArray(BitSet set) {
+		final int[] a = new int[set.cardinality()];
+		int index = 0;
+		for (int i = set.nextSetBit(0); i >= 0; i = set.nextSetBit(i + 1)) {
+			a[index++] = i;
+		}
+		return a;
 	}
 }

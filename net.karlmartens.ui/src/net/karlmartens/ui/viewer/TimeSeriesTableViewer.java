@@ -28,7 +28,6 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.viewers.AbstractTableViewer;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ColumnViewerEditor;
-import org.eclipse.jface.viewers.ColumnViewerEditorActivationStrategy;
 import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Point;
@@ -187,7 +186,7 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 	@Override
 	protected TimeSeriesTableViewerEditor createViewerEditor() {
 		return new TimeSeriesTableViewerEditor(this, //
-				new ColumnViewerEditorActivationStrategy(this), 
+				new TimeSeriesEditorActivationStrategy(this), 
 					ColumnViewerEditor.TABBING_HORIZONTAL | 
 					ColumnViewerEditor.TABBING_MOVE_TO_ROW_NEIGHBOR | 
 					ColumnViewerEditor.TABBING_VERTICAL | 

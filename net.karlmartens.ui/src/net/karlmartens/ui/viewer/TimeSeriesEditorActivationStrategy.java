@@ -24,6 +24,7 @@ import net.karlmartens.ui.widget.ClipboardStrategy;
 
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationEvent;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationStrategy;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Event;
 
 final class TimeSeriesEditorActivationStrategy extends
@@ -39,8 +40,7 @@ final class TimeSeriesEditorActivationStrategy extends
 	@Override
 	protected boolean isEditorActivationEvent(
 			ColumnViewerEditorActivationEvent event) {
-		if (event.eventType != ColumnViewerEditorActivationEvent.TRAVERSAL
-				&& event.eventType != ColumnViewerEditorActivationEvent.MOUSE_DOUBLE_CLICK_SELECTION
+		if (event.eventType != ColumnViewerEditorActivationEvent.MOUSE_DOUBLE_CLICK_SELECTION
 				&& event.eventType != ColumnViewerEditorActivationEvent.KEY_PRESSED
 				&& event.eventType != ColumnViewerEditorActivationEvent.PROGRAMMATIC)
 			return false;
@@ -48,7 +48,8 @@ final class TimeSeriesEditorActivationStrategy extends
 		if (event.eventType == ColumnViewerEditorActivationEvent.KEY_PRESSED) {
 			final Event e = new Event();
 			e.keyCode = event.keyCode;
-			if (_clipboardStrategy.isClipboardEvent(e) ||
+			if (isNonPrintable(e) ||
+					_clipboardStrategy.isClipboardEvent(e) ||
 					_navigationStrategy.isNavigationEvent(e) ||
 					_navigationStrategy.isExpandEvent(e)) {
 				return false;
@@ -56,5 +57,21 @@ final class TimeSeriesEditorActivationStrategy extends
 		}
 
 		return true;
+	}
+	
+	private boolean isNonPrintable(Event e) {
+		switch (e.keyCode) {
+			case SWT.SHIFT:
+			case SWT.COMMAND:
+			case SWT.CONTROL:
+			case SWT.ALT:
+			case SWT.CAPS_LOCK:
+			case SWT.NUM_LOCK:
+			case SWT.SCROLL_LOCK:
+			case SWT.ESC:
+				return true;
+		}
+		
+		return false;
 	}
 }
