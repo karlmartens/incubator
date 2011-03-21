@@ -101,6 +101,14 @@ public final class TimeSeriesTableComparator {
 		public int compare(Viewer viewer, Object e1, Object e2) {
 			final TimeSeriesTableViewer v = (TimeSeriesTableViewer) viewer;
 			if (_columnIndex != null) {
+				if (_columnIndex.intValue() < v.getControl().getColumnCount()) {
+					final ILabelProvider lp = (ILabelProvider) v
+							.getLabelProvider(_columnIndex.intValue());
+					final String s1 = lp.getText(e1);
+					final String s2 = lp.getText(e2);
+					return (_ascending ? 1 : -1) * _comparator.compare(s1, s2);
+				}
+
 				final TimeSeriesContentProvider cp = (TimeSeriesContentProvider) v
 						.getContentProvider();
 				final int periodIndex = _columnIndex
