@@ -35,71 +35,64 @@ import org.eclipse.swt.widgets.Item;
 
 public final class GridChooserViewerEditor extends ColumnViewerEditor {
 
-	private final GridChooserViewer _viewer;
-	private final GridChooserEditor _editor;
+  private final GridChooserViewer _viewer;
+  private final GridChooserEditor _editor;
 
-	public GridChooserViewerEditor(GridChooserViewer viewer,
-			ColumnViewerEditorActivationStrategy activationStrategy, int feature) {
-		super(viewer, activationStrategy, feature);
-		_viewer = viewer;
-		_editor = new GridChooserEditor(viewer.getControl());
-		addEditorActivationListener(_listener);
-	}
+  public GridChooserViewerEditor(GridChooserViewer viewer, ColumnViewerEditorActivationStrategy activationStrategy, int feature) {
+    super(viewer, activationStrategy, feature);
+    _viewer = viewer;
+    _editor = new GridChooserEditor(viewer.getControl());
+    addEditorActivationListener(_listener);
+  }
 
-	@Override
-	protected void setEditor(Control w, Item item, int columnIndex) {
-		final GridChooserItem chooserItem = (GridChooserItem) item;
-		_editor.setEditor(w, chooserItem, columnIndex);
-	}
+  @Override
+  protected void setEditor(Control w, Item item, int columnIndex) {
+    final GridChooserItem chooserItem = (GridChooserItem) item;
+    _editor.setEditor(w, chooserItem, columnIndex);
+  }
 
-	@Override
-	protected void setLayoutData(LayoutData layoutData) {
-		_editor.grabHorizontal = layoutData.grabHorizontal;
-		_editor.horizontalAlignment = layoutData.horizontalAlignment;
-		_editor.minimumWidth = layoutData.minimumWidth;
-		_editor.verticalAlignment = layoutData.verticalAlignment;
+  @Override
+  protected void setLayoutData(LayoutData layoutData) {
+    _editor.grabHorizontal = layoutData.grabHorizontal;
+    _editor.horizontalAlignment = layoutData.horizontalAlignment;
+    _editor.minimumWidth = layoutData.minimumWidth;
+    _editor.verticalAlignment = layoutData.verticalAlignment;
 
-		if (layoutData.minimumHeight != SWT.DEFAULT) {
-			_editor.minimumHeight = layoutData.minimumHeight;
-		}
-	}
+    if (layoutData.minimumHeight != SWT.DEFAULT) {
+      _editor.minimumHeight = layoutData.minimumHeight;
+    }
+  }
 
-	@Override
-	protected void updateFocusCell(ViewerCell focusCell,
-			ColumnViewerEditorActivationEvent event) {
+  @Override
+  protected void updateFocusCell(ViewerCell focusCell, ColumnViewerEditorActivationEvent event) {
 
-		// Nothing to do
-	}
+    // Nothing to do
+  }
 
-	public static void create(GridChooserViewer viewer,
-			ColumnViewerEditorActivationStrategy activationStrategy, int feature) {
-		final GridChooserViewerEditor editor = new GridChooserViewerEditor(
-				viewer, activationStrategy, feature);
-		viewer.setColumnViewerEditor(editor);
-	}
+  public static void create(GridChooserViewer viewer, ColumnViewerEditorActivationStrategy activationStrategy, int feature) {
+    final GridChooserViewerEditor editor = new GridChooserViewerEditor(viewer, activationStrategy, feature);
+    viewer.setColumnViewerEditor(editor);
+  }
 
-	private final ColumnViewerEditorActivationListener _listener = new ColumnViewerEditorActivationListener() {
-		@Override
-		public void beforeEditorActivated(
-				ColumnViewerEditorActivationEvent event) {
-			// nothing to do
-		}
+  private final ColumnViewerEditorActivationListener _listener = new ColumnViewerEditorActivationListener() {
+    @Override
+    public void beforeEditorActivated(ColumnViewerEditorActivationEvent event) {
+      // nothing to do
+    }
 
-		@Override
-		public void afterEditorActivated(ColumnViewerEditorActivationEvent event) {
-			// nothing to do
-		}
+    @Override
+    public void afterEditorActivated(ColumnViewerEditorActivationEvent event) {
+      // nothing to do
+    }
 
-		@Override
-		public void beforeEditorDeactivated(
-				ColumnViewerEditorDeactivationEvent event) {
-			// Nothing to do
-		}
+    @Override
+    public void beforeEditorDeactivated(ColumnViewerEditorDeactivationEvent event) {
+      // Nothing to do
+    }
 
-		@Override
-		public void afterEditorDeactivated(
-				ColumnViewerEditorDeactivationEvent event) {
-			_viewer.refresh();
-		}
-	};
+    @Override
+    public void afterEditorDeactivated(ColumnViewerEditorDeactivationEvent event) {
+      _viewer.refresh();
+    }
+  };
 }

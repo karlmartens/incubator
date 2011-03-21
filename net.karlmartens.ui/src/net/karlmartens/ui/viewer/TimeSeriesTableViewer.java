@@ -39,260 +39,250 @@ import org.joda.time.LocalDate;
 
 public final class TimeSeriesTableViewer extends AbstractTableViewer {
 
-	private final TimeSeriesTable _control;
-	private TimeSeriesEditingSupport _editingSupport;
-	private TimeSeriesTableViewerRow _cachedRow;
-	private TimeSeriesTableViewerColumn _periodColumn;
+  private final TimeSeriesTable _control;
+  private TimeSeriesEditingSupport _editingSupport;
+  private TimeSeriesTableViewerRow _cachedRow;
+  private TimeSeriesTableViewerColumn _periodColumn;
 
-	public TimeSeriesTableViewer(Composite parent) {
-		this(new TimeSeriesTable(parent));
-	}
+  public TimeSeriesTableViewer(Composite parent) {
+    this(new TimeSeriesTable(parent));
+  }
 
-	public TimeSeriesTableViewer(TimeSeriesTable control) {
-		_control = control;
-		hookControl(control);
-	}
+  public TimeSeriesTableViewer(TimeSeriesTable control) {
+    _control = control;
+    hookControl(control);
+  }
 
-	public void setEditingSupport(TimeSeriesEditingSupport editingSupport) {
-		_editingSupport = editingSupport;
-	}
+  public void setEditingSupport(TimeSeriesEditingSupport editingSupport) {
+    _editingSupport = editingSupport;
+  }
 
-	TimeSeriesEditingSupport getEditingSupport() {
-		return _editingSupport;
-	}
+  TimeSeriesEditingSupport getEditingSupport() {
+    return _editingSupport;
+  }
 
-	@Override
-	protected TimeSeriesTableViewerRow internalCreateNewRowPart(int style,
-			int rowIndex) {
-		final TimeSeriesTableItem item;
-		if (rowIndex >= 0) {
-			item = new TimeSeriesTableItem(_control, rowIndex);
-		} else {
-			item = new TimeSeriesTableItem(_control);
-		}
+  @Override
+  protected TimeSeriesTableViewerRow internalCreateNewRowPart(int style, int rowIndex) {
+    final TimeSeriesTableItem item;
+    if (rowIndex >= 0) {
+      item = new TimeSeriesTableItem(_control, rowIndex);
+    } else {
+      item = new TimeSeriesTableItem(_control);
+    }
 
-		return getViewerRowFromItem(item);
-	}
+    return getViewerRowFromItem(item);
+  }
 
-	@Override
-	protected int doIndexOf(Item item) {
-		return _control.indexOf((TimeSeriesTableItem) item);
-	}
+  @Override
+  protected int doIndexOf(Item item) {
+    return _control.indexOf((TimeSeriesTableItem) item);
+  }
 
-	@Override
-	protected int doGetItemCount() {
-		return _control.getItemCount();
-	}
+  @Override
+  protected int doGetItemCount() {
+    return _control.getItemCount();
+  }
 
-	@Override
-	protected void doSetItemCount(int count) {
-		_control.setItemCount(count);
-	}
+  @Override
+  protected void doSetItemCount(int count) {
+    _control.setItemCount(count);
+  }
 
-	@Override
-	protected TimeSeriesTableItem[] doGetItems() {
-		return _control.getItems();
-	}
+  @Override
+  protected TimeSeriesTableItem[] doGetItems() {
+    return _control.getItems();
+  }
 
-	@Override
-	protected TimeSeriesTableColumn doGetColumn(int index) {
-		return _control.getColumn(index);
-	}
+  @Override
+  protected TimeSeriesTableColumn doGetColumn(int index) {
+    return _control.getColumn(index);
+  }
 
-	@Override
-	protected TimeSeriesTableItem doGetItem(int index) {
-		return _control.getItem(index);
-	}
+  @Override
+  protected TimeSeriesTableItem doGetItem(int index) {
+    return _control.getItem(index);
+  }
 
-	@Override
-	protected TimeSeriesTableItem[] doGetSelection() {
-		return _control.getSelection();
-	}
+  @Override
+  protected TimeSeriesTableItem[] doGetSelection() {
+    return _control.getSelection();
+  }
 
-	@Override
-	protected int[] doGetSelectionIndices() {
-		return _control.getSelectionIndices();
-	}
+  @Override
+  protected int[] doGetSelectionIndices() {
+    return _control.getSelectionIndices();
+  }
 
-	@Override
-	protected void doClearAll() {
-		_control.clearAll();
-	}
+  @Override
+  protected void doClearAll() {
+    _control.clearAll();
+  }
 
-	@Override
-	protected void doResetItem(Item item) {
-		final TimeSeriesTableItem tableItem = (TimeSeriesTableItem) item;
-		final int columnCount = Math.max(1, _control.getColumnCount());
-		for (int i = 0; i < columnCount; i++) {
-			tableItem.setText(i, "");
-		}
+  @Override
+  protected void doResetItem(Item item) {
+    final TimeSeriesTableItem tableItem = (TimeSeriesTableItem) item;
+    final int columnCount = Math.max(1, _control.getColumnCount());
+    for (int i = 0; i < columnCount; i++) {
+      tableItem.setText(i, "");
+    }
 
-		final int periodCount = Math.max(1, _control.getPeriodCount());
-		for (int i = 0; i < periodCount; i++) {
-			tableItem.setValue(i, 0.0);
-		}
-	}
+    final int periodCount = Math.max(1, _control.getPeriodCount());
+    for (int i = 0; i < periodCount; i++) {
+      tableItem.setValue(i, 0.0);
+    }
+  }
 
-	@Override
-	protected void doRemove(int start, int end) {
-		_control.remove(start, end);
-	}
+  @Override
+  protected void doRemove(int start, int end) {
+    _control.remove(start, end);
+  }
 
-	@Override
-	protected void doRemoveAll() {
-		_control.removeAll();
-	}
+  @Override
+  protected void doRemoveAll() {
+    _control.removeAll();
+  }
 
-	@Override
-	protected void doRemove(int[] indices) {
-		_control.remove(indices);
-	}
+  @Override
+  protected void doRemove(int[] indices) {
+    _control.remove(indices);
+  }
 
-	@Override
-	protected void doShowItem(Item item) {
-		_control.showItem((TimeSeriesTableItem) item);
-	}
+  @Override
+  protected void doShowItem(Item item) {
+    _control.showItem((TimeSeriesTableItem) item);
+  }
 
-	@Override
-	protected void doDeselectAll() {
-		_control.deselectAll();
-	}
+  @Override
+  protected void doDeselectAll() {
+    _control.deselectAll();
+  }
 
-	@Override
-	protected void doSetSelection(Item[] items) {
-		final TimeSeriesTableItem[] tableItems = new TimeSeriesTableItem[items.length];
-		System.arraycopy(items, 0, tableItems, 0, tableItems.length);
-		_control.setSelection(tableItems);
-	}
+  @Override
+  protected void doSetSelection(Item[] items) {
+    final TimeSeriesTableItem[] tableItems = new TimeSeriesTableItem[items.length];
+    System.arraycopy(items, 0, tableItems, 0, tableItems.length);
+    _control.setSelection(tableItems);
+  }
 
-	@Override
-	protected void doShowSelection() {
-		_control.showSelection();
-	}
+  @Override
+  protected void doShowSelection() {
+    _control.showSelection();
+  }
 
-	@Override
-	protected void doSetSelection(int[] indices) {
-		_control.setSelection(indices);
-	}
+  @Override
+  protected void doSetSelection(int[] indices) {
+    _control.setSelection(indices);
+  }
 
-	@Override
-	protected void doClear(int index) {
-		_control.clear(index);
-	}
+  @Override
+  protected void doClear(int index) {
+    _control.clear(index);
+  }
 
-	@Override
-	protected void doSelect(int[] indices) {
-		_control.select(indices);
-	}
+  @Override
+  protected void doSelect(int[] indices) {
+    _control.select(indices);
+  }
 
-	@Override
-	protected TimeSeriesTableViewerEditor createViewerEditor() {
-		return new TimeSeriesTableViewerEditor(
-				this, //
-				new TimeSeriesEditorActivationStrategy(this),
-				ColumnViewerEditor.TABBING_HORIZONTAL
-						| ColumnViewerEditor.TABBING_MOVE_TO_ROW_NEIGHBOR
-						| ColumnViewerEditor.TABBING_VERTICAL
-						| ColumnViewerEditor.KEYBOARD_ACTIVATION);
-	}
+  @Override
+  protected TimeSeriesTableViewerEditor createViewerEditor() {
+    return new TimeSeriesTableViewerEditor(this, //
+        new TimeSeriesEditorActivationStrategy(this), ColumnViewerEditor.TABBING_HORIZONTAL | ColumnViewerEditor.TABBING_MOVE_TO_ROW_NEIGHBOR
+            | ColumnViewerEditor.TABBING_VERTICAL | ColumnViewerEditor.KEYBOARD_ACTIVATION);
+  }
 
-	@Override
-	protected TimeSeriesTableViewerRow getViewerRowFromItem(Widget item) {
-		if (_cachedRow == null) {
-			_cachedRow = new TimeSeriesTableViewerRow(
-					(TimeSeriesTableItem) item);
-		} else {
-			_cachedRow.setItem((TimeSeriesTableItem) item);
-		}
+  @Override
+  protected TimeSeriesTableViewerRow getViewerRowFromItem(Widget item) {
+    if (_cachedRow == null) {
+      _cachedRow = new TimeSeriesTableViewerRow((TimeSeriesTableItem) item);
+    } else {
+      _cachedRow.setItem((TimeSeriesTableItem) item);
+    }
 
-		return _cachedRow;
-	}
+    return _cachedRow;
+  }
 
-	@Override
-	protected TimeSeriesTableItem getItemAt(Point point) {
-		return _control.getItem(point);
-	}
+  @Override
+  protected TimeSeriesTableItem getItemAt(Point point) {
+    return _control.getItem(point);
+  }
 
-	@Override
-	protected int doGetColumnCount() {
-		return _control.getColumnCount() + _control.getPeriodCount();
-	}
+  @Override
+  protected int doGetColumnCount() {
+    return _control.getColumnCount() + _control.getPeriodCount();
+  }
 
-	@Override
-	public TimeSeriesTable getControl() {
-		return _control;
-	}
+  @Override
+  public TimeSeriesTable getControl() {
+    return _control;
+  }
 
-	@Override
-	protected void preservingSelection(Runnable updateCode) {
-		final Point[] selection = _control.getCellSelections();
-		try {
-			updateCode.run();
-		} finally {
+  @Override
+  protected void preservingSelection(Runnable updateCode) {
+    final Point[] selection = _control.getCellSelections();
+    try {
+      updateCode.run();
+    } finally {
 
-			final int rowCount = doGetItemCount();
-			final int columnCount = doGetColumnCount();
+      final int rowCount = doGetItemCount();
+      final int columnCount = doGetColumnCount();
 
-			final Point[] s = new Point[selection.length];
-			int index = 0;
-			for (int i = 0; i < selection.length; i++) {
-				final Point pt = selection[i];
-				if (pt.x >= 0 && pt.x < columnCount && pt.y >= 0
-						&& pt.y < rowCount) {
-					s[index++] = pt;
-				}
-			}
+      final Point[] s = new Point[selection.length];
+      int index = 0;
+      for (int i = 0; i < selection.length; i++) {
+        final Point pt = selection[i];
+        if (pt.x >= 0 && pt.x < columnCount && pt.y >= 0 && pt.y < rowCount) {
+          s[index++] = pt;
+        }
+      }
 
-			final Point[] newSelection = Arrays.copyOf(s, index);
-			_control.setCellSelections(newSelection);
-		}
-	}
+      final Point[] newSelection = Arrays.copyOf(s, index);
+      _control.setCellSelections(newSelection);
+    }
+  }
 
-	@Override
-	protected void internalRefresh(Object element, boolean updateLabels) {
-		if (updateLabels) {
-			final TimeSeriesContentProvider cp = (TimeSeriesContentProvider) getContentProvider();
-			if (cp == null)
-				throw new IllegalStateException();
+  @Override
+  protected void internalRefresh(Object element, boolean updateLabels) {
+    if (updateLabels) {
+      final TimeSeriesContentProvider cp = (TimeSeriesContentProvider) getContentProvider();
+      if (cp == null)
+        throw new IllegalStateException();
 
-			final LocalDate[] dates = cp.getDates();
-			if (dates != null) {
-				_control.setPeriods(dates);
+      final LocalDate[] dates = cp.getDates();
+      if (dates != null) {
+        _control.setPeriods(dates);
 
-				if (_periodColumn == null) {
-					_periodColumn = new TimeSeriesTableViewerColumn(this,
-							_control.getColumn(_control.getColumnCount()));
-					_periodColumn.setLabelProvider(new PeriodLabelProvider(cp));
-					_periodColumn
-							.setEditingSupport(new TimeSeriesTableValueEditingSupport(
-									this));
-				}
-			} else {
-				_control.setPeriods(new LocalDate[] {});
-			}
-		}
+        if (_periodColumn == null) {
+          _periodColumn = new TimeSeriesTableViewerColumn(this, _control.getColumn(_control.getColumnCount()));
+          _periodColumn.setLabelProvider(new PeriodLabelProvider(cp));
+          _periodColumn.setEditingSupport(new TimeSeriesTableValueEditingSupport(this));
+        }
+      } else {
+        _control.setPeriods(new LocalDate[] {});
+      }
+    }
 
-		super.internalRefresh(element, updateLabels);
-	}
+    super.internalRefresh(element, updateLabels);
+  }
 
-	@Override
-	protected void assertContentProviderType(IContentProvider provider) {
-		Assert.isTrue(provider instanceof TimeSeriesContentProvider);
-	}
+  @Override
+  protected void assertContentProviderType(IContentProvider provider) {
+    Assert.isTrue(provider instanceof TimeSeriesContentProvider);
+  }
 
-	private final class PeriodLabelProvider extends CellLabelProvider {
+  private final class PeriodLabelProvider extends CellLabelProvider {
 
-		private final TimeSeriesContentProvider _base;
+    private final TimeSeriesContentProvider _base;
 
-		public PeriodLabelProvider(TimeSeriesContentProvider base) {
-			_base = base;
-		}
+    public PeriodLabelProvider(TimeSeriesContentProvider base) {
+      _base = base;
+    }
 
-		@Override
-		public void update(ViewerCell cell) {
-			final int index = cell.getColumnIndex() - _control.getColumnCount();
-			final double value = _base.getValue(cell.getElement(), index);
-			((TimeSeriesTableItem) cell.getItem()).setValue(index, value);
-		}
-	}
+    @Override
+    public void update(ViewerCell cell) {
+      final int index = cell.getColumnIndex() - _control.getColumnCount();
+      final double value = _base.getValue(cell.getElement(), index);
+      ((TimeSeriesTableItem) cell.getItem()).setValue(index, value);
+    }
+  }
 }

@@ -24,36 +24,36 @@ import org.eclipse.swt.widgets.Event;
 
 public class ClipboardStrategy {
 
-	public static final int OPERATION_NONE = 0;
-	public static final int OPERATION_COPY = 1;
-	public static final int OPERATION_CUT = 2;
-	public static final int OPERATION_PASTE = 4;
+  public static final int OPERATION_NONE = 0;
+  public static final int OPERATION_COPY = 1;
+  public static final int OPERATION_CUT = 2;
+  public static final int OPERATION_PASTE = 4;
 
-	public boolean isClipboardEvent(Event e) {
-		if ((e.stateMask & SWT.MOD1) == 0)
-			return false;
+  public boolean isClipboardEvent(Event e) {
+    if ((e.stateMask & SWT.MOD1) == 0)
+      return false;
 
-		return 'c' == e.keyCode //
-				|| 'v' == e.keyCode //
-				|| 'x' == e.keyCode;
-	}
+    return 'c' == e.keyCode //
+        || 'v' == e.keyCode //
+        || 'x' == e.keyCode;
+  }
 
-	public int getOperation(Event e) {
-		if ((e.stateMask & SWT.MOD1) == 0)
-			return OPERATION_NONE;
+  public int getOperation(Event e) {
+    if ((e.stateMask & SWT.MOD1) == 0)
+      return OPERATION_NONE;
 
-		switch (e.keyCode) {
-		case 'c':
-			return OPERATION_COPY;
+    switch (e.keyCode) {
+      case 'c':
+        return OPERATION_COPY;
 
-		case 'v':
-			return OPERATION_PASTE;
+      case 'v':
+        return OPERATION_PASTE;
 
-		case 'x':
-			return OPERATION_CUT;
-		}
+      case 'x':
+        return OPERATION_CUT;
+    }
 
-		return OPERATION_NONE;
-	}
+    return OPERATION_NONE;
+  }
 
 }

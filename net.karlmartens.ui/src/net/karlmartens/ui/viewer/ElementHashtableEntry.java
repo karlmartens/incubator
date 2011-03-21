@@ -23,34 +23,34 @@ import org.eclipse.jface.viewers.IElementComparer;
 
 final class ElementHashtableEntry {
 
-	private final Object _element;
-	private final IElementComparer _comparer;
+  private final Object _element;
+  private final IElementComparer _comparer;
 
-	ElementHashtableEntry(Object element, IElementComparer comparer) {
-		if (element == null)
-			throw new NullPointerException();
+  ElementHashtableEntry(Object element, IElementComparer comparer) {
+    if (element == null)
+      throw new NullPointerException();
 
-		_element = element;
-		_comparer = comparer;
-	}
+    _element = element;
+    _comparer = comparer;
+  }
 
-	public Object getElement() {
-		return _element;
-	}
+  public Object getElement() {
+    return _element;
+  }
 
-	@Override
-	public int hashCode() {
-		if (_comparer != null)
-			return _comparer.hashCode(_element);
+  @Override
+  public int hashCode() {
+    if (_comparer != null)
+      return _comparer.hashCode(_element);
 
-		return _element.hashCode();
-	}
+    return _element.hashCode();
+  }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (_comparer != null)
-			return _comparer.equals(obj);
+  @Override
+  public boolean equals(Object obj) {
+    if (_comparer != null)
+      return _comparer.equals(obj);
 
-		return _element.equals(obj);
-	}
+    return _element.equals(obj);
+  }
 }

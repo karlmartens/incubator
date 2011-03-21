@@ -29,49 +29,48 @@ import net.karlmartens.ui.viewer.TimeSeriesTableViewer;
 
 public final class ViewerCellSelectionManager {
 
-	private final TimeSeriesTableViewer _viewer;
-	private final CellSelectionManager _manager;
+  private final TimeSeriesTableViewer _viewer;
+  private final CellSelectionManager _manager;
 
-	public ViewerCellSelectionManager(TimeSeriesTableViewer viewer) {
-		_viewer = viewer;
-		_manager = _viewer.getControl().getCellSelectionManager();
-		viewer.addSelectionChangedListener(_listener);
-		viewer.getControl().addDisposeListener(_listener);
-	}
+  public ViewerCellSelectionManager(TimeSeriesTableViewer viewer) {
+    _viewer = viewer;
+    _manager = _viewer.getControl().getCellSelectionManager();
+    viewer.addSelectionChangedListener(_listener);
+    viewer.getControl().addDisposeListener(_listener);
+  }
 
-	private void handleDispose() {
-		_viewer.removeSelectionChangedListener(_listener);
-		_viewer.getControl().removeDisposeListener(_listener);
-	}
+  private void handleDispose() {
+    _viewer.removeSelectionChangedListener(_listener);
+    _viewer.getControl().removeDisposeListener(_listener);
+  }
 
-	private void handleSelectionChanged() {
-		if (_viewer.getSelection().isEmpty()) {
-			_manager.setFocusCell(null);
-		}
-	}
+  private void handleSelectionChanged() {
+    if (_viewer.getSelection().isEmpty()) {
+      _manager.setFocusCell(null);
+    }
+  }
 
-	private final Listener _listener = new Listener();
+  private final Listener _listener = new Listener();
 
-	private class Listener implements ISelectionChangedListener,
-			DisposeListener {
-		@Override
-		public void widgetDisposed(DisposeEvent e) {
-			handleDispose();
-		}
+  private class Listener implements ISelectionChangedListener, DisposeListener {
+    @Override
+    public void widgetDisposed(DisposeEvent e) {
+      handleDispose();
+    }
 
-		@Override
-		public void selectionChanged(SelectionChangedEvent event) {
-			handleSelectionChanged();
-		}
-	}
+    @Override
+    public void selectionChanged(SelectionChangedEvent event) {
+      handleSelectionChanged();
+    }
+  }
 
-	public Point getFocusCell() {
-		return _manager.getFocusCell();
-	}
+  public Point getFocusCell() {
+    return _manager.getFocusCell();
+  }
 
-	public void setFocusCell(Point cell) {
-		if (cell != null) {
-			_manager.setFocusCell(cell);
-		}
-	}
+  public void setFocusCell(Point cell) {
+    if (cell != null) {
+      _manager.setFocusCell(cell);
+    }
+  }
 }

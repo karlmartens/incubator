@@ -27,40 +27,40 @@ import org.eclipse.swt.widgets.Composite;
 
 final class TestBooleanEditingSupport extends EditingSupport {
 
-	private final ColumnViewer _viewer;
-	private final int _index;
+  private final ColumnViewer _viewer;
+  private final int _index;
 
-	public TestBooleanEditingSupport(ColumnViewer viewer, int index) {
-		super(viewer);
-		_viewer = viewer;
-		_index = index;
-	}
+  public TestBooleanEditingSupport(ColumnViewer viewer, int index) {
+    super(viewer);
+    _viewer = viewer;
+    _index = index;
+  }
 
-	@Override
-	protected CellEditor getCellEditor(Object element) {
-		return new CheckboxCellEditor((Composite) _viewer.getControl());
-	}
+  @Override
+  protected CellEditor getCellEditor(Object element) {
+    return new CheckboxCellEditor((Composite) _viewer.getControl());
+  }
 
-	@Override
-	protected boolean canEdit(Object element) {
-		return true;
-	}
+  @Override
+  protected boolean canEdit(Object element) {
+    return true;
+  }
 
-	@Override
-	protected Object getValue(Object element) {
-		final Object[] data = (Object[]) element;
-		return (Boolean) data[_index];
-	}
+  @Override
+  protected Object getValue(Object element) {
+    final Object[] data = (Object[]) element;
+    return (Boolean) data[_index];
+  }
 
-	@Override
-	protected void setValue(Object element, Object value) {
-		final Object[] data = (Object[]) element;
-		if (value instanceof Boolean) {
-			data[_index] = value;
-		} else if (value instanceof String) {
-			data[_index] = Boolean.valueOf((String) value);
-		} else {
-			throw new IllegalArgumentException();
-		}
-	}
+  @Override
+  protected void setValue(Object element, Object value) {
+    final Object[] data = (Object[]) element;
+    if (value instanceof Boolean) {
+      data[_index] = value;
+    } else if (value instanceof String) {
+      data[_index] = Boolean.valueOf((String) value);
+    } else {
+      throw new IllegalArgumentException();
+    }
+  }
 }

@@ -24,8 +24,8 @@ import org.joda.time.LocalDate;
 
 public interface TimeSeriesContentProvider extends IStructuredContentProvider {
 
-	LocalDate[] getDates();
+  LocalDate[] getDates();
 
-	double getValue(Object element, int index);
+  double getValue(Object element, int index);
 
 }

@@ -23,10 +23,10 @@ import java.text.NumberFormat;
 
 public interface TimeSeriesEditingSupport {
 
-	NumberFormat getNumberFormat();
+  NumberFormat getNumberFormat();
 
-	boolean canEdit(Object element);
+  boolean canEdit(Object element);
 
-	void setValue(Object element, int index, double value);
+  void setValue(Object element, int index, double value);
 
 }

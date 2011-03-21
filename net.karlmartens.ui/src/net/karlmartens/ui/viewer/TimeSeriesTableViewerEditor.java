@@ -43,116 +43,106 @@ import org.eclipse.swt.widgets.Item;
 
 public final class TimeSeriesTableViewerEditor extends ColumnViewerEditor {
 
-	private final TimeSeriesTableViewer _viewer;
-	private final TimeSeriesTableEditor _editor;
-	private final ViewerCellSelectionManager _selectionManager;
+  private final TimeSeriesTableViewer _viewer;
+  private final TimeSeriesTableEditor _editor;
+  private final ViewerCellSelectionManager _selectionManager;
 
-	public TimeSeriesTableViewerEditor(TimeSeriesTableViewer viewer,
-			ColumnViewerEditorActivationStrategy strategy, int feature) {
-		super(viewer, strategy, feature);
-		_viewer = viewer;
-		_editor = new TimeSeriesTableEditor(viewer.getControl());
-		_selectionManager = new ViewerCellSelectionManager(viewer);
-		addEditorActivationListener(_listener);
-	}
+  public TimeSeriesTableViewerEditor(TimeSeriesTableViewer viewer, ColumnViewerEditorActivationStrategy strategy, int feature) {
+    super(viewer, strategy, feature);
+    _viewer = viewer;
+    _editor = new TimeSeriesTableEditor(viewer.getControl());
+    _selectionManager = new ViewerCellSelectionManager(viewer);
+    addEditorActivationListener(_listener);
+  }
 
-	public static void create(TimeSeriesTableViewer viewer,
-			ColumnViewerEditorActivationStrategy activationStrategy, int feature) {
-		final TimeSeriesTableViewerEditor editor = new TimeSeriesTableViewerEditor(
-				viewer, activationStrategy, feature);
-		viewer.setColumnViewerEditor(editor);
-	}
+  public static void create(TimeSeriesTableViewer viewer, ColumnViewerEditorActivationStrategy activationStrategy, int feature) {
+    final TimeSeriesTableViewerEditor editor = new TimeSeriesTableViewerEditor(viewer, activationStrategy, feature);
+    viewer.setColumnViewerEditor(editor);
+  }
 
-	private TimeSeriesTableViewerRow _cachedRow;
+  private TimeSeriesTableViewerRow _cachedRow;
 
-	@Override
-	public ViewerCell getFocusCell() {
-		final Point p = _selectionManager.getFocusCell();
-		if (p == null)
-			return null;
+  @Override
+  public ViewerCell getFocusCell() {
+    final Point p = _selectionManager.getFocusCell();
+    if (p == null)
+      return null;
 
-		final TimeSeriesTableItem item = _viewer.getControl().getItem(p.y);
-		if (_cachedRow == null) {
-			_cachedRow = new TimeSeriesTableViewerRow(item);
-		} else {
-			_cachedRow.setItem(item);
-		}
-		return _cachedRow.getCell(p.x);
-	}
+    final TimeSeriesTableItem item = _viewer.getControl().getItem(p.y);
+    if (_cachedRow == null) {
+      _cachedRow = new TimeSeriesTableViewerRow(item);
+    } else {
+      _cachedRow.setItem(item);
+    }
+    return _cachedRow.getCell(p.x);
+  }
 
-	@Override
-	protected void setEditor(Control w, Item item, int columnIndex) {
-		final TimeSeriesTableItem tableItem = (TimeSeriesTableItem) item;
-		_editor.setEditor(w, tableItem, columnIndex);
-	}
+  @Override
+  protected void setEditor(Control w, Item item, int columnIndex) {
+    final TimeSeriesTableItem tableItem = (TimeSeriesTableItem) item;
+    _editor.setEditor(w, tableItem, columnIndex);
+  }
 
-	@Override
-	protected void setLayoutData(LayoutData layoutData) {
-		_editor.grabHorizontal = layoutData.grabHorizontal;
-		_editor.horizontalAlignment = layoutData.horizontalAlignment;
-		_editor.minimumWidth = layoutData.minimumWidth;
-		_editor.verticalAlignment = layoutData.verticalAlignment;
+  @Override
+  protected void setLayoutData(LayoutData layoutData) {
+    _editor.grabHorizontal = layoutData.grabHorizontal;
+    _editor.horizontalAlignment = layoutData.horizontalAlignment;
+    _editor.minimumWidth = layoutData.minimumWidth;
+    _editor.verticalAlignment = layoutData.verticalAlignment;
 
-		if (layoutData.minimumHeight != SWT.DEFAULT) {
-			_editor.minimumHeight = layoutData.minimumHeight;
-		}
-	}
+    if (layoutData.minimumHeight != SWT.DEFAULT) {
+      _editor.minimumHeight = layoutData.minimumHeight;
+    }
+  }
 
-	@Override
-	protected void updateFocusCell(ViewerCell focusCell,
-			ColumnViewerEditorActivationEvent event) {
-		if (event.eventType == ColumnViewerEditorActivationEvent.PROGRAMMATIC
-				|| event.eventType == ColumnViewerEditorActivationEvent.TRAVERSAL) {
-			final TimeSeriesTable table = _viewer.getControl();
-			final int row = table.indexOf((TimeSeriesTableItem) focusCell
-					.getItem());
-			final int col = focusCell.getColumnIndex();
-			_selectionManager.setFocusCell(new Point(col, row));
-		}
-	}
+  @Override
+  protected void updateFocusCell(ViewerCell focusCell, ColumnViewerEditorActivationEvent event) {
+    if (event.eventType == ColumnViewerEditorActivationEvent.PROGRAMMATIC || event.eventType == ColumnViewerEditorActivationEvent.TRAVERSAL) {
+      final TimeSeriesTable table = _viewer.getControl();
+      final int row = table.indexOf((TimeSeriesTableItem) focusCell.getItem());
+      final int col = focusCell.getColumnIndex();
+      _selectionManager.setFocusCell(new Point(col, row));
+    }
+  }
 
-	private final ColumnViewerEditorActivationListener _listener = new ColumnViewerEditorActivationListener() {
-		@Override
-		public void beforeEditorActivated(
-				ColumnViewerEditorActivationEvent event) {
-			_viewer.getControl().addSelectionListener(_selectionListener);
-		}
+  private final ColumnViewerEditorActivationListener _listener = new ColumnViewerEditorActivationListener() {
+    @Override
+    public void beforeEditorActivated(ColumnViewerEditorActivationEvent event) {
+      _viewer.getControl().addSelectionListener(_selectionListener);
+    }
 
-		@Override
-		public void afterEditorActivated(ColumnViewerEditorActivationEvent event) {
-			// nothing to do
-		}
+    @Override
+    public void afterEditorActivated(ColumnViewerEditorActivationEvent event) {
+      // nothing to do
+    }
 
-		@Override
-		public void beforeEditorDeactivated(
-				ColumnViewerEditorDeactivationEvent event) {
-			// Nothing to do
-		}
+    @Override
+    public void beforeEditorDeactivated(ColumnViewerEditorDeactivationEvent event) {
+      // Nothing to do
+    }
 
-		@Override
-		public void afterEditorDeactivated(
-				ColumnViewerEditorDeactivationEvent event) {
-			final TimeSeriesTable table = _viewer.getControl();
-			table.removeSelectionListener(_selectionListener);
+    @Override
+    public void afterEditorDeactivated(ColumnViewerEditorDeactivationEvent event) {
+      final TimeSeriesTable table = _viewer.getControl();
+      table.removeSelectionListener(_selectionListener);
 
-			final ViewerCell cell = (ViewerCell) event.getSource();
-			final CellLabelProvider labelProvider = _viewer
-					.getLabelProvider(cell.getColumnIndex());
-			if (labelProvider != null)
-				labelProvider.update(cell);
+      final ViewerCell cell = (ViewerCell) event.getSource();
+      final CellLabelProvider labelProvider = _viewer.getLabelProvider(cell.getColumnIndex());
+      if (labelProvider != null)
+        labelProvider.update(cell);
 
-			table.redraw();
-		}
-	};
+      table.redraw();
+    }
+  };
 
-	private SelectionListener _selectionListener = new SelectionAdapter() {
-		@Override
-		public void widgetSelected(SelectionEvent e) {
-			final Control control = _editor.getEditor();
-			if (control == null || control.isDisposed())
-				return;
+  private SelectionListener _selectionListener = new SelectionAdapter() {
+    @Override
+    public void widgetSelected(SelectionEvent e) {
+      final Control control = _editor.getEditor();
+      if (control == null || control.isDisposed())
+        return;
 
-			control.notifyListeners(SWT.FocusOut, new Event());
-		}
-	};
+      control.notifyListeners(SWT.FocusOut, new Event());
+    }
+  };
 }

@@ -43,90 +43,80 @@ import org.joda.time.format.DateTimeFormat;
 
 public final class TimeSeriesTableViewerTest {
 
-	public static void main(String[] args) throws Exception {
-		final Shell shell = new Shell();
-		shell.setLayout(new FillLayout());
-		final Display display = shell.getDisplay();
+  public static void main(String[] args) throws Exception {
+    final Shell shell = new Shell();
+    shell.setLayout(new FillLayout());
+    final Display display = shell.getDisplay();
 
-		final LocalDate[] dates = generateDates();
+    final LocalDate[] dates = generateDates();
 
-		final TimeSeriesTableViewer viewer = new TimeSeriesTableViewer(shell);
-		viewer.setContentProvider(new TestTimeSeriesContentProvider(dates, 3));
-		viewer.setLabelProvider(new TestColumnLabelProvider(0));
-		viewer.setComparator(new ViewerComparator(new NumberStringComparator()));
-		viewer.setEditingSupport(new TestTimeSeriesEditingSupport(
-				new DecimalFormat("#,##0.0000"), 3));
+    final TimeSeriesTableViewer viewer = new TimeSeriesTableViewer(shell);
+    viewer.setContentProvider(new TestTimeSeriesContentProvider(dates, 3));
+    viewer.setLabelProvider(new TestColumnLabelProvider(0));
+    viewer.setComparator(new ViewerComparator(new NumberStringComparator()));
+    viewer.setEditingSupport(new TestTimeSeriesEditingSupport(new DecimalFormat("#,##0.0000"), 3));
 
-		final TimeSeriesTable table = viewer.getControl();
-		table.setHeaderVisible(true);
-		table.setBackground(display.getSystemColor(SWT.COLOR_WHITE));
-		table.setFont(new Font(display, "Arial", 10, SWT.NORMAL));
-		table.setDateFormat(new LocalDateFormat(DateTimeFormat
-				.forPattern("MMM yyyy")));
-		table.setNumberFormat(new DecimalFormat("#,##0.00"));
-		table.setScrollDataMode(ScrollDataMode.SELECTED_ROWS);
-		table.getColumn(0).addSelectionListener(
-				new TestSelectionListener("Period Column"));
+    final TimeSeriesTable table = viewer.getControl();
+    table.setHeaderVisible(true);
+    table.setBackground(display.getSystemColor(SWT.COLOR_WHITE));
+    table.setFont(new Font(display, "Arial", 10, SWT.NORMAL));
+    table.setDateFormat(new LocalDateFormat(DateTimeFormat.forPattern("MMM yyyy")));
+    table.setNumberFormat(new DecimalFormat("#,##0.00"));
+    table.setScrollDataMode(ScrollDataMode.SELECTED_ROWS);
+    table.getColumn(0).addSelectionListener(new TestSelectionListener("Period Column"));
 
-		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
-			@Override
-			public void selectionChanged(SelectionChangedEvent event) {
-				System.out.println("Selection changed event");
-			}
-		});
+    viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+      @Override
+      public void selectionChanged(SelectionChangedEvent event) {
+        System.out.println("Selection changed event");
+      }
+    });
 
-		final TimeSeriesTableViewerColumn c1 = new TimeSeriesTableViewerColumn(
-				viewer, SWT.NONE);
-		c1.setLabelProvider(new TestColumnLabelProvider(0));
-		c1.setEditingSupport(new TestTextEditingSupport(viewer, 0));
-		c1.getColumn().setText("Test");
-		c1.getColumn().setWidth(75);
-		c1.getColumn().addSelectionListener(
-				new TestSelectionListener("Column One"));
+    final TimeSeriesTableViewerColumn c1 = new TimeSeriesTableViewerColumn(viewer, SWT.NONE);
+    c1.setLabelProvider(new TestColumnLabelProvider(0));
+    c1.setEditingSupport(new TestTextEditingSupport(viewer, 0));
+    c1.getColumn().setText("Test");
+    c1.getColumn().setWidth(75);
+    c1.getColumn().addSelectionListener(new TestSelectionListener("Column One"));
 
-		final TimeSeriesTableViewerColumn c2 = new TimeSeriesTableViewerColumn(
-				viewer, SWT.CHECK);
-		c2.setLabelProvider(new TestColumnLabelProvider(1));
-		c2.setEditingSupport(new TestBooleanEditingSupport(viewer, 1));
-		c2.getColumn().setText("Test 2");
-		c2.getColumn().setWidth(60);
-		c2.getColumn().addSelectionListener(
-				new TestSelectionListener("Column Two"));
+    final TimeSeriesTableViewerColumn c2 = new TimeSeriesTableViewerColumn(viewer, SWT.CHECK);
+    c2.setLabelProvider(new TestColumnLabelProvider(1));
+    c2.setEditingSupport(new TestBooleanEditingSupport(viewer, 1));
+    c2.getColumn().setText("Test 2");
+    c2.getColumn().setWidth(60);
+    c2.getColumn().addSelectionListener(new TestSelectionListener("Column Two"));
 
-		new ViewerClipboardManager(viewer, OPERATION_COPY | OPERATION_CUT
-				| OPERATION_PASTE);
-		new TimeSeriesTableComparator(viewer);
+    new ViewerClipboardManager(viewer, OPERATION_COPY | OPERATION_CUT | OPERATION_PASTE);
+    new TimeSeriesTableComparator(viewer);
 
-		final int seriesLength = dates.length;
-		final Object[][] input = new Object[500][];
-		for (int i = 0; i < input.length; i++) {
-			input[i] = new Object[] { "Item " + Integer.toString(i),
-					Boolean.valueOf(i % 3 == 0), "stuff",
-					generateSeries(seriesLength) };
-		}
-		viewer.setInput(input);
+    final int seriesLength = dates.length;
+    final Object[][] input = new Object[500][];
+    for (int i = 0; i < input.length; i++) {
+      input[i] = new Object[] { "Item " + Integer.toString(i), Boolean.valueOf(i % 3 == 0), "stuff", generateSeries(seriesLength) };
+    }
+    viewer.setInput(input);
 
-		shell.open();
-		while (!shell.isDisposed()) {
-			if (!display.readAndDispatch())
-				display.sleep();
-		}
-	}
+    shell.open();
+    while (!shell.isDisposed()) {
+      if (!display.readAndDispatch())
+        display.sleep();
+    }
+  }
 
-	private static LocalDate[] generateDates() {
-		final LocalDate initialDate = new LocalDate(2011, 1, 1);
-		final LocalDate[] dates = new LocalDate[12 * 15];
-		for (int i = 0; i < dates.length; i++) {
-			dates[i] = initialDate.plusMonths(i);
-		}
-		return dates;
-	}
+  private static LocalDate[] generateDates() {
+    final LocalDate initialDate = new LocalDate(2011, 1, 1);
+    final LocalDate[] dates = new LocalDate[12 * 15];
+    for (int i = 0; i < dates.length; i++) {
+      dates[i] = initialDate.plusMonths(i);
+    }
+    return dates;
+  }
 
-	private static double[] generateSeries(int length) {
-		final double[] values = new double[length];
-		for (int i = 0; i < values.length; i++) {
-			values[i] = Math.random() * 100000;
-		}
-		return values;
-	}
+  private static double[] generateSeries(int length) {
+    final double[] values = new double[length];
+    for (int i = 0; i < values.length; i++) {
+      values[i] = Math.random() * 100000;
+    }
+    return values;
+  }
 }

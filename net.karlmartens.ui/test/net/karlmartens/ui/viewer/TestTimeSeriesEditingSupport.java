@@ -23,28 +23,28 @@ import java.text.NumberFormat;
 
 final class TestTimeSeriesEditingSupport implements TimeSeriesEditingSupport {
 
-	private final int _index;
-	private final NumberFormat _format;
+  private final int _index;
+  private final NumberFormat _format;
 
-	public TestTimeSeriesEditingSupport(NumberFormat format, int index) {
-		_index = index;
-		_format = format;
-	}
+  public TestTimeSeriesEditingSupport(NumberFormat format, int index) {
+    _index = index;
+    _format = format;
+  }
 
-	@Override
-	public NumberFormat getNumberFormat() {
-		return _format;
-	}
+  @Override
+  public NumberFormat getNumberFormat() {
+    return _format;
+  }
 
-	@Override
-	public boolean canEdit(Object element) {
-		return true;
-	}
+  @Override
+  public boolean canEdit(Object element) {
+    return true;
+  }
 
-	@Override
-	public void setValue(Object element, int index, double value) {
-		final double[] series = (double[]) ((Object[]) element)[_index];
-		series[index] = value;
-	}
+  @Override
+  public void setValue(Object element, int index, double value) {
+    final double[] series = (double[]) ((Object[]) element)[_index];
+    series[index] = value;
+  }
 
 }

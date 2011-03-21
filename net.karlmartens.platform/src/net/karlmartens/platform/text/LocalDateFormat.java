@@ -27,39 +27,38 @@ import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormatter;
 
 public final class LocalDateFormat extends Format {
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-	private final DateTimeFormatter _formatter;
+  private final DateTimeFormatter _formatter;
 
-	public LocalDateFormat(DateTimeFormatter formatter) {
-		_formatter = formatter;
-	}
+  public LocalDateFormat(DateTimeFormatter formatter) {
+    _formatter = formatter;
+  }
 
-	@Override
-	public StringBuffer format(Object obj, StringBuffer toAppendTo,
-			FieldPosition pos) {
-		if (obj instanceof LocalDate) {
-			return format((LocalDate) obj, toAppendTo);
-		}
+  @Override
+  public StringBuffer format(Object obj, StringBuffer toAppendTo, FieldPosition pos) {
+    if (obj instanceof LocalDate) {
+      return format((LocalDate) obj, toAppendTo);
+    }
 
-		throw new IllegalArgumentException();
-	}
+    throw new IllegalArgumentException();
+  }
 
-	public StringBuffer format(LocalDate date, StringBuffer toAppendTo) {
-		if (date != null) {
-			_formatter.printTo(toAppendTo, date);
-		}
+  public StringBuffer format(LocalDate date, StringBuffer toAppendTo) {
+    if (date != null) {
+      _formatter.printTo(toAppendTo, date);
+    }
 
-		return toAppendTo;
-	}
+    return toAppendTo;
+  }
 
-	public String format(LocalDate date) {
-		return format(date, new StringBuffer()).toString();
-	}
+  public String format(LocalDate date) {
+    return format(date, new StringBuffer()).toString();
+  }
 
-	@Override
-	public Object parseObject(String source, ParsePosition pos) {
-		throw new UnsupportedOperationException();
-	}
+  @Override
+  public Object parseObject(String source, ParsePosition pos) {
+    throw new UnsupportedOperationException();
+  }
 
 }

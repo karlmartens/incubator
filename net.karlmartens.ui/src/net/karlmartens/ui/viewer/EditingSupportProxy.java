@@ -27,36 +27,35 @@ import org.eclipse.jface.viewers.EditingSupport;
 
 class EditingSupportProxy extends EditingSupport {
 
-	EditingSupport _base;
+  EditingSupport _base;
 
-	EditingSupportProxy(ColumnViewer viewer) {
-		super(viewer);
-	}
+  EditingSupportProxy(ColumnViewer viewer) {
+    super(viewer);
+  }
 
-	@Override
-	protected CellEditor getCellEditor(Object element) {
-		throw new UnsupportedOperationException();
-	}
+  @Override
+  protected CellEditor getCellEditor(Object element) {
+    throw new UnsupportedOperationException();
+  }
 
-	@Override
-	protected boolean canEdit(Object element) {
-		if (_base == null)
-			return false;
+  @Override
+  protected boolean canEdit(Object element) {
+    if (_base == null)
+      return false;
 
-		return Boolean.TRUE.equals(ReflectSupport.invoke("canEdit", _base,
-				element));
-	}
+    return Boolean.TRUE.equals(ReflectSupport.invoke("canEdit", _base, element));
+  }
 
-	@Override
-	protected Object getValue(Object element) {
-		throw new UnsupportedOperationException();
-	}
+  @Override
+  protected Object getValue(Object element) {
+    throw new UnsupportedOperationException();
+  }
 
-	@Override
-	protected void setValue(Object element, Object value) {
-		if (_base == null)
-			return;
+  @Override
+  protected void setValue(Object element, Object value) {
+    if (_base == null)
+      return;
 
-		ReflectSupport.invoke("setValue", _base, element, value);
-	}
+    ReflectSupport.invoke("setValue", _base, element, value);
+  }
 }

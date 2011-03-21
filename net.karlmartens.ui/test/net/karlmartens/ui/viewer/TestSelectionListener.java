@@ -24,15 +24,15 @@ import org.eclipse.swt.events.SelectionEvent;
 
 final class TestSelectionListener extends SelectionAdapter {
 
-	private final String _message;
+  private final String _message;
 
-	public TestSelectionListener(String message) {
-		_message = message;
-	}
+  public TestSelectionListener(String message) {
+    _message = message;
+  }
 
-	@Override
-	public void widgetSelected(SelectionEvent e) {
-		System.out.println(_message);
-	}
+  @Override
+  public void widgetSelected(SelectionEvent e) {
+    System.out.println(_message);
+  }
 
 }

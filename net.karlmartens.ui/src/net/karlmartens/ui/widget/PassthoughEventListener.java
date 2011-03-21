@@ -35,98 +35,97 @@ import org.eclipse.swt.widgets.Event;
 
 final class PassthoughEventListener {
 
-	private final Control _target;
-	private final Collection<Control> _sources = new ArrayList<Control>();
-	private final ListenerImpl _listener = new ListenerImpl();
+  private final Control _target;
+  private final Collection<Control> _sources = new ArrayList<Control>();
+  private final ListenerImpl _listener = new ListenerImpl();
 
-	PassthoughEventListener(Control target) {
-		_target = target;
-		_target.addDisposeListener(_listener);
-	}
+  PassthoughEventListener(Control target) {
+    _target = target;
+    _target.addDisposeListener(_listener);
+  }
 
-	void addSource(Control source) {
-		_sources.add(source);
-		hookControl(source);
-	}
+  void addSource(Control source) {
+    _sources.add(source);
+    hookControl(source);
+  }
 
-	void removeSource(Control source) {
-		_sources.remove(source);
-		releaseControl(source);
-	}
+  void removeSource(Control source) {
+    _sources.remove(source);
+    releaseControl(source);
+  }
 
-	private void hookControl(Control control) {
-		control.addMouseListener(_listener);
-		control.addKeyListener(_listener);
-		control.addDisposeListener(_listener);
-	}
+  private void hookControl(Control control) {
+    control.addMouseListener(_listener);
+    control.addKeyListener(_listener);
+    control.addDisposeListener(_listener);
+  }
 
-	private void releaseControl(Control control) {
-		control.removeMouseListener(_listener);
-		control.removeKeyListener(_listener);
-		control.removeDisposeListener(_listener);
-	}
+  private void releaseControl(Control control) {
+    control.removeMouseListener(_listener);
+    control.removeKeyListener(_listener);
+    control.removeDisposeListener(_listener);
+  }
 
-	private class ListenerImpl implements MouseListener, KeyListener,
-			DisposeListener {
+  private class ListenerImpl implements MouseListener, KeyListener, DisposeListener {
 
-		@Override
-		public void widgetDisposed(DisposeEvent e) {
-			if (e.getSource() == _target) {
-				for (Control source : _sources) {
-					releaseControl(source);
-				}
-				_sources.clear();
-			} else {
-				removeSource((Control) e.getSource());
-			}
-		}
+    @Override
+    public void widgetDisposed(DisposeEvent e) {
+      if (e.getSource() == _target) {
+        for (Control source : _sources) {
+          releaseControl(source);
+        }
+        _sources.clear();
+      } else {
+        removeSource((Control) e.getSource());
+      }
+    }
 
-		@Override
-		public void keyPressed(KeyEvent e) {
-			_target.notifyListeners(SWT.KeyDown, convertEvent(e));
-		}
+    @Override
+    public void keyPressed(KeyEvent e) {
+      _target.notifyListeners(SWT.KeyDown, convertEvent(e));
+    }
 
-		@Override
-		public void keyReleased(KeyEvent e) {
-			_target.notifyListeners(SWT.KeyUp, convertEvent(e));
-		}
+    @Override
+    public void keyReleased(KeyEvent e) {
+      _target.notifyListeners(SWT.KeyUp, convertEvent(e));
+    }
 
-		@Override
-		public void mouseDoubleClick(MouseEvent e) {
-			_target.notifyListeners(SWT.MouseDoubleClick, convertEvent(e));
-		}
+    @Override
+    public void mouseDoubleClick(MouseEvent e) {
+      _target.notifyListeners(SWT.MouseDoubleClick, convertEvent(e));
+    }
 
-		@Override
-		public void mouseDown(MouseEvent e) {
-			_target.notifyListeners(SWT.MouseDown, convertEvent(e));
-		}
+    @Override
+    public void mouseDown(MouseEvent e) {
+      _target.notifyListeners(SWT.MouseDown, convertEvent(e));
+    }
 
-		@Override
-		public void mouseUp(MouseEvent e) {
-			_target.notifyListeners(SWT.MouseUp, convertEvent(e));
-		}
+    @Override
+    public void mouseUp(MouseEvent e) {
+      _target.notifyListeners(SWT.MouseUp, convertEvent(e));
+    }
 
-		private Event convertEvent(MouseEvent e) {
-			final Event event = new Event();
-			event.button = e.button;
-			event.count = e.count;
-			event.data = e.data;
-			event.stateMask = e.stateMask;
-			event.time = e.time;
-			final Rectangle r = ((Control) e.getSource()).getBounds();
-			event.x = e.x + r.x;
-			event.y = e.y + r.y;
-			return event;
-		}
+    private Event convertEvent(MouseEvent e) {
+      final Event event = new Event();
+      event.button = e.button;
+      event.count = e.count;
+      event.data = e.data;
+      event.stateMask = e.stateMask;
+      event.time = e.time;
+      final Rectangle r = ((Control) e.getSource()).getBounds();
+      event.x = e.x + r.x;
+      event.y = e.y + r.y;
+      return event;
+    }
 
-		private Event convertEvent(KeyEvent e) {
-			final Event event = new Event();
-			event.character = e.character;
-			event.data = e.data;
-			event.keyCode = e.keyCode;
-			event.stateMask = e.stateMask;
-			event.time = e.time;
-			return event;
-		}
-	}
+    private Event convertEvent(KeyEvent e) {
+      final Event event = new Event();
+      event.character = e.character;
+      event.data = e.data;
+      event.keyCode = e.keyCode;
+      event.stateMask = e.stateMask;
+      event.time = e.time;
+      return event;
+    }
+  }
 }

@@ -26,17 +26,17 @@ import org.eclipse.jface.action.IAction;
 
 public class ToggleColumnVisibiltyAction extends Action implements IAction {
 
-	private final TimeSeriesTableColumn _column;
+  private final TimeSeriesTableColumn _column;
 
-	public ToggleColumnVisibiltyAction(TimeSeriesTableColumn column) {
-		super(column.getText(), IAction.AS_CHECK_BOX);
-		setChecked(column.isVisible());
+  public ToggleColumnVisibiltyAction(TimeSeriesTableColumn column) {
+    super(column.getText(), IAction.AS_CHECK_BOX);
+    setChecked(column.isVisible());
 
-		_column = column;
-	}
+    _column = column;
+  }
 
-	@Override
-	public void run() {
-		_column.setVisible(isChecked());
-	}
+  @Override
+  public void run() {
+    _column.setVisible(isChecked());
+  }
 }
