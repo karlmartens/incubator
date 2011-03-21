@@ -47,6 +47,7 @@ final class TimeSeriesEditorActivationStrategy extends
 
 		if (event.eventType == ColumnViewerEditorActivationEvent.KEY_PRESSED) {
 			final Event e = new Event();
+			e.stateMask = event.stateMask;
 			e.keyCode = event.keyCode;
 			if (isNonPrintable(e) || _clipboardStrategy.isClipboardEvent(e)
 					|| _navigationStrategy.isNavigationEvent(e)
