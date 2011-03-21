@@ -65,6 +65,8 @@ public final class TimeSeriesTableViewerTest {
 				.forPattern("MMM yyyy")));
 		table.setNumberFormat(new DecimalFormat("#,##0.00"));
 		table.setScrollDataMode(ScrollDataMode.SELECTED_ROWS);
+		table.getColumn(0).addSelectionListener(
+				new TestSelectionListener("Period Column"));
 
 		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			@Override
@@ -79,6 +81,8 @@ public final class TimeSeriesTableViewerTest {
 		c1.setEditingSupport(new TestTextEditingSupport(viewer, 0));
 		c1.getColumn().setText("Test");
 		c1.getColumn().setWidth(75);
+		c1.getColumn().addSelectionListener(
+				new TestSelectionListener("Column One"));
 
 		final TimeSeriesTableViewerColumn c2 = new TimeSeriesTableViewerColumn(
 				viewer, SWT.CHECK);
@@ -86,9 +90,12 @@ public final class TimeSeriesTableViewerTest {
 		c2.setEditingSupport(new TestBooleanEditingSupport(viewer, 1));
 		c2.getColumn().setText("Test 2");
 		c2.getColumn().setWidth(60);
+		c2.getColumn().addSelectionListener(
+				new TestSelectionListener("Column Two"));
 
 		new ViewerClipboardManager(viewer, OPERATION_COPY | OPERATION_CUT
 				| OPERATION_PASTE);
+		new TimeSeriesTableComparator(viewer);
 
 		final int seriesLength = dates.length;
 		final Object[][] input = new Object[500][];

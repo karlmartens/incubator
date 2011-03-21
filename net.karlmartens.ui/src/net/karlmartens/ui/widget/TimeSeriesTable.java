@@ -205,6 +205,27 @@ public final class TimeSeriesTable extends Composite {
 		return -1;
 	}
 
+	public int indexOf(TimeSeriesTableColumn column) {
+		checkWidget();
+		checkNull(column);
+
+		if (column == _periodColumn) {
+			final Object o = _periodColumn.getData();
+			if (o == null)
+				return -1;
+
+			return ((Integer) o).intValue() + _columnCount;
+		}
+
+		for (int i = 0; i < _columnCount; i++) {
+			if (_columns[i] == column) {
+				return i;
+			}
+		}
+
+		return -1;
+	}
+
 	public TimeSeriesTableItem[] getItems() {
 		checkWidget();
 		final TimeSeriesTableItem[] items = new TimeSeriesTableItem[_itemCount];
@@ -279,6 +300,7 @@ public final class TimeSeriesTable extends Composite {
 			final LocalDate date = _periods[periodIndex];
 			_periodColumn.setText(date == null ? "" : _dateFormat.format(date));
 			_periodColumn.setWidth(_widths[periodIndex]);
+			_periodColumn.setData(periodIndex);
 			_lastPeriodColumnIndex = periodIndex;
 		} finally {
 			_inUpdate = false;

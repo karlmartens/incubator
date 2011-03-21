@@ -40,6 +40,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Shell;
@@ -52,10 +53,12 @@ final class TimeSeriesColumnManager {
 	private final ResizeColumnAction _resizeColumnAction;
 	private final ResizeAllColumnsAction _resizeAllColumnsAction;
 
+	private TimeSeriesTableColumn _column;
 	private Integer _columnIndex;
 	private Point _offset;
 	private Image _image;
 	private Shell _shell;
+	private boolean _selection = false;
 
 	TimeSeriesColumnManager(TimeSeriesTable container, KTableImpl table) {
 		_container = container;
@@ -159,6 +162,18 @@ final class TimeSeriesColumnManager {
 		return _columnIndex != null;
 	}
 
+	private void initiateSelection() {
+		_selection = true;
+	}
+
+	private void cancelSelection() {
+		_selection = false;
+	}
+
+	private boolean isSelectionActive() {
+		return _selection;
+	}
+
 	private final Listener _widgetListener = new Listener();
 
 	private final class Listener implements MouseListener, MouseMoveListener,
@@ -171,30 +186,48 @@ final class TimeSeriesColumnManager {
 
 		@Override
 		public void mouseDown(MouseEvent e) {
-			if (_table != e.getSource())
+			if (_table != e.getSource()) {
+				cancelColumnMove();
+				cancelSelection();
 				return;
+			}
 
-			if (e.button != 1) // Left Click
+			if (e.button != 1) {
+				cancelColumnMove();
+				cancelSelection();
 				return;
+			}
 
 			final Point cellCord = _table.getCellForCoordinates(e.x, e.y);
 			if (cellCord.y < 0
-					|| cellCord.y >= _table.getModel().getFixedHeaderRowCount()) // Header
-																					// Row
+					|| cellCord.y >= _table.getModel().getFixedHeaderRowCount()) {
+				cancelColumnMove();
+				cancelSelection();
 				return;
+			}
 
 			if (cellCord.x < 0
 					|| cellCord.x >= (_container.getColumnCount() + _container
-							.getPeriodCount())) // Valid column
+							.getPeriodCount())) {
+				cancelColumnMove();
+				cancelSelection();
 				return;
+			}
 
 			final Rectangle r = _table.getCellRect(cellCord.x, cellCord.y);
-			if (e.x - r.x <= 5 || r.x + r.width - e.x <= 5) // Tolerance for
-															// resize
+			if (e.x - r.x <= 5 || r.x + r.width - e.x <= 5) {
+				cancelColumnMove();
+				cancelSelection();
 				return;
+			}
 
-			if (!_container.getColumn(cellCord.x).isMoveable()) // Moveable
+			_column = _container.getColumn(cellCord.x);
+			initiateSelection();
+
+			if (!_column.isMoveable()) {
+				cancelColumnMove();
 				return;
+			}
 
 			initiateColumnMove(e, cellCord.x);
 		}
@@ -206,6 +239,7 @@ final class TimeSeriesColumnManager {
 
 			if (_table != e.getSource()) {
 				cancelColumnMove();
+				cancelSelection();
 				return;
 			}
 
@@ -214,15 +248,22 @@ final class TimeSeriesColumnManager {
 			if (cellCord.x < 0 || cellCord.x >= _container.getColumnCount()
 					|| oldColumnIndex == cellCord.x) {
 				cancelColumnMove();
+
+				if (isSelectionActive()) {
+					_column.notifyListeners(SWT.Selection, new Event());
+					cancelSelection();
+				}
 				return;
 			}
 
 			_container.moveColumn(oldColumnIndex, cellCord.x);
 			cancelColumnMove();
+			cancelSelection();
 		}
 
 		@Override
 		public void mouseMove(MouseEvent e) {
+			cancelSelection();
 			if (!isColumnMoveActive())
 				return;
 

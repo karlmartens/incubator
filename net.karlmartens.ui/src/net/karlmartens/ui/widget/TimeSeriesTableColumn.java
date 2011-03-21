@@ -21,6 +21,7 @@ package net.karlmartens.ui.widget;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlListener;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.TypedListener;
 
@@ -95,5 +96,17 @@ public final class TimeSeriesTableColumn extends Item {
 		final TypedListener tListener = new TypedListener(listener);
 		removeListener(SWT.Resize, tListener);
 		removeListener(SWT.Move, tListener);
+	}
+
+	public void addSelectionListener(SelectionListener listener) {
+		final TypedListener tListener = new TypedListener(listener);
+		addListener(SWT.Selection, tListener);
+		addListener(SWT.DefaultSelection, tListener);
+	}
+
+	public void removeSelectionListener(SelectionListener listener) {
+		final TypedListener tListener = new TypedListener(listener);
+		removeListener(SWT.Selection, tListener);
+		removeListener(SWT.DefaultSelection, tListener);
 	}
 }
