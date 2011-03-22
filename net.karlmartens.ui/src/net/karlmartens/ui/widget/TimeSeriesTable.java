@@ -585,7 +585,7 @@ public final class TimeSeriesTable extends Composite {
     System.arraycopy(indices, 0, idxs, 0, idxs.length);
     Arrays.sort(idxs);
     for (int i = idxs.length - 1; i >= 0; i--) {
-      doRemove(i);
+      doRemove(idxs[i]);
     }
     _table.redraw();
   }

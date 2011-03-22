@@ -5,5 +5,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="resources"/>
 	<classpathentry kind="src" output="classes-test" path="test"/>
+	<classpathentry kind="var" path="WORKSPACE/lib/junit-4.9b2.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
