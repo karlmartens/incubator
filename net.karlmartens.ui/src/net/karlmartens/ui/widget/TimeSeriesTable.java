@@ -1099,7 +1099,7 @@ public final class TimeSeriesTable extends Composite {
         return;
 
       _hscroll.setLabel(_dateFormat.format(_periods[selection]));
-      showColumn(_hscroll.getSelection() + _columnCount);
+      scrollColumnTo(_hscroll.getSelection() + _columnCount);
     }
 
     @Override
