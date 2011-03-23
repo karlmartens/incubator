@@ -899,7 +899,7 @@ public final class TimeSeriesTable extends Composite {
     switch (_scrollDataMode) {
       case FOCUS_CELL:
         final Point focus = _cellSelectionManager.getFocusCell();
-        if (focus != null && focus.y >= 0 && (!_showHeader || focus.y > 0)) {
+        if (focus != null && focus.y >= 0 && focus.y < _itemCount) {
           indices = new int[] { focus.y };
         } else {
           indices = new int[] {};
