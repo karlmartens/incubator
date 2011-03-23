@@ -19,6 +19,9 @@
  */
 package net.karlmartens.ui.action;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.ResourceBundle;
 
 import net.karlmartens.ui.widget.TimeSeriesTable;
@@ -70,12 +73,33 @@ public class ResizeColumnAction extends Action {
     if ((column.getStyle() & SWT.CHECK) > 0) {
       width = Math.max(width, CheckableCellRenderer.IMAGE_CHECKED.getImageData().width + IMAGE_SPACER);
     } else {
+      final Map<Font, String> messages = new HashMap<Font, String>();
+
       for (int i = 0; i < _table.getItemCount(); i++) {
         final TimeSeriesTableItem item = _table.getItem(i);
-        gc.setFont(item.getFont(i));
-        width = Math.max(width, gc.textExtent(item.getText(_columnIndex)).x + TEXT_SPACER);
+        final Font f = item.getFont(_columnIndex);
+        final String m1 = messages.get(f);
+        final String m2 = item.getText(_columnIndex);
+        if (m1 == null) {
+          messages.put(f, m2);
+          continue;
+        }
+
+        if (m2 == null) {
+          messages.put(f, m1);
+          continue;
+        }
+
+        if (m2.length() > m1.length()) {
+          messages.put(f, m2);
+        }
+      }
+
+      for (Entry<Font, String> entry : messages.entrySet()) {
+        width = Math.max(width, gc.textExtent(entry.getValue()).x + TEXT_SPACER);
       }
     }
+
     gc.dispose();
     font.dispose();
 
