@@ -43,7 +43,7 @@ class EditingSupportProxy extends EditingSupport {
     if (_base == null)
       return false;
 
-    return Boolean.TRUE.equals(ReflectSupport.invoke("canEdit", _base, element));
+    return Boolean.TRUE.equals(ReflectSupport.invoke("canEdit", _base, Object.class, element));
   }
 
   @Override
@@ -56,6 +56,6 @@ class EditingSupportProxy extends EditingSupport {
     if (_base == null)
       return;
 
-    ReflectSupport.invoke("setValue", _base, element, value);
+    ReflectSupport.invoke("setValue", _base, new Class[] {Object.class, Object.class}, new Object[] { element, value });
   }
 }

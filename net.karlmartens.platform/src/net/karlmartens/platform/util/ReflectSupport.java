@@ -24,13 +24,8 @@ import java.lang.reflect.Method;
 
 public final class ReflectSupport {
 
-  public static Object invoke(String methodName, Object instance, Object... args) {
+  public static Object invoke(String methodName, Object instance, Class<?>[] argTypes, Object[] args) {
     try {
-      final Class<?>[] argTypes = new Class[args.length];
-      for (int i = 0; i < args.length; i++) {
-        argTypes[i] = args[i].getClass().getComponentType();
-      }
-
       final Method method = instance.getClass().getDeclaredMethod(methodName, argTypes);
       method.setAccessible(true);
       return method.invoke(instance, args);
@@ -43,4 +38,7 @@ public final class ReflectSupport {
     }
   }
 
+  public static Object invoke(String methodName, Object instance, Class<?> argType, Object arg) {
+    return invoke(methodName, instance, new Class[] { argType }, new Object[] { arg });
+  }
 }
