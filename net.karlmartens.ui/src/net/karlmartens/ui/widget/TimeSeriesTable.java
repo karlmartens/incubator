@@ -318,8 +318,13 @@ public final class TimeSeriesTable extends Composite {
     Arrays.sort(newPeriods);
     _periods = periods;
 
-    _widths = new int[_periods.length];
-    Arrays.fill(_widths, _defaultWidth);
+    final int len = Math.min(_widths.length, _periods.length);
+    final int[] newWidths = new int[_periods.length];
+    System.arraycopy(_widths, 0, newWidths, 0, len);
+    if (len < newWidths.length) {
+      Arrays.fill(newWidths, len, newWidths.length, _defaultWidth);
+    }
+    _widths = newWidths;
 
     _hscroll.setMaximum(Math.max(1, _periods.length - 1));
     _table.redraw();

@@ -34,6 +34,7 @@ import net.karlmartens.platform.util.NumberStringComparator;
 import net.karlmartens.ui.SwtTester;
 import net.karlmartens.ui.SwtTester.Initializer;
 import net.karlmartens.ui.SwtTester.Task;
+import net.karlmartens.ui.action.ResizeAllColumnsAction;
 import net.karlmartens.ui.widget.TimeSeriesTable;
 import net.karlmartens.ui.widget.TimeSeriesTable.ScrollDataMode;
 
@@ -110,6 +111,32 @@ public final class TimeSeriesTableViewerTest {
             assertEquals(0, control.getCellSelections().length);
           }
         }).run();
+  }
+
+  @Test
+  public void testRefresh() {
+    SwtTester//
+        .test(_initializer)//
+        .add(new Task<TimeSeriesTableViewer>() {
+          @Override
+          public void run(TimeSeriesTableViewer context) {
+            final TimeSeriesTable table = context.getControl();
+            new ResizeAllColumnsAction(context.getControl()).run();
+            final int[] expectedWidths = getColumnWidths(table);
+            context.refresh();
+            final int[] actualWidths = getColumnWidths(table);
+            assertTrue(Arrays.equals(expectedWidths, actualWidths));
+          }
+        }).run();
+  }
+
+  private static int[] getColumnWidths(TimeSeriesTable table) {
+    final int columnCount = table.getColumnCount() + table.getPeriodCount();
+    final int[] widths = new int[columnCount];
+    for (int i = 0; i < columnCount; i++) {
+      widths[i] = table.getColumn(i).getWidth();
+    }
+    return widths;
   }
 
   public static void main(String[] args) throws Exception {
