@@ -303,6 +303,19 @@ public final class TimeSeriesTable extends Composite {
     return _periodColumn;
   }
 
+  @Override
+  public boolean setFocus() {
+    return _table.setFocus();
+  }
+
+  @Override
+  public boolean isFocusControl() {
+    if (_table.isFocusControl())
+      return true;
+
+    return super.isFocusControl();
+  }
+
   public void setHeaderVisible(boolean show) {
     checkWidget();
     _showHeader = show;

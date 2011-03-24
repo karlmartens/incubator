@@ -48,7 +48,6 @@ public class SwtTester<T> {
 
     final Display display = shell.getDisplay();
     shell.open();
-    shell.setVisible(false);
     while (!shell.isDisposed()) {
       if (!display.readAndDispatch()) {
         final Task<T> task = _queue.poll();

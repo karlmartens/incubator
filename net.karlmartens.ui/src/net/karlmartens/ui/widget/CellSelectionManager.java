@@ -136,6 +136,9 @@ final class CellSelectionManager {
     if (item == null)
       return;
 
+    if (!_table.isFocusControl())
+      _table.setFocus();
+
     for (int i = 0; i < _table.getColumnCount() + _table.getPeriodCount(); i++) {
       if (_table.getBounds(item, i).contains(p)) {
         final Point cell = new Point(i, _table.indexOf(item));

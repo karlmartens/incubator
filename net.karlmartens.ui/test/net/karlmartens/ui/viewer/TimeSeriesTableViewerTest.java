@@ -46,6 +46,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Shell;
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
@@ -126,6 +127,28 @@ public final class TimeSeriesTableViewerTest {
             context.refresh();
             final int[] actualWidths = getColumnWidths(table);
             assertTrue(Arrays.equals(expectedWidths, actualWidths));
+          }
+        }).run();
+  }
+
+  @Test
+  public void testFocus() {
+    final TimeSeriesTableViewer[] tables = new TimeSeriesTableViewer[1];
+    SwtTester//
+        .test(_initializer)//
+        .add(new Task<TimeSeriesTableViewer>() {
+          @Override
+          public void run(TimeSeriesTableViewer context) {
+            final TimeSeriesTable table = context.getControl();
+            tables[0] = _initializer.run(table.getShell());
+            assertTrue(tables[0].getControl().setFocus());
+
+            final Event e = new Event();
+            e.button = 1;
+            e.x = 100;
+            e.y = 100;
+            table.notifyListeners(SWT.MouseDown, e);
+            assertTrue(table.isFocusControl());
           }
         }).run();
   }
