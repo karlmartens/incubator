@@ -165,7 +165,7 @@ public final class TimeSeriesTable extends Composite {
     checkWidget();
     return _periods.length;
   }
-
+  
   public int getItemCount() {
     checkWidget();
     return _itemCount;
@@ -302,6 +302,19 @@ public final class TimeSeriesTable extends Composite {
       _inUpdate = false;
     }
     return _periodColumn;
+  }
+  
+  public Rectangle getVisibleDataCells() {
+    checkWidget();
+    
+    final Rectangle r = doGetVisibleDataCells();
+    r.x -= _columnCount;
+    r.y = computeModelRow(r.y);
+    
+    if (r.x < 0 || r.x >= _periods.length || r.y < 0 || r.y >= _itemCount)
+      return new Rectangle(0,0,0,0);
+    
+    return r;
   }
 
   @Override
