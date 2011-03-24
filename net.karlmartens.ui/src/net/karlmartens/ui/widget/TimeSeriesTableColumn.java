@@ -36,8 +36,13 @@ public final class TimeSeriesTableColumn extends Item {
    * <p>
    * <dl>
    * <dt><b>Styles:</b></dt>
-   * <dd>CHECK</dd>
+   * <dd>CHECK, LEFT, RIGHT, CENTER</dd>
+   * <dt><b>Events:</b><//dt>
+   * <dd>Resize, Selection, Move</dd>
    * </dl>
+   * </p>
+   * <p>
+   * Note: Only one of the styles LEFT, RIGHT or CENTER can be specified.
    * </p>
    * 
    */
@@ -51,6 +56,11 @@ public final class TimeSeriesTableColumn extends Item {
     _parent = table;
   }
 
+  /**
+   * Constructor used internally to create a period value column.
+   * 
+   * @param table
+   */
   TimeSeriesTableColumn(TimeSeriesTable table) {
     super(table, SWT.NONE);
     _parent = table;

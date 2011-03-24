@@ -20,6 +20,9 @@
 package net.karlmartens.ui.widget;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 
 public final class TimeSeriesTableItem extends AbstractTableItem {
@@ -103,6 +106,38 @@ public final class TimeSeriesTableItem extends AbstractTableItem {
 
     _values[index] = value;
     _parent.redraw();
+  }
+
+  @Override
+  public Color getBackground(int index) {
+    if (index < _parent.getColumnCount())
+      return super.getBackground(index);
+
+    return getBackground();
+  }
+
+  @Override
+  public Font getFont(int index) {
+    if (index < _parent.getColumnCount())
+      return super.getFont(index);
+
+    return getFont();
+  }
+
+  @Override
+  public Color getForeground(int index) {
+    if (index < _parent.getColumnCount())
+      return super.getForeground(index);
+
+    return getForeground();
+  }
+
+  @Override
+  public Image getImage(int index) {
+    if (index < _parent.getColumnCount())
+      return super.getImage(index);
+
+    return null;
   }
 
   @Override

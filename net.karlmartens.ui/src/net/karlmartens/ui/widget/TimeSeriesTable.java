@@ -105,6 +105,7 @@ public final class TimeSeriesTable extends Composite {
     final GC gc = new GC(getShell());
     gc.setFont(getFont());
     _periodColumn = new TimeSeriesTableColumn(this);
+
     _defaultWidth = gc.getCharWidth('W') * 8;
     _rowHeight = gc.getFontMetrics().getHeight() + 10;
     gc.dispose();
@@ -1011,28 +1012,34 @@ public final class TimeSeriesTable extends Composite {
         return _headerRenderer;
       }
 
-      final int modelRow = computeModelRow(row);
-      final TimeSeriesTableItem item = getItem(modelRow);
+      final TimeSeriesTableColumn column = getColumn(col);
       final DefaultCellRenderer renderer;
-      if (col < _columnCount) {
-        if ((SWT.CHECK & _columns[col].getStyle()) > 0) {
-          renderer = _checkRenderer;
-          _checkRenderer.setAlignment(SWTX.ALIGN_HORIZONTAL_CENTER | SWTX.ALIGN_VERTICAL_CENTER);
-        } else {
-          renderer = _renderer;
-          _renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_LEFT | SWTX.ALIGN_VERTICAL_CENTER);
-        }
-
-        renderer.setDefaultBackground(item.getBackground(col));
-        renderer.setDefaultForeground(item.getForeground(col));
-        renderer.setFont(item.getFont(col));
+      if ((SWT.CHECK & column.getStyle()) > 0) {
+        renderer = _checkRenderer;
+        renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_CENTER | SWTX.ALIGN_VERTICAL_CENTER);
       } else {
         renderer = _renderer;
-        _renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_RIGHT | SWTX.ALIGN_VERTICAL_CENTER);
-        _renderer.setDefaultBackground(item.getBackground());
-        _renderer.setDefaultForeground(item.getForeground());
-        _renderer.setFont(item.getFont());
+        if (column == _periodColumn) {
+          renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_RIGHT | SWTX.ALIGN_VERTICAL_CENTER);
+        } else {
+          renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_LEFT | SWTX.ALIGN_VERTICAL_CENTER);
+        }
       }
+
+      final int style = column.getStyle();
+      if ((style & SWT.LEFT) > 0) {
+        renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_LEFT | SWTX.ALIGN_VERTICAL_CENTER);
+      } else if ((style & SWT.RIGHT) > 0) {
+        renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_RIGHT | SWTX.ALIGN_VERTICAL_CENTER);
+      } else if ((style & SWT.CENTER) > 0) {
+        renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_CENTER | SWTX.ALIGN_VERTICAL_CENTER);
+      }
+
+      final int modelRow = computeModelRow(row);
+      final TimeSeriesTableItem item = getItem(modelRow);
+      renderer.setDefaultBackground(item.getBackground(col));
+      renderer.setDefaultForeground(item.getForeground(col));
+      renderer.setFont(item.getFont(col));
 
       return renderer;
     }
