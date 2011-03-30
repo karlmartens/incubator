@@ -319,7 +319,7 @@ public final class TimeSeriesTable extends Composite {
 
   @Override
   public boolean setFocus() {
-    return _table.setFocus();
+    return _table.forceFocus();
   }
 
   @Override
