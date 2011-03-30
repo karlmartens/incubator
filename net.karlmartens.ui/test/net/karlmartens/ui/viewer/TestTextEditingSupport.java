@@ -30,6 +30,7 @@ final class TestTextEditingSupport extends EditingSupport {
 
   private final ColumnViewer _viewer;
   private final int _index;
+  private TextCellEditor _cellEditor;
 
   public TestTextEditingSupport(ColumnViewer viewer, int index) {
     super(viewer);
@@ -39,7 +40,10 @@ final class TestTextEditingSupport extends EditingSupport {
 
   @Override
   protected CellEditor getCellEditor(Object element) {
-    return new TextCellEditor((Composite) _viewer.getControl());
+    if (_cellEditor == null) {
+      _cellEditor = new TextCellEditor((Composite) _viewer.getControl());
+    }
+    return _cellEditor;
   }
 
   @Override

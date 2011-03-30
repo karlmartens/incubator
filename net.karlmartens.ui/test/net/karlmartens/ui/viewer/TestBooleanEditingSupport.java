@@ -29,6 +29,7 @@ final class TestBooleanEditingSupport extends EditingSupport {
 
   private final ColumnViewer _viewer;
   private final int _index;
+  private CheckboxCellEditor _cellEditor;
 
   public TestBooleanEditingSupport(ColumnViewer viewer, int index) {
     super(viewer);
@@ -38,7 +39,10 @@ final class TestBooleanEditingSupport extends EditingSupport {
 
   @Override
   protected CellEditor getCellEditor(Object element) {
-    return new CheckboxCellEditor((Composite) _viewer.getControl());
+    if (_cellEditor == null) {
+      _cellEditor = new CheckboxCellEditor((Composite) _viewer.getControl());
+    }
+    return _cellEditor;
   }
 
   @Override

@@ -21,9 +21,6 @@ package net.karlmartens.ui.viewer;
 
 import net.karlmartens.platform.util.NullSafe;
 import net.karlmartens.platform.util.NumberStringComparator;
-import net.karlmartens.ui.viewer.GridChooserViewer;
-import net.karlmartens.ui.viewer.GridChooserViewerColumn;
-import net.karlmartens.ui.viewer.GridChooserViewerEditor;
 import net.karlmartens.ui.widget.GridChooserColumnWeightedResize;
 
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -109,6 +106,7 @@ public final class GridChooserViewerTest {
 
     private final GridChooserViewer _viewer;
     private final int _index;
+    private TextCellEditor _cellEditor;
 
     public TextEditingSupport(GridChooserViewer viewer, int index) {
       super(viewer);
@@ -118,7 +116,10 @@ public final class GridChooserViewerTest {
 
     @Override
     protected CellEditor getCellEditor(Object element) {
-      return new TextCellEditor(_viewer.getControl());
+      if (_cellEditor == null) {
+        _cellEditor = new TextCellEditor(_viewer.getControl());
+      }
+      return _cellEditor;
     }
 
     @Override

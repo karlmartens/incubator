@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.Composite;
 class TimeSeriesTableValueEditingSupport extends EditingSupport {
 
   private final TimeSeriesTableViewer _viewer;
+  private TextCellEditor _cellEditor;
 
   TimeSeriesTableValueEditingSupport(TimeSeriesTableViewer viewer) {
     super(viewer);
@@ -41,7 +42,10 @@ class TimeSeriesTableValueEditingSupport extends EditingSupport {
 
   @Override
   protected CellEditor getCellEditor(Object element) {
-    return new TextCellEditor((Composite) _viewer.getControl(), SWT.RIGHT);
+    if (_cellEditor == null) {
+      _cellEditor = new TextCellEditor((Composite) _viewer.getControl(), SWT.RIGHT);
+    }
+    return _cellEditor;
   }
 
   @Override
