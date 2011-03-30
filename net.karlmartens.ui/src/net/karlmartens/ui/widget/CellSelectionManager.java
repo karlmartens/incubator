@@ -28,7 +28,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
-final class CellSelectionManager {
+public final class CellSelectionManager {
 
   private final TimeSeriesTable _table;
   private final CellNavigationStrategy _navigationStrategy;
@@ -37,7 +37,7 @@ final class CellSelectionManager {
   private Point _focusCell;
   private Point _expansionCell;
 
-  public CellSelectionManager(TimeSeriesTable table) {
+  CellSelectionManager(TimeSeriesTable table) {
     _table = table;
     _navigationStrategy = new CellNavigationStrategy();
     _listener = new TableListener();
@@ -49,7 +49,7 @@ final class CellSelectionManager {
     return _focusCell;
   }
 
-  void setFocusCell(Point cell) {
+  public void setFocusCell(Point cell) {
     if (NullSafe.equals(cell, _focusCell))
       return;
 

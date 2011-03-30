@@ -17,7 +17,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package net.karlmartens.ui.widget;
+package net.karlmartens.ui.viewer;
 
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -25,7 +25,7 @@ import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Point;
 
-import net.karlmartens.ui.viewer.TimeSeriesTableViewer;
+import net.karlmartens.ui.widget.CellSelectionManager;
 
 public final class ViewerCellSelectionManager {
 

@@ -22,7 +22,6 @@ package net.karlmartens.ui.viewer;
 import net.karlmartens.ui.widget.TimeSeriesTable;
 import net.karlmartens.ui.widget.TimeSeriesTableEditor;
 import net.karlmartens.ui.widget.TimeSeriesTableItem;
-import net.karlmartens.ui.widget.ViewerCellSelectionManager;
 
 import org.eclipse.jface.viewers.CellEditor.LayoutData;
 import org.eclipse.jface.viewers.CellLabelProvider;
