@@ -9,4 +9,3 @@ Export-Package: net.karlmartens.platform.text,
 Bundle-ClassPath: .
 Import-Package: org.joda.time,
  org.joda.time.format
-Bundle-ActivationPolicy: lazy
