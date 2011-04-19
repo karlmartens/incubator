@@ -1023,6 +1023,9 @@ public final class TimeSeriesTable extends Composite {
         _headerRenderer.setFont(getFont());
         return _headerRenderer;
       }
+      
+      if (col >= (_columnCount + _periods.length))
+        return _renderer;
 
       final TimeSeriesTableColumn column = getColumn(col);
       final DefaultCellRenderer renderer;
