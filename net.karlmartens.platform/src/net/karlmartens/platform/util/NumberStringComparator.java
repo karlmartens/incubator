@@ -17,6 +17,8 @@
  */
 package net.karlmartens.platform.util;
 
+import java.text.BreakIterator;
+import java.text.Collator;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Comparator;
@@ -24,21 +26,29 @@ import java.util.Comparator;
 public final class NumberStringComparator implements Comparator<String> {
 
   private final NumberFormat _format;
-  private final Comparator<String> _comparator;
+  private final Collator _collator;
   private final double _tolerance;
+  private final BreakIterator[] _bi;
 
   public NumberStringComparator() {
     this(NumberFormat.getInstance());
   }
 
   public NumberStringComparator(NumberFormat format) {
-    this(format, new StringComparator(true), 0.00001);
+    this(format, getDefaultCollator(), 0.00001);
   }
 
-  public NumberStringComparator(NumberFormat format, Comparator<String> base, double tolerance) {
+  private static Collator getDefaultCollator() {
+    final Collator c = Collator.getInstance();
+    c.setStrength(Collator.PRIMARY);
+    return c;
+  }
+
+  public NumberStringComparator(NumberFormat format, Collator collator, double tolerance) {
     _format = format;
-    _comparator = base;
+    _collator = collator;
     _tolerance = tolerance;
+    _bi = new BreakIterator[] { BreakIterator.getWordInstance(), BreakIterator.getWordInstance() };
   }
 
   @Override
@@ -52,20 +62,54 @@ public final class NumberStringComparator implements Comparator<String> {
     if (o2 == null)
       return 1;
 
-    try {
-      final double n1 = _format.parse(o1).doubleValue();
-      final double n2 = _format.parse(o2).doubleValue();
-      if (Math.abs(n1 - n2) > _tolerance) {
-        if (n1 < n2) {
-          return -1;
+    _bi[0].setText(o1);
+    _bi[1].setText(o2);
+
+    int current1 = _bi[0].first();
+    int current2 = _bi[1].first();
+    for (;;) {
+      if (current1 == BreakIterator.DONE) {
+        if (current2 == BreakIterator.DONE) {
+          return 0;
         }
 
-        return 1;
+        return -1;
       }
-    } catch (ParseException e) {
-      // Ignore error compare string with base comparator
-    }
 
-    return _comparator.compare(o1, o2);
+      if (current2 == BreakIterator.DONE)
+        return 1;
+
+      int next1 = _bi[0].following(current1);
+      if (next1 == BreakIterator.DONE)
+        next1 = o1.length();
+
+      int next2 = _bi[1].following(current2);
+      if (next2 == BreakIterator.DONE)
+        next2 = o2.length();
+
+      final String w1 = o1.substring(current1, next1);
+      final String w2 = o2.substring(current2, next2);
+
+      try {
+        final double n1 = _format.parse(w1).doubleValue();
+        final double n2 = _format.parse(w2).doubleValue();
+        if (Math.abs(n1 - n2) > _tolerance) {
+          if (n1 < n2) {
+            return -1;
+          }
+
+          return 1;
+        }
+      } catch (ParseException e) {
+        // Ignore error compare string with base comparator
+      }
+
+      final int c = _collator.compare(w1, w2);
+      if (c != 0)
+        return c;
+
+      current1 = _bi[0].next();
+      current2 = _bi[1].next();
+    }
   }
 }

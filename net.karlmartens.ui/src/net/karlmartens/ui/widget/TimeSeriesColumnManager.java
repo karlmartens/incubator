@@ -51,11 +51,12 @@ final class TimeSeriesColumnManager {
   private final ResizeColumnAction _resizeColumnAction;
   private final ResizeAllColumnsAction _resizeAllColumnsAction;
 
-  private TimeSeriesTableColumn _column;
-  private Integer _columnIndex;
+  private int _columnIndex;
   private Point _offset;
   private Image _image;
   private Shell _shell;
+
+  private boolean _columnMove = false;
   private boolean _selection = false;
 
   TimeSeriesColumnManager(TimeSeriesTable container, KTableImpl table) {
@@ -107,7 +108,7 @@ final class TimeSeriesColumnManager {
   }
 
   private void initiateColumnMove(MouseEvent e, int colIndex) {
-    _columnIndex = colIndex;
+    _columnMove = true;
     _table.setIgnoreMouseMove(true);
 
     final Rectangle cellCords = _table.getCellRect(colIndex, 0);
@@ -140,7 +141,7 @@ final class TimeSeriesColumnManager {
   }
 
   private void cancelColumnMove() {
-    _columnIndex = null;
+    _columnMove = false;
     _offset = null;
     _table.setIgnoreMouseMove(false);
 
@@ -156,7 +157,7 @@ final class TimeSeriesColumnManager {
   }
 
   private boolean isColumnMoveActive() {
-    return _columnIndex != null;
+    return _columnMove;
   }
 
   private void initiateSelection() {
@@ -214,10 +215,10 @@ final class TimeSeriesColumnManager {
         return;
       }
 
-      _column = _container.getColumn(cellCord.x);
+      _columnIndex = cellCord.x;
       initiateSelection();
 
-      if (!_column.isMoveable()) {
+      if (!_container.getColumn(_columnIndex).isMoveable()) {
         cancelColumnMove();
         return;
       }
@@ -227,7 +228,7 @@ final class TimeSeriesColumnManager {
 
     @Override
     public void mouseUp(MouseEvent e) {
-      if (!isColumnMoveActive())
+      if (!isColumnMoveActive() && !isSelectionActive())
         return;
 
       if (_table != e.getSource()) {
@@ -237,18 +238,20 @@ final class TimeSeriesColumnManager {
       }
 
       final Point cellCord = _table.getCellForCoordinates(e.x, e.y);
-      final int oldColumnIndex = _columnIndex.intValue();
-      if (cellCord.x < 0 || cellCord.x >= _container.getColumnCount() || oldColumnIndex == cellCord.x) {
+      if (cellCord.x < 0 || cellCord.x >= _container.getColumnCount() || _columnIndex == cellCord.x) {
         cancelColumnMove();
 
         if (isSelectionActive()) {
-          _column.notifyListeners(SWT.Selection, new Event());
+          final TimeSeriesTableColumn column = _container.getColumn(_columnIndex);
+          column.notifyListeners(SWT.Selection, new Event());
           cancelSelection();
         }
         return;
       }
 
-      _container.moveColumn(oldColumnIndex, cellCord.x);
+      if (isColumnMoveActive())
+        _container.moveColumn(_columnIndex, cellCord.x);
+
       cancelColumnMove();
       cancelSelection();
     }
