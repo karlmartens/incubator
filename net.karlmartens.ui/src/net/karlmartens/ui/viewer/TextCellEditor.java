@@ -48,6 +48,12 @@ public final class TextCellEditor extends org.eclipse.jface.viewers.TextCellEdit
         case ' ':
           break;
 
+        case SWT.BS:
+        case SWT.DEL:
+          getControl().setText("");
+          _selectAll = false;
+          break;
+
         default:
           final String value = new String(new char[] { activationEvent.character });
           getControl().setText(value);

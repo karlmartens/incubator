@@ -151,6 +151,23 @@ public final class TimeSeriesTableViewerTest {
         }).run();
   }
 
+  @Test
+  public void testRemoveFromModel() throws Exception {
+    SwtTester //
+        .test(_initializer) //
+        .add(new Task<TimeSeriesTableViewer>() {
+          @Override
+          public void run(TimeSeriesTableViewer context) {
+            for (int i = 2; i >= 0; i--) {
+              final Object[][] input = Arrays.copyOf(_input, i);
+              context.getControl().setCellSelections(new Point[] { new Point(4, i) });
+              context.setInput(input);
+              Display.getCurrent().readAndDispatch();
+            }
+          }
+        }).run();
+  }
+
   private static int[] getColumnWidths(TimeSeriesTable table) {
     final int columnCount = table.getColumnCount() + table.getPeriodCount();
     final int[] widths = new int[columnCount];
