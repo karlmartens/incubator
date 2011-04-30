@@ -178,7 +178,34 @@ final class TimeSeriesColumnManager {
 
     @Override
     public void mouseDoubleClick(MouseEvent e) {
-      // ignore
+      if (_table != e.getSource())
+        return;
+
+      final Point cellCord = _table.getCellForCoordinates(e.x, e.y);
+      if (cellCord.y < 0 || cellCord.y >= _table.getModel().getFixedHeaderRowCount())
+        return;
+
+      final TimeSeriesTableColumn column = _container.getColumn(cellCord.x);
+      if (!column.isVisible())
+        return;
+
+      final Rectangle r = _table.getCellRect(cellCord.x, cellCord.y);
+      if (r.x + r.width - e.x <= 5) {
+        _resizeColumnAction.setColumnIndex(cellCord.x);
+        _resizeColumnAction.run();
+        return;
+      }
+
+      if (e.x - r.x <= 5) {
+        for (int i = cellCord.x; i >= 0; i--) {
+          final TimeSeriesTableColumn pColumn = _container.getColumn(i);
+          if (pColumn.isVisible()) {
+            _resizeColumnAction.setColumnIndex(i);
+            _resizeColumnAction.run();
+            return;
+          }
+        }
+      }
     }
 
     @Override
