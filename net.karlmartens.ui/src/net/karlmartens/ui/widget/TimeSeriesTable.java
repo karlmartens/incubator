@@ -105,7 +105,7 @@ public final class TimeSeriesTable extends Composite {
     _periodColumn = new TimeSeriesTableColumn(this);
 
     _defaultWidth = gc.getCharWidth('W') * 8;
-    _rowHeight = gc.getFontMetrics().getHeight() + 10;
+    _rowHeight = gc.getFontMetrics().getHeight() + 6;
     gc.dispose();
 
     _table = new KTableImpl(this, SWT.FLAT | SWT.V_SCROLL | SWT.MULTI | SWTX.MARK_FOCUS_HEADERS);

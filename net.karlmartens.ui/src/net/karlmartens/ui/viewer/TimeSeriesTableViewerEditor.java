@@ -85,7 +85,7 @@ public final class TimeSeriesTableViewerEditor extends ColumnViewerEditor {
     _editor.grabHorizontal = layoutData.grabHorizontal;
     _editor.horizontalAlignment = layoutData.horizontalAlignment;
     _editor.minimumWidth = layoutData.minimumWidth;
-    _editor.verticalAlignment = layoutData.verticalAlignment;
+    _editor.verticalAlignment = SWT.CENTER;
 
     if (layoutData.minimumHeight != SWT.DEFAULT) {
       _editor.minimumHeight = layoutData.minimumHeight;

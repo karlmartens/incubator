@@ -21,6 +21,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ControlEditor;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -57,7 +58,11 @@ public final class TimeSeriesTableEditor extends ControlEditor {
       }
     };
 
-    grabVertical = true;
+    final GC gc = new GC(control);
+    gc.setFont(control.getFont());
+    minimumHeight = gc.getFontMetrics().getHeight();
+    gc.dispose();
+    grabVertical = false;
   }
 
   public void setEditor(Control editor, TimeSeriesTableItem item, int columnIndex) {
@@ -173,8 +178,8 @@ public final class TimeSeriesTableEditor extends ControlEditor {
 
     // Remove space taken by image from editor
     final Rectangle image = _item.getImageBounds(_column);
-    cell.x = image.x + image.width;
-    cell.width -= image.width;
+    cell.x = image.x + image.width + 3;
+    cell.width -= image.width + 6;
 
     // Convert from global widget coordinates to table relative coordinates
     final Composite parent = getEditor().getParent();
@@ -206,6 +211,14 @@ public final class TimeSeriesTableEditor extends ControlEditor {
       // nothing to do
     } else {
       editor.x += (cell.width - editor.width) / 2;
+    }
+
+    if (verticalAlignment == SWT.TOP) {
+      // nothing to do
+    } else if (verticalAlignment == SWT.BOTTOM) {
+      editor.y += cell.height - editor.height;
+    } else {
+      editor.y += (cell.height - editor.height) / 2;
     }
 
     return editor;
