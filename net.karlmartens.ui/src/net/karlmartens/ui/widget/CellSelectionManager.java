@@ -34,6 +34,7 @@ public final class CellSelectionManager {
   private final ItemListener _itemListener;
   private Point _focusCell;
   private Point _expansionCell;
+  private boolean _dragExpand = false;
 
   CellSelectionManager(TimeSeriesTable table) {
     _table = table;
@@ -116,6 +117,8 @@ public final class CellSelectionManager {
 
   private void hookListener() {
     _table.addListener(SWT.MouseDown, _listener);
+    _table.addListener(SWT.MouseUp, _listener);
+    _table.addListener(SWT.MouseMove, _listener);
     _table.addListener(SWT.KeyDown, _listener);
     _table.addListener(SWT.Selection, _listener);
     _table.addListener(SWT.Dispose, _listener);
@@ -124,30 +127,42 @@ public final class CellSelectionManager {
   private void handleDispose() {
     _table.removeListener(SWT.Dispose, _listener);
     _table.removeListener(SWT.MouseDown, _listener);
+    _table.removeListener(SWT.MouseUp, _listener);
+    _table.removeListener(SWT.MouseMove, _listener);
     _table.removeListener(SWT.KeyDown, _listener);
     _table.removeListener(SWT.Selection, _listener);
   }
 
   private void handleMouseDown(Event e) {
-    final Point p = new Point(e.x, e.y);
-    final TimeSeriesTableItem item = _table.getItem(p);
-    if (item == null)
-      return;
-
     if (!_table.isFocusControl())
       _table.setFocus();
 
-    for (int i = 0; i < _table.getColumnCount() + _table.getPeriodCount(); i++) {
-      if (_table.getBounds(item, i).contains(p)) {
-        final Point cell = new Point(i, _table.indexOf(item));
-        if ((e.stateMask & SWT.SHIFT) > 0) {
-          expandSelection(cell);
-        } else if (cell != null) {
-          setFocusCell(cell);
-        }
-        return;
-      }
+    final Point cell = getCell(new Point(e.x, e.y));
+    if (cell == null)
+      return;
+
+    if ((e.stateMask & SWT.SHIFT) > 0) {
+      expandSelection(cell);
+    } else if (cell != null) {
+      setFocusCell(cell);
+      _dragExpand = true;
     }
+  }
+
+  private void handleMouseUp(Event e) {
+    _dragExpand = false;
+  }
+
+  private void handleMouseMove(Event e) {
+    if (!_dragExpand)
+      return;
+
+    final Point cell = getCell(new Point(e.x, e.y));
+    if (cell == null) {
+      return;
+    }
+
+    expandSelection(cell);
   }
 
   private void handleKeyDown(Event e) {
@@ -179,6 +194,20 @@ public final class CellSelectionManager {
     setFocusCell(new Point(0, 0));
   }
 
+  private Point getCell(Point position) {
+    final TimeSeriesTableItem item = _table.getItem(position);
+    if (item == null)
+      return null;
+
+    for (int i = 0; i < _table.getColumnCount() + _table.getPeriodCount(); i++) {
+      if (_table.getBounds(item, i).contains(position)) {
+        return new Point(i, _table.indexOf(item));
+      }
+    }
+
+    return null;
+  }
+
   private final class TableListener implements Listener {
 
     @Override
@@ -186,6 +215,14 @@ public final class CellSelectionManager {
       switch (event.type) {
         case SWT.MouseDown:
           handleMouseDown(event);
+          break;
+
+        case SWT.MouseUp:
+          handleMouseUp(event);
+          break;
+
+        case SWT.MouseMove:
+          handleMouseMove(event);
           break;
 
         case SWT.KeyDown:

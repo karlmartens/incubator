@@ -27,6 +27,7 @@ import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
@@ -54,17 +55,19 @@ final class PassthoughEventListener {
 
   private void hookControl(Control control) {
     control.addMouseListener(_listener);
+    control.addMouseMoveListener(_listener);
     control.addKeyListener(_listener);
     control.addDisposeListener(_listener);
   }
 
   private void releaseControl(Control control) {
     control.removeMouseListener(_listener);
+    control.removeMouseMoveListener(_listener);
     control.removeKeyListener(_listener);
     control.removeDisposeListener(_listener);
   }
 
-  private class ListenerImpl implements MouseListener, KeyListener, DisposeListener {
+  private class ListenerImpl implements MouseListener, MouseMoveListener, KeyListener, DisposeListener {
 
     @Override
     public void widgetDisposed(DisposeEvent e) {
@@ -101,6 +104,11 @@ final class PassthoughEventListener {
     @Override
     public void mouseUp(MouseEvent e) {
       _target.notifyListeners(SWT.MouseUp, convertEvent(e));
+    }
+
+    @Override
+    public void mouseMove(MouseEvent e) {
+      _target.notifyListeners(SWT.MouseMove, convertEvent(e));
     }
 
     private Event convertEvent(MouseEvent e) {
