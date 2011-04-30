@@ -103,6 +103,7 @@ public final class TimeSeriesTable extends Composite {
     final GC gc = new GC(getShell());
     gc.setFont(getFont());
     _periodColumn = new TimeSeriesTableColumn(this);
+    _periodColumn.setMoveable(false);
 
     _defaultWidth = gc.getCharWidth('W') * 8;
     _rowHeight = gc.getFontMetrics().getHeight() + 6;
