@@ -55,6 +55,14 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
     _editingSupport = editingSupport;
   }
 
+  public void addClipboardSupport(int operations) {
+    new ViewerClipboardManager(this, operations);
+  }
+
+  public void addDeleteCellSelectionSupport() {
+    new DeleteCellSelectionSupport(this);
+  }
+
   TimeSeriesEditingSupport getEditingSupport() {
     return _editingSupport;
   }

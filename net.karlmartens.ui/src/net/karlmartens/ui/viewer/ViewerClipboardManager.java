@@ -48,14 +48,14 @@ import org.eclipse.swt.widgets.Event;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 
-public final class ViewerClipboardManager {
+final class ViewerClipboardManager {
 
   private final TimeSeriesTableViewer _viewer;
   private final int _operations;
   private final ClipboardStrategy _clipboardStrategy;
   private final EditingSupportProxy _editingSupportCache;
 
-  public ViewerClipboardManager(TimeSeriesTableViewer viewer, int operations) {
+  ViewerClipboardManager(TimeSeriesTableViewer viewer, int operations) {
     _viewer = viewer;
     _operations = operations;
     _editingSupportCache = new EditingSupportProxy(viewer);

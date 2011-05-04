@@ -18,6 +18,7 @@
 package net.karlmartens.ui.viewer;
 
 import net.karlmartens.ui.widget.CellSelectionManager;
+import net.karlmartens.ui.widget.TimeSeriesTable;
 
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -32,14 +33,19 @@ public final class ViewerCellSelectionManager {
 
   public ViewerCellSelectionManager(TimeSeriesTableViewer viewer) {
     _viewer = viewer;
-    _manager = _viewer.getControl().getCellSelectionManager();
     viewer.addSelectionChangedListener(_listener);
-    viewer.getControl().addDisposeListener(_listener);
+
+    final TimeSeriesTable control = _viewer.getControl();
+    _manager = control.getCellSelectionManager();
+
+    control.addDisposeListener(_listener);
   }
 
   private void handleDispose() {
     _viewer.removeSelectionChangedListener(_listener);
-    _viewer.getControl().removeDisposeListener(_listener);
+
+    final TimeSeriesTable control = _viewer.getControl();
+    control.removeDisposeListener(_listener);
   }
 
   private void handleSelectionChanged() {

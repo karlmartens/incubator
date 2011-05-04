@@ -196,7 +196,8 @@ public final class TimeSeriesTableViewerTest {
       }
     });
 
-    new ViewerClipboardManager(viewer, OPERATION_COPY | OPERATION_CUT | OPERATION_PASTE);
+    viewer.addClipboardSupport(OPERATION_COPY | OPERATION_CUT | OPERATION_PASTE);
+    viewer.addDeleteCellSelectionSupport();
 
     final Display display = shell.getDisplay();
     shell.open();
