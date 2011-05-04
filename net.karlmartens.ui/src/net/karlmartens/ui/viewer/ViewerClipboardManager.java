@@ -25,14 +25,11 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Arrays;
-import java.util.BitSet;
+import java.util.Comparator;
 import java.util.List;
 
 import net.karlmartens.ui.widget.ClipboardStrategy;
-import net.karlmartens.ui.widget.TimeSeriesTableColumn;
-import net.karlmartens.ui.widget.TimeSeriesTableItem;
 
-import org.eclipse.jface.util.Policy;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
@@ -48,17 +45,16 @@ import org.eclipse.swt.widgets.Event;
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 
-final class ViewerClipboardManager {
+final class ViewerClipboardManager extends CellSelectionModifier {
 
   private final TimeSeriesTableViewer _viewer;
   private final int _operations;
   private final ClipboardStrategy _clipboardStrategy;
-  private final EditingSupportProxy _editingSupportCache;
 
   ViewerClipboardManager(TimeSeriesTableViewer viewer, int operations) {
+    super(viewer);
     _viewer = viewer;
     _operations = operations;
-    _editingSupportCache = new EditingSupportProxy(viewer);
     _clipboardStrategy = new ClipboardStrategy();
     hookControl(viewer.getControl());
   }
@@ -74,93 +70,98 @@ final class ViewerClipboardManager {
     control.removeKeyListener(_listener);
   }
 
-  private void handleCopy() {
-    if ((_operations & OPERATION_COPY) == 0)
-      return;
-    final Rectangle region = computeRegion(_viewer.getControl().getCellSelections());
-    if (!isRegionValid(region))
-      return;
+  private boolean copy() {
+    final Point[] cells = _viewer.getControl().getCellSelections();
+    Arrays.sort(cells, _comparator);
+    final int length = computeRegion(cells);
+    if (length <= 0)
+      return false;
 
-    doCopy(region);
+    final String[] values = getValues(cells);
+
+    final StringWriter sw = new StringWriter();
+    final CSVWriter writer = new CSVWriter(sw, '\t');
+    for (int i = 0; i < cells.length / length; i++) {
+      final String[] row = new String[length];
+      System.arraycopy(values, i * length, row, 0, row.length);
+      writer.writeNext(row);
+    }
+
+    try {
+      writer.close();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+
+    final Clipboard cb = new Clipboard(_viewer.getControl().getDisplay());
+    cb.setContents(new String[] { sw.toString() }, new Transfer[] { TextTransfer.getInstance() });
+    cb.dispose();
+    return true;
   }
 
-  private void handlePaste() {
-    if ((_operations & OPERATION_COPY) == 0)
-      return;
-
-    final Rectangle region = computeRegion(_viewer.getControl().getCellSelections());
-    if (!isRegionValid(region))
-      return;
+  private boolean paste() {
+    final Point[] cells = _viewer.getControl().getCellSelections();
+    Arrays.sort(cells, _comparator);
+    final int length = computeRegion(cells);
+    if (length <= 0)
+      return length == 0;
 
     String[][] data = readFromClipboard();
     if (data.length == 0)
-      return;
+      return true;
 
     final Rectangle dataRect = new Rectangle(0, 0, 0, data.length);
     for (String[] dataRow : data) {
       dataRect.width = Math.max(dataRect.width, dataRow.length);
     }
 
+    final Point anchor = cells[0];
     final Rectangle targetRect;
-    if (region.width == 1 && region.height == 1) {
+    if (cells.length == 1) {
       // Paste top-left anchor
-      final int width = Math.min(dataRect.width, _viewer.doGetColumnCount() - region.x);
-      final int height = Math.min(dataRect.height, _viewer.doGetItemCount() - region.y);
-      targetRect = new Rectangle(region.x, region.y, width, height);
+      final int width = Math.min(dataRect.width, _viewer.doGetColumnCount() - anchor.x);
+      final int height = Math.min(dataRect.height, _viewer.doGetItemCount() - anchor.y);
+      targetRect = new Rectangle(anchor.x, anchor.y, width, height);
     } else if (dataRect.width == 1 && dataRect.height == 1) {
       // Fill
-      final int width = Math.min(region.width, _viewer.doGetColumnCount() - region.x);
-      final int height = Math.min(region.height, _viewer.doGetItemCount() - region.y);
-      targetRect = new Rectangle(region.x, region.y, width, height);
+      final int width = Math.min(length, _viewer.doGetColumnCount() - anchor.x);
+      final int height = Math.min(cells.length / length, _viewer.doGetItemCount() - anchor.y);
+      targetRect = new Rectangle(anchor.x, anchor.y, width, height);
 
-      final String[][] newData = new String[region.height][region.width];
+      final String[][] newData = new String[height][width];
       for (String[] r : newData) {
         Arrays.fill(r, data[0][0]);
       }
       data = newData;
     } else {
       // Paste into region
-      final int width = Math.min(region.width, _viewer.doGetColumnCount() - region.x);
-      final int height = Math.min(region.height, _viewer.doGetItemCount() - region.y);
-      targetRect = new Rectangle(region.x, region.y, width, height);
+      final int width = Math.min(length, _viewer.doGetColumnCount() - anchor.x);
+      final int height = Math.min(cells.length / length, _viewer.doGetItemCount() - anchor.y);
+      targetRect = new Rectangle(anchor.x, anchor.y, width, height);
     }
 
-    if (!isRegionEditable(targetRect))
-      return;
+    final Point[] targetCells = computeCells(targetRect);
+    if (!isEditable(targetCells))
+      return false;
 
     final String[] values = new String[targetRect.width * targetRect.height];
     Arrays.fill(values, "");
     copy(data, values, new Point(targetRect.width, targetRect.height));
-    doSet(targetRect, values);
+    setValues(targetCells, values);
     _viewer.refresh();
+    return true;
   }
 
-  private void handleCut() {
-    if ((_operations & OPERATION_COPY) == 0)
-      return;
+  private boolean handleCut() {
+    if (!copy())
+      return false;
 
-    final Rectangle region = computeRegion(_viewer.getControl().getCellSelections());
-    if (!isRegionValid(region))
-      return;
-
-    if (!isRegionEditable(region))
-      return;
-
-    doCopy(region);
-
-    final String[] values = new String[region.width * region.height];
+    final Point[] cells = _viewer.getControl().getCellSelections();
+    final String[] values = new String[cells.length];
     Arrays.fill(values, "");
-    doSet(region, values);
+    setValues(cells, values);
     _viewer.refresh();
-  }
-
-  private void copy(String[][] source, String[] dest, Point dimensions) {
-    for (int i = 0; i < Math.min(dimensions.y, source.length); i++) {
-      final String[] sourceRow = source[i];
-      for (int j = 0; j < Math.min(dimensions.x, sourceRow.length); j++) {
-        dest[i * dimensions.x + j] = sourceRow[j];
-      }
-    }
+    return true;
   }
 
   private String[][] readFromClipboard() {
@@ -184,122 +185,73 @@ final class ViewerClipboardManager {
     }
   }
 
-  private void doCopy(Rectangle region) {
-    final StringWriter sw = new StringWriter();
-    final CSVWriter writer = new CSVWriter(sw, '\t');
-    for (int y = region.y; y < (region.y + region.height); y++) {
-      final String[] row = new String[region.width];
-      for (int i = 0; i < row.length; i++) {
-        final int x = region.x + i;
-        final TimeSeriesTableItem item = _viewer.doGetItem(y);
-        final int columnCount = _viewer.getControl().getColumnCount();
-        final String text;
-        if (x < columnCount) {
-          text = item.getText(x);
-        } else {
-          text = Double.toString(item.getValue(x - columnCount));
-        }
-        row[i] = text;
-      }
+  private static int computeRegion(Point[] cells) {
+    if (cells == null || cells.length == 0)
+      return 0;
 
-      writer.writeNext(row);
-    }
-    try {
-      writer.close();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-
-    final Clipboard cb = new Clipboard(_viewer.getControl().getDisplay());
-    cb.setContents(new String[] { sw.toString() }, new Transfer[] { TextTransfer.getInstance() });
-    cb.dispose();
-  }
-
-  private void doSet(Rectangle region, String[] values) {
-    final int firstTimeValueIndex = _viewer.getControl().getColumnCount();
-    final TimeSeriesEditingSupport timeValueEditingSupport = _viewer.getEditingSupport();
-
-    for (int y = region.y; y < (region.y + region.height); y++) {
-      final TimeSeriesTableItem item = _viewer.doGetItem(y);
-      for (int x = region.x; x < (region.x + region.width); x++) {
-        _editingSupportCache._base = getViewerColumn(x).doGetEditingSupport();
-        final int index = (y - region.y) * region.width + (x - region.x);
-        if (x < firstTimeValueIndex) {
-          _editingSupportCache.setValue(item.getData(), values[index]);
-        } else {
-          final int vIndex = x - firstTimeValueIndex;
-          try {
-            final Double value = Double.valueOf(values[index]);
-            timeValueEditingSupport.setValue(item.getData(), vIndex, value == null ? 0.0 : value.doubleValue());
-          } catch (NumberFormatException e) {
-            timeValueEditingSupport.setValue(item.getData(), vIndex, 0.0);
-          }
-        }
-      }
-    }
-  }
-
-  private boolean isRegionValid(Rectangle region) {
-    if (region.x < 0 || region.y < 0 || region.width <= 0 || region.height <= 0)
-      return false;
-
-    return true;
-  }
-
-  private boolean isRegionEditable(Rectangle region) {
-    for (int y = region.y; y < (region.y + region.height); y++) {
-      final TimeSeriesTableItem item = _viewer.doGetItem(y);
-      for (int x = region.x; x < (region.x + region.width); x++) {
-        _editingSupportCache._base = getViewerColumn(x).doGetEditingSupport();
-        if (!_editingSupportCache.canEdit(item.getData()))
-          return false;
-      }
-    }
-
-    return true;
-  }
-
-  private TimeSeriesTableViewerColumn getViewerColumn(int index) {
-    final TimeSeriesTableColumn column = (TimeSeriesTableColumn) _viewer.doGetColumn(index);
-    return (TimeSeriesTableViewerColumn) column.getData(Policy.JFACE + ".columnViewer");
-  }
-
-  private Rectangle computeRegion(Point[] cells) {
-    if (cells.length <= 0)
-      return new Rectangle(0, 0, 0, 0);
-
-    final Rectangle r = new Rectangle(cells[0].x, cells[0].y, 1, 1);
+    final Point origin = cells[0];
+    int length = 0;
     for (Point cell : cells) {
-      final int dx = cell.x - r.x;
-      if (dx < 0) {
-        r.x += dx;
-        r.width -= dx;
-      }
+      if (cell.y != origin.y)
+        break;
 
-      if (dx >= r.width) {
-        r.width = dx + 1;
-      }
-
-      final int dy = cell.y - r.y;
-      if (dy < 0) {
-        r.y += dy;
-        r.height -= dy;
-      }
-
-      if (dy >= r.height) {
-        r.height = dy + 1;
-      }
+      length++;
     }
 
-    final BitSet set = new BitSet(r.width * r.height);
-    for (Point cell : cells) {
-      set.set((cell.y - r.y) * r.width + (cell.x - r.x));
-    }
-    if (set.cardinality() != (r.width * r.height))
-      return new Rectangle(0, 0, 0, 0);
+    if ((cells.length % length) != 0)
+      return -1;
 
-    return r;
+    for (int i = length; i < cells.length; i++) {
+      final int cIdx = i % length;
+      if (cIdx != 0 && cells[i].y != cells[i - 1].y)
+        return -1;
+
+      if (cells[cIdx].x != cells[i].x)
+        return -1;
+    }
+
+    return length;
   }
+
+  private static Point[] computeCells(Rectangle region) {
+    final Point[] pts = new Point[region.width * region.height];
+    int i = 0;
+    for (int y = region.y; y < region.y + region.height; y++) {
+      for (int x = region.x; x < region.x + region.width; x++) {
+        pts[i++] = new Point(x, y);
+      }
+    }
+    return pts;
+  }
+
+  private static void copy(String[][] source, String[] dest, Point dimensions) {
+    for (int i = 0; i < Math.min(dimensions.y, source.length); i++) {
+      final String[] sourceRow = source[i];
+      for (int j = 0; j < Math.min(dimensions.x, sourceRow.length); j++) {
+        dest[i * dimensions.x + j] = sourceRow[j];
+      }
+    }
+  }
+
+  private final Comparator<Point> _comparator = new Comparator<Point>() {
+    @Override
+    public int compare(Point o1, Point o2) {
+      if (o1 == o2)
+        return 0;
+
+      if (o1 == null)
+        return -1;
+
+      if (o2 == null)
+        return 1;
+
+      int i = o1.y - o2.y;
+      if (i != 0)
+        return i;
+
+      return o1.x - o2.x;
+    }
+  };
 
   private final Listener _listener = new Listener();
 
@@ -320,15 +272,18 @@ final class ViewerClipboardManager {
 
       switch (_clipboardStrategy.getOperation(event)) {
         case OPERATION_COPY:
-          handleCopy();
+          if ((_operations & OPERATION_COPY) > 0)
+            copy();
           break;
 
         case OPERATION_PASTE:
-          handlePaste();
+          if ((_operations & OPERATION_COPY) > 0)
+            paste();
           break;
 
         case OPERATION_CUT:
-          handleCut();
+          if ((_operations & OPERATION_COPY) > 0)
+            handleCut();
           break;
       }
     }
