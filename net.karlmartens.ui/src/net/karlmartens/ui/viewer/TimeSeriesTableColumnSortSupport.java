@@ -31,18 +31,20 @@ import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 
-public final class TimeSeriesTableComparator {
+public final class TimeSeriesTableColumnSortSupport {
 
   private final TimeSeriesTableViewer _viewer;
   private final Comparator _comparator = new Comparator();
 
-  public TimeSeriesTableComparator(TimeSeriesTableViewer viewer) {
+  public TimeSeriesTableColumnSortSupport(TimeSeriesTableViewer viewer) {
     _viewer = viewer;
 
     final TimeSeriesTable table = _viewer.getControl();
-    for (int i = 0; i <= table.getColumnCount(); i++) {
+    for (int i = 0; i < table.getColumnCount(); i++) {
       new Listener(table.getColumn(i));
     }
+
+    new Listener(table.getPeriodColumn());
   }
 
   private class Listener implements SelectionListener, DisposeListener {

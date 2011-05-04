@@ -197,7 +197,6 @@ public final class TimeSeriesTableViewerTest {
     });
 
     new ViewerClipboardManager(viewer, OPERATION_COPY | OPERATION_CUT | OPERATION_PASTE);
-    new TimeSeriesTableComparator(viewer);
 
     final Display display = shell.getDisplay();
     shell.open();
@@ -238,6 +237,8 @@ public final class TimeSeriesTableViewerTest {
       c2.setEditingSupport(new TestBooleanEditingSupport(viewer, 1));
       c2.getColumn().setText("Test 2");
       c2.getColumn().setWidth(60);
+
+      new TimeSeriesTableColumnSortSupport(viewer);
 
       viewer.setInput(_input);
 

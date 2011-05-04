@@ -303,6 +303,11 @@ public final class TimeSeriesTable extends Composite {
     return _periodColumn;
   }
 
+  public TimeSeriesTableColumn getPeriodColumn() {
+    checkWidget();
+    return _periodColumn;
+  }
+
   public Rectangle getVisibleDataCells() {
     checkWidget();
 
@@ -863,7 +868,7 @@ public final class TimeSeriesTable extends Composite {
   }
 
   private void checkColumnIndex(int index) {
-    if (index < 0 || index >= (_columnCount + Math.max(1, _periods.length)))
+    if (index < 0 || index >= (_columnCount + _periods.length))
       SWT.error(SWT.ERROR_INVALID_RANGE);
   }
 
