@@ -99,6 +99,15 @@ public final class TextCellEditor extends org.eclipse.jface.viewers.TextCellEdit
   }
 
   @Override
+  public LayoutData getLayoutData() {
+    // This is to handle variations in eclipse versions; some supported versions
+    // leave this at the default of 50 others set it to zero.
+    final LayoutData data = super.getLayoutData();
+    data.minimumWidth = 0;
+    return data;
+  }
+
+  @Override
   public Text getControl() {
     return (Text) super.getControl();
   }
