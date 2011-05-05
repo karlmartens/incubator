@@ -197,7 +197,7 @@ final class TimeSeriesColumnManager {
       }
 
       if (e.x - r.x <= 5) {
-        for (int i = cellCord.x; i >= 0; i--) {
+        for (int i = cellCord.x - 1; i >= 0; i--) {
           final TimeSeriesTableColumn pColumn = _container.getColumn(i);
           if (pColumn.isVisible()) {
             _resizeColumnAction.setColumnIndex(i);
