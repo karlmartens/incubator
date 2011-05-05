@@ -23,6 +23,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
@@ -73,7 +74,7 @@ public final class CellSelectionManager {
     _table.setCellSelections(_focusCell == null ? new Point[0] : new Point[] { _focusCell });
   }
 
-  void expandSelection(Point cell) {
+  private void expandSelection(Point cell) {
     if (cell == null)
       return;
 
@@ -84,14 +85,26 @@ public final class CellSelectionManager {
       return;
     }
 
-    final Point vFocusCell = new Point(_focusCell.x, _focusCell.y);
+    if (cell.equals(_expansionCell))
+      return;
+
+    final int dirX = _focusCell.x > cell.x ? -1 : 1;
+    final int dirY = _focusCell.y > cell.y ? -1 : 1;
+
     final Point vCell = new Point(cell.x, cell.y);
+    final Rectangle visible = _table.getVisibleDataCells();
+    final int numFixedCols = _table.getColumnCount();
+    if (visible.x > 0) {
+      if (dirX < 0 && cell.x == numFixedCols - 1) {
+        vCell.x = numFixedCols + visible.x - 1;
+      } else if (dirX > 0 && cell.x == numFixedCols + visible.x) {
+        vCell.x = numFixedCols;
+      }
+    }
 
-    final int dirX = vFocusCell.x > vCell.x ? -1 : 1;
-    final int dirY = vFocusCell.y > vCell.y ? -1 : 1;
-    final int dx = Math.abs(vFocusCell.x - vCell.x) + 1;
-    final int dy = Math.abs(vFocusCell.y - vCell.y) + 1;
-
+    final int dx = Math.abs(_focusCell.x - vCell.x) + 1;
+    final int dy = Math.abs(_focusCell.y - vCell.y) + 1;
+    final Point vFocusCell = new Point(_focusCell.x, _focusCell.y);
     final Point[] selection = new Point[dx * dy];
     int index = 0;
     for (int y = 0; y < dy; y++) {
@@ -104,8 +117,13 @@ public final class CellSelectionManager {
       }
     }
 
-    _expansionCell = cell;
+    _expansionCell = vCell;
     _table.setCellSelections(selection);
+    if (vCell.x < numFixedCols && dirX < 0) {
+      _table.showColumn(numFixedCols);
+    } else {
+      _table.showColumn(vCell.x);
+    }
   }
 
   private TimeSeriesTableItem getItemAtIndex(Point pt) {
@@ -158,10 +176,6 @@ public final class CellSelectionManager {
       return;
 
     final Point cell = getCell(new Point(e.x, e.y));
-    if (cell == null) {
-      return;
-    }
-
     expandSelection(cell);
   }
 
