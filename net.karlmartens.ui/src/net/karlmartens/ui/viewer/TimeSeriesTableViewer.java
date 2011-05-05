@@ -29,6 +29,7 @@ import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ColumnViewerEditor;
 import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Item;
@@ -43,7 +44,11 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
   private TimeSeriesTableViewerColumn _periodColumn;
 
   public TimeSeriesTableViewer(Composite parent) {
-    this(new TimeSeriesTable(parent));
+    this(parent, SWT.NONE);
+  }
+
+  public TimeSeriesTableViewer(Composite parent, int style) {
+    this(new TimeSeriesTable(parent, style));
   }
 
   public TimeSeriesTableViewer(TimeSeriesTable control) {

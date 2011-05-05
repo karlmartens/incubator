@@ -27,9 +27,14 @@ import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.ResourceBundle;
 
+import net.karlmartens.ui.Activator;
 import net.karlmartens.ui.widget.ClipboardStrategy;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
@@ -41,6 +46,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Shell;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
@@ -74,8 +80,13 @@ final class ViewerClipboardManager extends CellSelectionModifier {
     final Point[] cells = _viewer.getControl().getCellSelections();
     Arrays.sort(cells, _comparator);
     final int length = computeRegion(cells);
-    if (length <= 0)
+    if (length == 0)
+      return true;
+
+    if (length < 0) {
+      showUnsupportedDialog(_viewer.getControl().getShell());
       return false;
+    }
 
     final String[] values = getValues(cells);
 
@@ -103,8 +114,13 @@ final class ViewerClipboardManager extends CellSelectionModifier {
     final Point[] cells = _viewer.getControl().getCellSelections();
     Arrays.sort(cells, _comparator);
     final int length = computeRegion(cells);
-    if (length <= 0)
-      return length == 0;
+    if (length == 0)
+      return true;
+
+    if (length < 0) {
+      showUnsupportedDialog(_viewer.getControl().getShell());
+      return false;
+    }
 
     String[][] data = readFromClipboard();
     if (data.length == 0)
@@ -152,11 +168,14 @@ final class ViewerClipboardManager extends CellSelectionModifier {
     return true;
   }
 
-  private boolean handleCut() {
+  private boolean cut() {
     if (!copy())
       return false;
 
     final Point[] cells = _viewer.getControl().getCellSelections();
+    if (cells == null || cells.length == 0)
+      return true;
+
     final String[] values = new String[cells.length];
     Arrays.fill(values, "");
     setValues(cells, values);
@@ -233,6 +252,14 @@ final class ViewerClipboardManager extends CellSelectionModifier {
     }
   }
 
+  private static void showUnsupportedDialog(Shell shell) {
+    final ResourceBundle bundle = ResourceBundle.getBundle("net.karlmartens.ui.locale.messages");
+    final String title = bundle.getString("ViewerClipboardManager.Error.Unsupported.Title");
+    final String message = bundle.getString("ViewerClipboardManager.Error.MultiSelection.Message");
+    final IStatus status = new Status(IStatus.INFO, Activator.PLUGIN_ID, message);
+    ErrorDialog.openError(shell, title, null, status);
+  }
+
   private final Comparator<Point> _comparator = new Comparator<Point>() {
     @Override
     public int compare(Point o1, Point o2) {
@@ -283,7 +310,7 @@ final class ViewerClipboardManager extends CellSelectionModifier {
 
         case OPERATION_CUT:
           if ((_operations & OPERATION_COPY) > 0)
-            handleCut();
+            cut();
           break;
       }
     }

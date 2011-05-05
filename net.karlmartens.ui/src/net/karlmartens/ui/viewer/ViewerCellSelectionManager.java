@@ -50,7 +50,7 @@ public final class ViewerCellSelectionManager {
 
   private void handleSelectionChanged() {
     if (_viewer.getSelection().isEmpty()) {
-      _manager.setFocusCell(null);
+      _manager.setFocusCell(null, false);
     }
   }
 
@@ -74,7 +74,7 @@ public final class ViewerCellSelectionManager {
 
   public void setFocusCell(Point cell) {
     if (cell != null) {
-      _manager.setFocusCell(cell);
+      _manager.setFocusCell(cell, false);
     }
   }
 }

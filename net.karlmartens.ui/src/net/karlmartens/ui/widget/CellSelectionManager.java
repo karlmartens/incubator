@@ -35,6 +35,7 @@ public final class CellSelectionManager {
   private final ItemListener _itemListener;
   private Point _focusCell;
   private Point _expansionCell;
+  private Point[] _selections = new Point[0];
   private boolean _dragExpand = false;
 
   CellSelectionManager(TimeSeriesTable table) {
@@ -49,7 +50,7 @@ public final class CellSelectionManager {
     return _focusCell;
   }
 
-  public void setFocusCell(Point cell) {
+  public void setFocusCell(Point cell, boolean multi) {
     if (NullSafe.equals(cell, _focusCell))
       return;
 
@@ -61,6 +62,12 @@ public final class CellSelectionManager {
     _focusCell = cell;
     _expansionCell = cell;
 
+    if (multi) {
+      _selections = _table.getCellSelections();
+    } else {
+      _selections = new Point[0];
+    }
+
     final TimeSeriesTableItem newItem = getItemAtIndex(_focusCell);
     if (newItem != null && !newItem.isDisposed()) {
       newItem.addDisposeListener(_itemListener);
@@ -71,16 +78,22 @@ public final class CellSelectionManager {
       _table.showColumn(_focusCell.x);
     }
 
-    _table.setCellSelections(_focusCell == null ? new Point[0] : new Point[] { _focusCell });
+    final int insert = _focusCell == null ? 0 : 1;
+    final Point[] newSelections = new Point[_selections.length + insert];
+    System.arraycopy(_selections, 0, newSelections, insert, _selections.length);
+    if (_focusCell != null) {
+      newSelections[0] = _focusCell;
+    }
+    _table.setCellSelections(newSelections);
   }
 
-  private void expandSelection(Point cell) {
+  private void expandSelection(Point cell, boolean multi) {
     if (cell == null)
       return;
 
     if (_focusCell == null) {
       if (cell != null) {
-        setFocusCell(cell);
+        setFocusCell(cell, multi);
       }
       return;
     }
@@ -102,10 +115,14 @@ public final class CellSelectionManager {
       }
     }
 
+    if (!multi) {
+      _selections = new Point[0];
+    }
+
     final int dx = Math.abs(_focusCell.x - vCell.x) + 1;
     final int dy = Math.abs(_focusCell.y - vCell.y) + 1;
     final Point vFocusCell = new Point(_focusCell.x, _focusCell.y);
-    final Point[] selection = new Point[dx * dy];
+    final Point[] selection = new Point[dx * dy + _selections.length];
     int index = 0;
     for (int y = 0; y < dy; y++) {
       final int row = vFocusCell.y;
@@ -116,6 +133,7 @@ public final class CellSelectionManager {
         vFocusCell.x += dirX;
       }
     }
+    System.arraycopy(_selections, 0, selection, index, _selections.length);
 
     _expansionCell = vCell;
     _table.setCellSelections(selection);
@@ -160,9 +178,9 @@ public final class CellSelectionManager {
       return;
 
     if ((e.stateMask & SWT.SHIFT) > 0) {
-      expandSelection(cell);
+      expandSelection(cell, isMulti(e));
     } else if (cell != null) {
-      setFocusCell(cell);
+      setFocusCell(cell, isMulti(e));
       _dragExpand = true;
     }
   }
@@ -176,20 +194,20 @@ public final class CellSelectionManager {
       return;
 
     final Point cell = getCell(new Point(e.x, e.y));
-    expandSelection(cell);
+    expandSelection(cell, isMulti(e));
   }
 
   private void handleKeyDown(Event e) {
     if (_navigationStrategy.isNavigationEvent(e)) {
       final Point cell = _navigationStrategy.findSelectedCell(_table, _focusCell, e);
       if (cell != null) {
-        setFocusCell(cell);
+        setFocusCell(cell, false);
       }
     }
 
     if (_navigationStrategy.isExpandEvent(e)) {
       final Point cell = _navigationStrategy.findSelectedCell(_table, _expansionCell, e);
-      expandSelection(cell);
+      expandSelection(cell, false);
     }
   }
 
@@ -198,14 +216,14 @@ public final class CellSelectionManager {
       return;
 
     final int row = _table.indexOf((TimeSeriesTableItem) e.item);
-    setFocusCell(new Point(_focusCell.x, row));
+    setFocusCell(new Point(_focusCell.x, row), false);
   }
 
   private void handleFocusIn(Event e) {
     if (_focusCell != null || _table.isDisposed() || _table.getItemCount() <= 0 || _table.getColumnCount() + _table.getPeriodCount() <= 0)
       return;
 
-    setFocusCell(new Point(0, 0));
+    setFocusCell(new Point(0, 0), false);
   }
 
   private Point getCell(Point position) {
@@ -220,6 +238,11 @@ public final class CellSelectionManager {
     }
 
     return null;
+  }
+
+  private boolean isMulti(Event e) {
+    return (_table.getStyle() & SWT.MULTI) > 0 && //
+        (e.stateMask & SWT.MOD1) > 0;
   }
 
   private final class TableListener implements Listener {
@@ -261,7 +284,7 @@ public final class CellSelectionManager {
   private final class ItemListener implements DisposeListener {
     @Override
     public void widgetDisposed(DisposeEvent e) {
-      setFocusCell(null);
+      setFocusCell(null, false);
     }
   }
 }

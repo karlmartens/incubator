@@ -93,8 +93,8 @@ public final class TimeSeriesTable extends Composite {
   private int[] _lastRowSelection = new int[0];
   private int _lastIndexOf = -1;
 
-  public TimeSeriesTable(Composite parent) {
-    super(parent, SWT.NONE);
+  public TimeSeriesTable(Composite parent, int style) {
+    super(parent, style);
     setLayout(new FormLayout());
 
     _defaultFont = new Font(getDisplay(), "Arial", 10, SWT.BOLD);
@@ -1028,7 +1028,7 @@ public final class TimeSeriesTable extends Composite {
         _headerRenderer.setFont(getFont());
         return _headerRenderer;
       }
-      
+
       if (col >= (_columnCount + _periods.length))
         return _renderer;
 

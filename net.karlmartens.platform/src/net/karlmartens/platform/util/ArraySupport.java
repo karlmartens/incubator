@@ -24,99 +24,99 @@ public final class ArraySupport {
   public static long max(long[] arr) {
     if (arr.length == 0)
       throw new IllegalArgumentException();
-    
+
     long max = arr[0];
-    for (int i=1; i<arr.length; i++) {
+    for (int i = 1; i < arr.length; i++) {
       max = Math.max(max, arr[i]);
     }
-    
+
     return max;
   }
 
   public static int max(int[] arr) {
     if (arr.length == 0)
       throw new IllegalArgumentException();
-    
+
     int max = arr[0];
-    for (int i=1; i<arr.length; i++) {
+    for (int i = 1; i < arr.length; i++) {
       max = Math.max(max, arr[i]);
     }
-    
+
     return max;
   }
 
   public static double max(double[] arr) {
     if (arr.length == 0)
       throw new IllegalArgumentException();
-    
+
     double max = arr[0];
-    for (int i=1; i<arr.length; i++) {
+    for (int i = 1; i < arr.length; i++) {
       max = Math.max(max, arr[i]);
     }
-    
+
     return max;
   }
 
   public static float max(float[] arr) {
     if (arr.length == 0)
       throw new IllegalArgumentException();
-    
+
     float max = arr[0];
-    for (int i=1; i<arr.length; i++) {
+    for (int i = 1; i < arr.length; i++) {
       max = Math.max(max, arr[i]);
     }
-    
+
     return max;
   }
-  
+
   public static long min(long[] arr) {
     if (arr.length == 0)
       throw new IllegalArgumentException();
-    
+
     long min = arr[0];
-    for (int i=0; i<arr.length; i++) {
+    for (int i = 0; i < arr.length; i++) {
       min = Math.min(min, arr[i]);
     }
-    
+
     return min;
   }
-  
+
   public static int min(int[] arr) {
     if (arr.length == 0)
       throw new IllegalArgumentException();
-    
+
     int min = arr[0];
-    for (int i=0; i<arr.length; i++) {
+    for (int i = 0; i < arr.length; i++) {
       min = Math.min(min, arr[i]);
     }
-    
+
     return min;
   }
-  
+
   public static double min(double[] arr) {
     if (arr.length == 0)
       throw new IllegalArgumentException();
-    
+
     double min = arr[0];
-    for (int i=0; i<arr.length; i++) {
+    for (int i = 0; i < arr.length; i++) {
       min = Math.min(min, arr[i]);
     }
-    
+
     return min;
   }
-  
+
   public static float min(float[] arr) {
     if (arr.length == 0)
       throw new IllegalArgumentException();
-    
+
     float min = arr[0];
-    for (int i=0; i<arr.length; i++) {
+    for (int i = 0; i < arr.length; i++) {
       min = Math.min(min, arr[i]);
     }
-    
+
     return min;
   }
-  
+
   public static int[] minus(int[] first, int[] second) {
     final BitSet set = new BitSet();
     for (int i : first)

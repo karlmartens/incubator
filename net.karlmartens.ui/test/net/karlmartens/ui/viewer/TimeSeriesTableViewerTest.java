@@ -214,7 +214,7 @@ public final class TimeSeriesTableViewerTest {
     public TimeSeriesTableViewer run(Shell shell) {
       final Display display = shell.getDisplay();
 
-      final TimeSeriesTableViewer viewer = new TimeSeriesTableViewer(shell);
+      final TimeSeriesTableViewer viewer = new TimeSeriesTableViewer(shell, SWT.MULTI);
       viewer.setContentProvider(new TestTimeSeriesContentProvider(_dates, 3));
       viewer.setLabelProvider(new TestColumnLabelProvider(0));
       viewer.setEditingSupport(new TestTimeSeriesEditingSupport(new DecimalFormat("#,##0.0000"), 3));

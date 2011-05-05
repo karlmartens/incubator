@@ -44,7 +44,7 @@ public class TimeSeriesTableTest {
       periods[i] = DEFAULT_DATE.plusMonths(i);
     }
 
-    final TimeSeriesTable table = new TimeSeriesTable(shell);
+    final TimeSeriesTable table = new TimeSeriesTable(shell, SWT.NONE);
     table.setHeaderVisible(true);
     table.setScrollDataMode(ScrollDataMode.SELECTED_ROWS);
     table.setPeriods(periods);
