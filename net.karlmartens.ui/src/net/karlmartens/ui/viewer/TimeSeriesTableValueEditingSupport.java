@@ -41,7 +41,7 @@ class TimeSeriesTableValueEditingSupport extends EditingSupport {
   @Override
   protected CellEditor getCellEditor(Object element) {
     if (_cellEditor == null) {
-      _cellEditor = new TextCellEditor((Composite) _viewer.getControl(), SWT.RIGHT);
+      _cellEditor = new TextCellEditor((Composite) _viewer.getControl(), SWT.SINGLE | SWT.RIGHT);
     }
     return _cellEditor;
   }
