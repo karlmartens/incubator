@@ -48,6 +48,7 @@ import org.eclipse.swt.events.MouseTrackListener;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -74,6 +75,7 @@ public final class SparklineScrollBar extends Composite {
   private Layer _thumbLayer;
   private Layer _highlightLayer;
   private RectangleFigure _thumbFigure;
+  private Layer _labelLayer;
   private Label _labelFigure;
 
   private int _minimum = 0;
@@ -151,8 +153,11 @@ public final class SparklineScrollBar extends Composite {
     _thumbLayer.setLayoutManager(new XYLayout());
     container.add(_thumbLayer, 2);
 
+    _labelLayer = new Layer();
+    _labelLayer.setLayoutManager(new XYLayout());
+    container.add(_labelLayer, 3);
+
     _thumbFigure = new RectangleFigure();
-    _thumbFigure.setLayoutManager(new XYLayout());
     _thumbFigure.setBackgroundColor(ColorConstants.yellow);
     _thumbFigure.setForegroundColor(ColorConstants.yellow);
     _thumbFigure.setAlpha(THUMB_ALPHA_DEFAULT);
@@ -165,7 +170,7 @@ public final class SparklineScrollBar extends Composite {
     _labelFigure.setTextAlignment(Label.LEFT);
     _labelFigure.setForegroundColor(LABEL_DEFAULT_COLOR);
     _labelFigure.setVisible(false);
-    _thumbFigure.add(_labelFigure, new org.eclipse.draw2d.geometry.Rectangle(2, 2, 100, 10));
+    _labelLayer.add(_labelFigure);
 
     return container;
   }
@@ -372,12 +377,12 @@ public final class SparklineScrollBar extends Composite {
 
   public void setLabel(String text) {
     _labelFigure.setText(text);
-    _labelFigure.invalidate();
+    refreshLabel();
   }
 
   public void setLabelFont(Font font) {
     _labelFigure.setFont(font);
-    _labelFigure.invalidate();
+    refreshLabel();
   }
 
   public void setLabelColor(Color color) {
@@ -433,6 +438,7 @@ public final class SparklineScrollBar extends Composite {
     refreshSparkline();
     refreshHighlights();
     refreshThumb();
+    refreshLabel();
   }
 
   private void refreshHighlights() {
@@ -477,11 +483,24 @@ public final class SparklineScrollBar extends Composite {
   private void refreshThumb() {
     final Rectangle available = _track.getClientArea();
     _thumbLayer.setSize(available.width, available.height);
+    _labelLayer.setSize(available.width, available.height);
 
     final int x = computeX(_selection - _minimum);
     _thumbFigure.setLocation(new Point(x, 0));
     _thumbFigure.setSize(Math.max(5, available.width * _thumb / computeDataPoints()), available.height);
     _thumbFigure.invalidate();
+  }
+
+  private void refreshLabel() {
+    final GC gc = new GC(this);
+    gc.setFont(_labelFigure.getFont());
+    final org.eclipse.swt.graphics.Point extent = gc.stringExtent(_labelFigure.getText());
+    gc.dispose();
+
+    _labelFigure.setSize(extent.x, extent.y);
+    final int x = computeX(_selection - _minimum);
+    _labelFigure.setLocation(new Point(x + 3, 3));
+    _labelFigure.invalidate();
   }
 
   private void refreshSparkline() {

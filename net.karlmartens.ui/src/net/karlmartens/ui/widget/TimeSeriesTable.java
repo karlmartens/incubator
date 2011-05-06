@@ -358,6 +358,7 @@ public final class TimeSeriesTable extends Composite {
     _widths = newWidths;
 
     _hscroll.setMaximum(Math.max(1, _periods.length - 1));
+    doUpdateLabel();
     _table.redraw();
   }
 
@@ -366,6 +367,7 @@ public final class TimeSeriesTable extends Composite {
     checkNull(format);
 
     _dateFormat = format;
+    doUpdateLabel();
     _table.redraw();
   }
 
@@ -941,6 +943,15 @@ public final class TimeSeriesTable extends Composite {
     _hscroll.setDataPoints(data);
   }
 
+  private void doUpdateLabel() {
+    if (_periods.length == 0)
+      return;
+
+    final int selection = Math.max(Math.min(_hscroll.getSelection(), _periods.length - 1), 0);
+    final LocalDate date = _periods[selection];
+    _hscroll.setLabel(_dateFormat.format(date));
+  }
+
   private void doUpdateRows(int[] indices) {
     if (indices.length <= 0)
       return;
@@ -1171,6 +1182,7 @@ public final class TimeSeriesTable extends Composite {
 
       _hscroll.setThumb(Math.max(1, visible.width));
       _hscroll.setEnabled(true);
+      doUpdateLabel();
     }
 
     @Override
