@@ -35,6 +35,7 @@ import net.karlmartens.ui.widget.ClipboardStrategy;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
@@ -77,110 +78,140 @@ final class ViewerClipboardManager extends CellSelectionModifier {
   }
 
   private boolean copy() {
-    final Point[] cells = _viewer.getControl().getCellSelections();
-    Arrays.sort(cells, _comparator);
-    final int length = computeRegion(cells);
-    if (length == 0)
-      return true;
+    final boolean[] result = new boolean[1];
+    BusyIndicator.showWhile(_viewer.getControl().getDisplay(), new Runnable() {
+      @Override
+      public void run() {
+        final Point[] cells = _viewer.getControl().getCellSelections();
+        Arrays.sort(cells, _comparator);
+        final int length = computeRegion(cells);
+        if (length <= 0) {
+          result[0] = length == 0;
+          return;
+        }
 
-    if (length < 0) {
+        final String[] values = getValues(cells);
+
+        final StringWriter sw = new StringWriter();
+        final CSVWriter writer = new CSVWriter(sw, '\t');
+        for (int i = 0; i < cells.length / length; i++) {
+          final String[] row = new String[length];
+          System.arraycopy(values, i * length, row, 0, row.length);
+          writer.writeNext(row);
+        }
+
+        try {
+          writer.close();
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+
+        final Clipboard cb = new Clipboard(_viewer.getControl().getDisplay());
+        cb.setContents(new String[] { sw.toString() }, new Transfer[] { TextTransfer.getInstance() });
+        cb.dispose();
+        result[0] = true;
+      }
+    });
+
+    if (!result[0]) {
       showUnsupportedDialog(_viewer.getControl().getShell());
-      return false;
     }
-
-    final String[] values = getValues(cells);
-
-    final StringWriter sw = new StringWriter();
-    final CSVWriter writer = new CSVWriter(sw, '\t');
-    for (int i = 0; i < cells.length / length; i++) {
-      final String[] row = new String[length];
-      System.arraycopy(values, i * length, row, 0, row.length);
-      writer.writeNext(row);
-    }
-
-    try {
-      writer.close();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-
-    final Clipboard cb = new Clipboard(_viewer.getControl().getDisplay());
-    cb.setContents(new String[] { sw.toString() }, new Transfer[] { TextTransfer.getInstance() });
-    cb.dispose();
-    return true;
+    return result[0];
   }
 
   private boolean paste() {
-    final Point[] cells = _viewer.getControl().getCellSelections();
-    Arrays.sort(cells, _comparator);
-    final int length = computeRegion(cells);
-    if (length == 0)
-      return true;
+    final boolean[] result = new boolean[1];
+    BusyIndicator.showWhile(_viewer.getControl().getDisplay(), new Runnable() {
+      @Override
+      public void run() {
+        final Point[] cells = _viewer.getControl().getCellSelections();
+        Arrays.sort(cells, _comparator);
+        final int length = computeRegion(cells);
+        if (length <= 0) {
+          result[0] = length == 0;
+          return;
+        }
 
-    if (length < 0) {
-      showUnsupportedDialog(_viewer.getControl().getShell());
-      return false;
-    }
+        String[][] data = readFromClipboard();
+        if (data.length == 0) {
+          result[0] = true;
+          return;
+        }
 
-    String[][] data = readFromClipboard();
-    if (data.length == 0)
-      return true;
+        final Rectangle dataRect = new Rectangle(0, 0, 0, data.length);
+        for (String[] dataRow : data) {
+          dataRect.width = Math.max(dataRect.width, dataRow.length);
+        }
 
-    final Rectangle dataRect = new Rectangle(0, 0, 0, data.length);
-    for (String[] dataRow : data) {
-      dataRect.width = Math.max(dataRect.width, dataRow.length);
-    }
+        final Point anchor = cells[0];
+        final Rectangle targetRect;
+        if (cells.length == 1) {
+          // Paste top-left anchor
+          final int width = Math.min(dataRect.width, _viewer.doGetColumnCount() - anchor.x);
+          final int height = Math.min(dataRect.height, _viewer.doGetItemCount() - anchor.y);
+          targetRect = new Rectangle(anchor.x, anchor.y, width, height);
+        } else if (dataRect.width == 1 && dataRect.height == 1) {
+          // Fill
+          final int width = Math.min(length, _viewer.doGetColumnCount() - anchor.x);
+          final int height = Math.min(cells.length / length, _viewer.doGetItemCount() - anchor.y);
+          targetRect = new Rectangle(anchor.x, anchor.y, width, height);
 
-    final Point anchor = cells[0];
-    final Rectangle targetRect;
-    if (cells.length == 1) {
-      // Paste top-left anchor
-      final int width = Math.min(dataRect.width, _viewer.doGetColumnCount() - anchor.x);
-      final int height = Math.min(dataRect.height, _viewer.doGetItemCount() - anchor.y);
-      targetRect = new Rectangle(anchor.x, anchor.y, width, height);
-    } else if (dataRect.width == 1 && dataRect.height == 1) {
-      // Fill
-      final int width = Math.min(length, _viewer.doGetColumnCount() - anchor.x);
-      final int height = Math.min(cells.length / length, _viewer.doGetItemCount() - anchor.y);
-      targetRect = new Rectangle(anchor.x, anchor.y, width, height);
+          final String[][] newData = new String[height][width];
+          for (String[] r : newData) {
+            Arrays.fill(r, data[0][0]);
+          }
+          data = newData;
+        } else {
+          // Paste into region
+          final int width = Math.min(length, _viewer.doGetColumnCount() - anchor.x);
+          final int height = Math.min(cells.length / length, _viewer.doGetItemCount() - anchor.y);
+          targetRect = new Rectangle(anchor.x, anchor.y, width, height);
+        }
 
-      final String[][] newData = new String[height][width];
-      for (String[] r : newData) {
-        Arrays.fill(r, data[0][0]);
+        final Point[] targetCells = computeCells(targetRect);
+        if (!isEditable(targetCells)) {
+          result[0] = false;
+          return;
+        }
+
+        final String[] values = new String[targetRect.width * targetRect.height];
+        Arrays.fill(values, "");
+        copy(data, values, new Point(targetRect.width, targetRect.height));
+        setValues(targetCells, values);
+        _viewer.refresh();
+        result[0] = true;
       }
-      data = newData;
-    } else {
-      // Paste into region
-      final int width = Math.min(length, _viewer.doGetColumnCount() - anchor.x);
-      final int height = Math.min(cells.length / length, _viewer.doGetItemCount() - anchor.y);
-      targetRect = new Rectangle(anchor.x, anchor.y, width, height);
+    });
+
+    if (!result[0]) {
+      showUnsupportedDialog(_viewer.getControl().getShell());
     }
-
-    final Point[] targetCells = computeCells(targetRect);
-    if (!isEditable(targetCells))
-      return false;
-
-    final String[] values = new String[targetRect.width * targetRect.height];
-    Arrays.fill(values, "");
-    copy(data, values, new Point(targetRect.width, targetRect.height));
-    setValues(targetCells, values);
-    _viewer.refresh();
-    return true;
+    return result[0];
   }
 
   private boolean cut() {
     if (!copy())
       return false;
 
-    final Point[] cells = _viewer.getControl().getCellSelections();
-    if (cells == null || cells.length == 0)
-      return true;
+    final boolean[] result = new boolean[1];
+    BusyIndicator.showWhile(_viewer.getControl().getDisplay(), new Runnable() {
+      @Override
+      public void run() {
+        final Point[] cells = _viewer.getControl().getCellSelections();
+        if (cells == null || cells.length == 0) {
+          result[0] = true;
+          return;
+        }
 
-    final String[] values = new String[cells.length];
-    Arrays.fill(values, "");
-    setValues(cells, values);
-    _viewer.refresh();
-    return true;
+        final String[] values = new String[cells.length];
+        Arrays.fill(values, "");
+        setValues(cells, values);
+        _viewer.refresh();
+        result[0] = true;
+      }
+    });
+
+    return result[0];
   }
 
   private String[][] readFromClipboard() {
