@@ -142,6 +142,7 @@ public final class CellSelectionManager {
     } else {
       _table.showColumn(vCell.x);
     }
+    _table.showItem(_table.getItem(vCell.y));
   }
 
   private TimeSeriesTableItem getItemAtIndex(Point pt) {
