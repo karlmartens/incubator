@@ -150,16 +150,31 @@ final class ViewerClipboardManager extends CellSelectionModifier {
           final int width = Math.min(dataRect.width, _viewer.doGetColumnCount() - anchor.x);
           final int height = Math.min(dataRect.height, _viewer.doGetItemCount() - anchor.y);
           targetRect = new Rectangle(anchor.x, anchor.y, width, height);
-        } else if (dataRect.width == 1 && dataRect.height == 1) {
+        } else if (dataRect.width == 1 || dataRect.height == 1) {
           // Fill
           final int width = Math.min(length, _viewer.doGetColumnCount() - anchor.x);
           final int height = Math.min(cells.length / length, _viewer.doGetItemCount() - anchor.y);
           targetRect = new Rectangle(anchor.x, anchor.y, width, height);
 
           final String[][] newData = new String[height][width];
-          for (String[] r : newData) {
-            Arrays.fill(r, data[0][0]);
+          if (dataRect.width == 1) {
+            if (dataRect.height == 1) {
+              for (String[] r : newData) {
+                Arrays.fill(r, data[0][0]);
+              }
+            } else if (dataRect.height == targetRect.height) {
+              for (int i = 0; i < height; i++) {
+                Arrays.fill(newData[i], data[i][0]);
+              }
+            }
+          } else if (dataRect.width == targetRect.width) {
+            for (int x = 0; x < width; x++) {
+              for (int y = 0; y < height; y++) {
+                newData[y][x] = data[0][x];
+              }
+            }
           }
+
           data = newData;
         } else {
           // Paste into region
