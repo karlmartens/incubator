@@ -31,12 +31,12 @@ import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 
-public final class TimeSeriesTableColumnSortSupport {
+final class TimeSeriesTableColumnSortSupport {
 
   private final TimeSeriesTableViewer _viewer;
   private final Comparator _comparator = new Comparator();
 
-  public TimeSeriesTableColumnSortSupport(TimeSeriesTableViewer viewer) {
+  TimeSeriesTableColumnSortSupport(TimeSeriesTableViewer viewer) {
     _viewer = viewer;
 
     final TimeSeriesTable table = _viewer.getControl();

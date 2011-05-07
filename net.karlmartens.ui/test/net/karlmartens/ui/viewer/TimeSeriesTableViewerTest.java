@@ -239,7 +239,7 @@ public final class TimeSeriesTableViewerTest {
       c2.getColumn().setText("Test 2");
       c2.getColumn().setWidth(60);
 
-      new TimeSeriesTableColumnSortSupport(viewer);
+      viewer.addColumnSortSupport();
 
       viewer.setInput(_input);
 
