@@ -22,6 +22,9 @@ import java.text.DecimalFormat;
 import net.karlmartens.platform.text.LocalDateFormat;
 import net.karlmartens.ui.widget.TimeSeriesTable.ScrollDataMode;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.FillLayout;
@@ -52,6 +55,14 @@ public class TimeSeriesTableTest {
     table.setDateFormat(new LocalDateFormat(DateTimeFormat.forPattern("MMM yyyy")));
     table.setBackground(display.getSystemColor(SWT.COLOR_WHITE));
     table.setFont(new Font(display, "Arial", 10, SWT.NONE));
+
+    IMenuManager menuManager = table.getColumnMenuManager();
+    menuManager.appendToGroup(TimeSeriesTable.GROUP_COMMAND, new Action("Test") {
+      @Override
+      public void run() {
+        MessageDialog.openInformation(shell, "Test", "Test");
+      }
+    });
 
     final TimeSeriesTableColumn[] columns = { new TimeSeriesTableColumn(table, SWT.NONE), //
         new TimeSeriesTableColumn(table, SWT.CHECK), //

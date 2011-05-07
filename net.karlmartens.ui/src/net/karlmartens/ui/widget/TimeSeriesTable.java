@@ -24,6 +24,7 @@ import java.util.BitSet;
 import net.karlmartens.platform.text.LocalDateFormat;
 import net.karlmartens.platform.util.ArraySupport;
 
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -63,9 +64,15 @@ public final class TimeSeriesTable extends Composite {
 
   public enum ScrollDataMode {
     FOCUS_CELL, SELECTED_ROWS
-  };
+  }
+
+  public static final String DATA_COLUMN = "TimeSeriesTable.Column";
+
+  public static final String GROUP_COMMAND = "TimeSeriesTable.Group.Command";
+  public static final String GROUP_VISIBLE_COLUMNS = "TimeSeriesTable.Group.VisibleColumns";
 
   private final CellSelectionManager _cellSelectionManager;
+  private final TimeSeriesColumnManager _columnManager;
 
   private final TimeSeriesTableListener _listener;
   private final Font _defaultFont;
@@ -139,7 +146,7 @@ public final class TimeSeriesTable extends Composite {
     _cellSelectionManager = new CellSelectionManager(this);
     final PassthoughEventListener passthroughListener = new PassthoughEventListener(this);
     passthroughListener.addSource(_table);
-    new TimeSeriesColumnManager(this, _table);
+    _columnManager = new TimeSeriesColumnManager(this, _table);
     hookControls();
   }
 
@@ -153,6 +160,10 @@ public final class TimeSeriesTable extends Composite {
   public void setForeground(Color color) {
     super.setForeground(color);
     _table.setForeground(color);
+  }
+
+  public IMenuManager getColumnMenuManager() {
+    return _columnManager.getMenuManager();
   }
 
   public int getColumnCount() {

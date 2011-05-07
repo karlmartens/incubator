@@ -19,9 +19,10 @@ package net.karlmartens.ui.widget;
 
 import net.karlmartens.ui.action.ResizeAllColumnsAction;
 import net.karlmartens.ui.action.ResizeColumnAction;
-import net.karlmartens.ui.action.ToggleColumnVisibiltyAction;
 import net.karlmartens.ui.widget.TimeSeriesTable.KTableImpl;
 
+import org.eclipse.jface.action.GroupMarker;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.SWT;
@@ -63,12 +64,23 @@ final class TimeSeriesColumnManager {
     _container = container;
     _table = table;
 
-    _columnMenu = new MenuManager();
-
     _resizeColumnAction = new ResizeColumnAction(_container, -1);
     _resizeAllColumnsAction = new ResizeAllColumnsAction(_container);
 
+    _columnMenu = new MenuManager();
+    _columnMenu.add(new GroupMarker(TimeSeriesTable.GROUP_COMMAND));
+    _columnMenu.add(_resizeColumnAction);
+    _columnMenu.add(_resizeAllColumnsAction);
+    _columnMenu.add(new GroupMarker(TimeSeriesTable.GROUP_VISIBLE_COLUMNS));
+    _columnMenu.add(new Separator());
+    _columnMenu.add(new VisibleColumnsContribution(_container));
+    _columnMenu.update();
+
     hookControl();
+  }
+
+  IMenuManager getMenuManager() {
+    return _columnMenu;
   }
 
   private void hookControl() {
@@ -93,16 +105,6 @@ final class TimeSeriesColumnManager {
 
   private Menu buildMenu(int columnIndex) {
     _resizeColumnAction.setColumnIndex(columnIndex);
-
-    _columnMenu.removeAll();
-    _columnMenu.add(_resizeColumnAction);
-    _columnMenu.add(_resizeAllColumnsAction);
-    _columnMenu.add(new Separator());
-    for (int i = 0; i < _container.getColumnCount(); i++) {
-      final TimeSeriesTableColumn column = _container.getColumn(i);
-      _columnMenu.add(new ToggleColumnVisibiltyAction(column));
-    }
-    _columnMenu.update();
     _columnMenu.createContextMenu(_table);
     return _columnMenu.getMenu();
   }
@@ -310,6 +312,7 @@ final class TimeSeriesColumnManager {
       final Point cell = _table.getCellForCoordinates(cord.x, cord.y);
       if (_table.isFixedCell(cell.x, cell.y)) {
         final Menu menu = buildMenu(cell.x);
+        menu.setData(TimeSeriesTable.DATA_COLUMN, cell.x);
         if (menu != null && !menu.isDisposed()) {
           menu.setLocation(e.x, e.y);
           menu.setVisible(true);
