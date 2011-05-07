@@ -553,11 +553,11 @@ public final class TimeSeriesTable extends Composite {
       return;
 
     if (index < r.x) {
-      scrollColumnTo(index);
+      scrollColumnTo(index, true);
       return;
     }
 
-    scrollColumnTo(index - r.width + 1);
+    scrollColumnTo(index - r.width + 1, true);
   }
 
   public void scrollColumnTo(LocalDate date) {
@@ -569,12 +569,12 @@ public final class TimeSeriesTable extends Composite {
       index = -(index + 1);
     }
 
-    scrollColumnTo(index + _columnCount);
+    scrollColumnTo(index + _columnCount, true);
   }
 
   final int[] _scrollColumnId = new int[1];
 
-  private void scrollColumnTo(final int index) {
+  private void scrollColumnTo(final int index, boolean immediate) {
     checkWidget();
     checkColumnIndex(index);
 
@@ -584,15 +584,21 @@ public final class TimeSeriesTable extends Composite {
     final int id = ++_scrollColumnId[0];
     final Rectangle r = doGetVisibleDataCells();
     final int row = Math.max(0, Math.min(r.y, _itemCount - _table.getVisibleRowCount() + 1));
-    getDisplay().asyncExec(new Runnable() {
-      @Override
-      public void run() {
-        if (id != _scrollColumnId[0] || _table == null || _table.isDisposed())
-          return;
 
-        _table.scroll(index, row);
-      }
-    });
+    if (immediate) {
+      _table.scroll(index, row);
+    } else {
+      getDisplay().asyncExec(new Runnable() {
+        @Override
+        public void run() {
+          if (id != _scrollColumnId[0] || _table == null || _table.isDisposed())
+            return;
+
+          _table.scroll(index, row);
+        }
+      });
+    }
+
     _hscroll.setSelection(index - _columnCount);
   }
 
@@ -1177,7 +1183,7 @@ public final class TimeSeriesTable extends Composite {
         return;
 
       _hscroll.setLabel(_dateFormat.format(_periods[selection]));
-      scrollColumnTo(_hscroll.getSelection() + _columnCount);
+      scrollColumnTo(_hscroll.getSelection() + _columnCount, false);
     }
 
     @Override
