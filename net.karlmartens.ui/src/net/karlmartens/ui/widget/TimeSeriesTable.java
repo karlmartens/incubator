@@ -561,16 +561,27 @@ public final class TimeSeriesTable extends Composite {
     scrollColumnTo(index + _columnCount);
   }
 
-  private void scrollColumnTo(int index) {
+  final int[] _scrollColumnId = new int[1];
+
+  private void scrollColumnTo(final int index) {
     checkWidget();
     checkColumnIndex(index);
 
     if (index < _columnCount)
       return;
 
+    final int id = ++_scrollColumnId[0];
     final Rectangle r = doGetVisibleDataCells();
     final int row = Math.max(0, Math.min(r.y, _itemCount - _table.getVisibleRowCount() + 1));
-    _table.scroll(index, row);
+    getDisplay().asyncExec(new Runnable() {
+      @Override
+      public void run() {
+        if (id != _scrollColumnId[0] || _table == null || _table.isDisposed())
+          return;
+
+        _table.scroll(index, row);
+      }
+    });
     _hscroll.setSelection(index - _columnCount);
   }
 
