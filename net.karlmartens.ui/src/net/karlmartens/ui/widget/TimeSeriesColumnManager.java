@@ -310,7 +310,7 @@ final class TimeSeriesColumnManager {
     public void menuDetected(MenuDetectEvent e) {
       final Point cord = _table.toControl(e.x, e.y);
       final Point cell = _table.getCellForCoordinates(cord.x, cord.y);
-      if (_table.isFixedCell(cell.x, cell.y)) {
+      if (cell.y < _table.getModel().getFixedHeaderRowCount()) {
         final Menu menu = buildMenu(cell.x);
         menu.setData(TimeSeriesTable.DATA_COLUMN, cell.x);
         if (menu != null && !menu.isDisposed()) {
