@@ -226,6 +226,7 @@ public final class TimeSeriesTableViewerTest {
       table.setDateFormat(new LocalDateFormat(DateTimeFormat.forPattern("MMM yyyy")));
       table.setNumberFormat(new DecimalFormat("#,##0.00"));
       table.setScrollDataMode(ScrollDataMode.SELECTED_ROWS);
+      table.addColumnSortSupport();
 
       final TimeSeriesTableViewerColumn c1 = new TimeSeriesTableViewerColumn(viewer, SWT.NONE);
       c1.setLabelProvider(new TestColumnLabelProvider(0));
@@ -238,8 +239,6 @@ public final class TimeSeriesTableViewerTest {
       c2.setEditingSupport(new TestBooleanEditingSupport(viewer, 1));
       c2.getColumn().setText("Test 2");
       c2.getColumn().setWidth(60);
-
-      viewer.addColumnSortSupport();
 
       viewer.setInput(_input);
 

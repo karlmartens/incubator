@@ -52,6 +52,8 @@ final class TimeSeriesColumnManager {
   private final ResizeColumnAction _resizeColumnAction;
   private final ResizeAllColumnsAction _resizeAllColumnsAction;
 
+  private boolean _columnsSortable = false;
+
   private int _columnIndex;
   private Point _offset;
   private Image _image;
@@ -81,6 +83,10 @@ final class TimeSeriesColumnManager {
 
   IMenuManager getMenuManager() {
     return _columnMenu;
+  }
+
+  void enableColumnSort() {
+    _columnsSortable = true;
   }
 
   private void hookControl() {
@@ -271,6 +277,10 @@ final class TimeSeriesColumnManager {
         cancelColumnMove();
 
         if (isSelectionActive()) {
+          if (_columnsSortable) {
+            _container.sort(_columnIndex);
+          }
+
           final TimeSeriesTableColumn column = _container.getColumn(_columnIndex);
           column.notifyListeners(SWT.Selection, new Event());
           cancelSelection();

@@ -68,10 +68,6 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
     new DeleteCellSelectionSupport(this);
   }
 
-  public void addColumnSortSupport() {
-    new TimeSeriesTableColumnSortSupport(this);
-  }
-
   TimeSeriesEditingSupport getEditingSupport() {
     return _editingSupport;
   }

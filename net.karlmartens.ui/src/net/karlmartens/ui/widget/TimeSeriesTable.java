@@ -20,9 +20,11 @@ package net.karlmartens.ui.widget;
 import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Comparator;
 
 import net.karlmartens.platform.text.LocalDateFormat;
 import net.karlmartens.platform.util.ArraySupport;
+import net.karlmartens.platform.util.NumberStringComparator;
 
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
@@ -70,6 +72,9 @@ public final class TimeSeriesTable extends Composite {
 
   public static final String GROUP_COMMAND = "TimeSeriesTable.Group.Command";
   public static final String GROUP_VISIBLE_COLUMNS = "TimeSeriesTable.Group.VisibleColumns";
+
+  public static final int SORT_DECENDING = -1;
+  public static final int SORT_ASCENDING = 1;
 
   private final CellSelectionManager _cellSelectionManager;
   private final TimeSeriesColumnManager _columnManager;
@@ -312,6 +317,48 @@ public final class TimeSeriesTable extends Composite {
       _inUpdate = false;
     }
     return _periodColumn;
+  }
+
+  public void addColumnSortSupport() {
+    _columnManager.enableColumnSort();
+  }
+
+  public void sort(int index) {
+    checkWidget();
+    checkColumnIndex(index);
+
+    if (_itemCount <= 1)
+      return;
+
+    final NumberStringComparator comparator = new NumberStringComparator();
+    for (int i = 1; i < _itemCount; i++) {
+      final TimeSeriesTableItem first = _items[i - 1];
+      final TimeSeriesTableItem second = _items[i];
+      if (comparator.compare(first.getText(index), second.getText(index)) > 0) {
+        sort(index, SORT_ASCENDING);
+        return;
+      }
+    }
+
+    sort(index, SORT_DECENDING);
+  }
+
+  public void sort(int index, int direction) {
+    checkWidget();
+    checkColumnIndex(index);
+    if (direction != SORT_ASCENDING && direction != SORT_DECENDING)
+      SWT.error(SWT.ERROR_INVALID_ARGUMENT);
+
+    if (_itemCount <= 1)
+      return;
+
+    final TimeSeriesTableItem[] newItems = Arrays.copyOf(_items, _items.length);
+    final Comparator<TimeSeriesTableItem> comparator = new TimeSeriesTableItemComparator(new NumberStringComparator(), index, direction);
+    Arrays.sort(newItems, 0, _itemCount, comparator);
+
+    _items = newItems;
+    notifyListeners(SWT.Selection, new Event());
+    redraw();
   }
 
   public TimeSeriesTableColumn getPeriodColumn() {
