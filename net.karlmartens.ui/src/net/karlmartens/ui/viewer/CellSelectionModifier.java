@@ -27,7 +27,7 @@ import net.karlmartens.ui.widget.TimeSeriesTableItem;
 import org.eclipse.jface.util.Policy;
 import org.eclipse.swt.graphics.Point;
 
-abstract class CellSelectionModifier {
+public abstract class CellSelectionModifier {
   private final TimeSeriesTableViewer _viewer;
   private final EditingSupportProxy _editSupport;
 
