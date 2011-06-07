@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Ui
 Bundle-SymbolicName: net.karlmartens.ui;singleton:=true
-Bundle-Version: 1.0.0.vqualifier
+Bundle-Version: 1.0.1.vqualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Activator: net.karlmartens.ui.Activator
 Require-Bundle: org.eclipse.ui,
