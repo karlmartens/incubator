@@ -19,16 +19,16 @@ package net.karlmartens.ui.action;
 
 import java.util.ResourceBundle;
 
-import net.karlmartens.ui.widget.TimeSeriesTable;
+import net.karlmartens.ui.widget.Table;
 
 import org.eclipse.jface.action.Action;
 
 public final class ResizeAllColumnsAction extends Action {
 
-  private final TimeSeriesTable _table;
+  private final Table _table;
   private final ResizeColumnAction _delegateAction;
 
-  public ResizeAllColumnsAction(TimeSeriesTable table) {
+  public ResizeAllColumnsAction(Table table) {
     _table = table;
     _delegateAction = new ResizeColumnAction(_table, -1);
 
@@ -38,7 +38,7 @@ public final class ResizeAllColumnsAction extends Action {
 
   @Override
   public void run() {
-    for (int i = 0; i < _table.getColumnCount() + _table.getPeriodCount(); i++) {
+    for (int i = 0; i < _table.getColumnCount(); i++) {
       _delegateAction.setColumnIndex(i);
       _delegateAction.run();
     }

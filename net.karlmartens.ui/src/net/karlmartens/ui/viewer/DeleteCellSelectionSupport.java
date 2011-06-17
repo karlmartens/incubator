@@ -19,8 +19,6 @@ package net.karlmartens.ui.viewer;
 
 import java.util.Arrays;
 
-import net.karlmartens.ui.widget.TimeSeriesTable;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -31,17 +29,16 @@ import org.eclipse.swt.widgets.Control;
 
 final class DeleteCellSelectionSupport extends CellSelectionModifier {
 
-  private final TimeSeriesTableViewer _viewer;
+  private final TableViewer _viewer;
 
-  DeleteCellSelectionSupport(TimeSeriesTableViewer viewer) {
+  DeleteCellSelectionSupport(TableViewer viewer) {
     super(viewer);
     _viewer = viewer;
     new Listener();
   }
 
   private void performDelete() {
-    final TimeSeriesTable control = _viewer.getControl();
-    final Point[] selection = control.getCellSelections();
+    final Point[] selection = _viewer.doGetCellSelections();
     if (selection == null || selection.length == 0)
       return;
 

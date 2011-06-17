@@ -58,7 +58,7 @@ public final class CellNavigationStrategy {
     return false;
   }
 
-  public Point findSelectedCell(TimeSeriesTable table, Point currentSelectedCell, Event event) {
+  public Point findSelectedCell(Table table, Point currentSelectedCell, Event event) {
     if (currentSelectedCell == null)
       return null;
 
@@ -130,13 +130,13 @@ public final class CellNavigationStrategy {
     return null;
   }
 
-  private Point getNeighbor(TimeSeriesTable table, Point currentSelectedCell, Point delta) {
+  private Point getNeighbor(Table table, Point currentSelectedCell, Point delta) {
     final Point pt = new Point(currentSelectedCell.x, currentSelectedCell.y);
     for (;;) {
       pt.x += delta.x;
       pt.y += delta.y;
       if (pt.x < 0 || //
-          pt.y < 0 || pt.x >= table.getColumnCount() + table.getPeriodCount() || //
+          pt.y < 0 || pt.x >= table.getColumnCount() || //
           pt.y >= table.getItemCount())
         return null;
 
@@ -145,15 +145,15 @@ public final class CellNavigationStrategy {
     }
   }
 
-  private Point doPageUp(TimeSeriesTable table, Point currentSelectedCell, Event event) {
+  private Point doPageUp(Table table, Point currentSelectedCell, Event event) {
     if (table.getItemCount() <= 0)
       return null;
-
+    
     final int y = Math.max(0, currentSelectedCell.y - (table.getVisibleRowCount() - 1));
     return new Point(currentSelectedCell.x, y);
   }
 
-  private Point doPageDown(TimeSeriesTable table, Point currentSelectedCell, Event event) {
+  private Point doPageDown(Table table, Point currentSelectedCell, Event event) {
     if (table.getItemCount() <= 0)
       return null;
 
@@ -161,29 +161,31 @@ public final class CellNavigationStrategy {
     return new Point(currentSelectedCell.x, y);
   }
 
-  private Point doPageLeft(TimeSeriesTable table, Point currentSelectedCell, Event event) {
-    if (table.getPeriodCount() <= 0)
+  private Point doPageLeft(Table table, Point currentSelectedCell, Event event) {
+    final int numFixedColumns = table.getFixedColumnCount();
+    if (numFixedColumns >=  table.getColumnCount())
       return null;
 
-    final int x = Math.max(table.getColumnCount(), currentSelectedCell.x - (table.getVisibleColumnCount() - 1));
+    final int x = Math.max(numFixedColumns, currentSelectedCell.x - (table.getVisibleColumnCount() - 1));
     return new Point(x, currentSelectedCell.y);
   }
 
-  private Point doPageRight(TimeSeriesTable table, Point currentSelectedCell, Event event) {
-    if (table.getPeriodCount() <= 0)
+  private Point doPageRight(Table table, Point currentSelectedCell, Event event) {
+    final int numFixedColumns = table.getFixedColumnCount();
+    if (numFixedColumns >=  table.getColumnCount())
       return null;
 
-    final int x = Math.min(table.getColumnCount() + table.getPeriodCount() - 1, currentSelectedCell.x + (table.getVisibleColumnCount() - 1));
+    final int x = Math.min(table.getColumnCount() - 1, currentSelectedCell.x + (table.getVisibleColumnCount() - 1));
     return new Point(x, currentSelectedCell.y);
   }
 
-  private Point doHome(TimeSeriesTable table, Point currentSelectedCell, Event event) {
-    final TimeSeriesTableItem item = table.getItem(currentSelectedCell.y);
-    final int columnCount = table.getColumnCount();
-    final int start = currentSelectedCell.x < columnCount ? 0 : columnCount;
-    final boolean skipValueTest = currentSelectedCell.x < columnCount
-        || (currentSelectedCell.x != columnCount && item.getText(currentSelectedCell.x - 1).length() == 0);
-    final int end = skipValueTest ? currentSelectedCell.x : columnCount + table.getPeriodCount();
+  private Point doHome(Table table, Point currentSelectedCell, Event event) {
+    final TableItem item = table.getItem(currentSelectedCell.y);
+    final int fixedColumnCount = table.getFixedColumnCount();
+    final int start = currentSelectedCell.x < fixedColumnCount ? 0 : fixedColumnCount;
+    final boolean skipValueTest = currentSelectedCell.x < fixedColumnCount
+        || (currentSelectedCell.x != fixedColumnCount && item.getText(currentSelectedCell.x - 1).length() == 0);
+    final int end = skipValueTest ? currentSelectedCell.x : table.getColumnCount();
 
     for (int i = start; i < end; i++) {
       if (table.getColumn(i).isVisible() && (item.getText(i).length() != 0 || skipValueTest)) {
@@ -194,13 +196,13 @@ public final class CellNavigationStrategy {
     return null;
   }
 
-  private Point doEnd(TimeSeriesTable table, Point currentSelectedCell, Event event) {
-    final TimeSeriesTableItem item = table.getItem(currentSelectedCell.y);
-    final int columnCount = table.getColumnCount();
-    final int start = columnCount - 1 + (currentSelectedCell.x < columnCount ? 0 : table.getPeriodCount());
-    final boolean skipValueTest = currentSelectedCell.x < columnCount
+  private Point doEnd(Table table, Point currentSelectedCell, Event event) {
+    final TableItem item = table.getItem(currentSelectedCell.y);
+    final int fixedColumnCount = table.getFixedColumnCount();
+    final int start = fixedColumnCount - 1 + (currentSelectedCell.x < fixedColumnCount ? 0 : table.getColumnCount() - fixedColumnCount);
+    final boolean skipValueTest = currentSelectedCell.x < fixedColumnCount
         || (currentSelectedCell.x != start && item.getText(currentSelectedCell.x + 1).length() == 0);
-    final int end = skipValueTest ? currentSelectedCell.x : columnCount;
+    final int end = skipValueTest ? currentSelectedCell.x : fixedColumnCount;
 
     for (int i = start; i >= end; i--) {
       if (table.getColumn(i).isVisible() && (item.getText(i).length() != 0 || skipValueTest)) {

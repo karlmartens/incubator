@@ -19,7 +19,7 @@ package net.karlmartens.ui.widget;
 
 import net.karlmartens.ui.action.ResizeAllColumnsAction;
 import net.karlmartens.ui.action.ResizeColumnAction;
-import net.karlmartens.ui.widget.TimeSeriesTable.KTableImpl;
+import net.karlmartens.ui.widget.Table.KTableImpl;
 
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IMenuManager;
@@ -44,9 +44,9 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Shell;
 
-final class TimeSeriesColumnManager {
+final class TableColumnManager {
 
-  private final TimeSeriesTable _container;
+  private final Table _container;
   private final KTableImpl _table;
   private final MenuManager _columnMenu;
   private final ResizeColumnAction _resizeColumnAction;
@@ -62,7 +62,7 @@ final class TimeSeriesColumnManager {
   private boolean _columnMove = false;
   private boolean _selection = false;
 
-  TimeSeriesColumnManager(TimeSeriesTable container, KTableImpl table) {
+  TableColumnManager(Table container, KTableImpl table) {
     _container = container;
     _table = table;
 
@@ -70,10 +70,10 @@ final class TimeSeriesColumnManager {
     _resizeAllColumnsAction = new ResizeAllColumnsAction(_container);
 
     _columnMenu = new MenuManager();
-    _columnMenu.add(new GroupMarker(TimeSeriesTable.GROUP_COMMAND));
+    _columnMenu.add(new GroupMarker(Table.GROUP_COMMAND));
     _columnMenu.add(_resizeColumnAction);
     _columnMenu.add(_resizeAllColumnsAction);
-    _columnMenu.add(new GroupMarker(TimeSeriesTable.GROUP_VISIBLE_COLUMNS));
+    _columnMenu.add(new GroupMarker(Table.GROUP_VISIBLE_COLUMNS));
     _columnMenu.add(new Separator());
     _columnMenu.add(new VisibleColumnsContribution(_container));
     _columnMenu.update();
@@ -137,7 +137,6 @@ final class TimeSeriesColumnManager {
     _table.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_HAND));
 
     _shell = new Shell(getDisplay(), SWT.NO_TRIM);
-    _shell.setAlpha(200);
     _shell.setLayout(new FillLayout());
     _shell.setBounds(_image.getBounds());
 
@@ -193,7 +192,7 @@ final class TimeSeriesColumnManager {
       if (cellCord.y < 0 || cellCord.y >= _table.getModel().getFixedHeaderRowCount())
         return;
 
-      final TimeSeriesTableColumn column = _container.getColumn(cellCord.x);
+      final TableColumn column = _container.getColumn(cellCord.x);
       if (!column.isVisible())
         return;
 
@@ -206,7 +205,7 @@ final class TimeSeriesColumnManager {
 
       if (e.x - r.x <= 5) {
         for (int i = cellCord.x - 1; i >= 0; i--) {
-          final TimeSeriesTableColumn pColumn = _container.getColumn(i);
+          final TableColumn pColumn = _container.getColumn(i);
           if (pColumn.isVisible()) {
             _resizeColumnAction.setColumnIndex(i);
             _resizeColumnAction.run();
@@ -237,7 +236,7 @@ final class TimeSeriesColumnManager {
         return;
       }
 
-      if (cellCord.x < 0 || cellCord.x >= (_container.getColumnCount() + _container.getPeriodCount())) {
+      if (cellCord.x < 0 || cellCord.x >= _container.getColumnCount()) {
         cancelColumnMove();
         cancelSelection();
         return;
@@ -281,7 +280,7 @@ final class TimeSeriesColumnManager {
             _container.sort(_columnIndex);
           }
 
-          final TimeSeriesTableColumn column = _container.getColumn(_columnIndex);
+          final TableColumn column = _container.getColumn(_columnIndex);
           column.notifyListeners(SWT.Selection, new Event());
           cancelSelection();
         }
@@ -310,9 +309,19 @@ final class TimeSeriesColumnManager {
         showColumnMoveEffect();
       }
 
-      final Rectangle rLastCol = _table.getCellRect(_container.getColumnCount() - 1, 0);
+      final Point cellCord = _table.getCellForCoordinates(e.x, e.y);
+      if (cellCord.x >= 0 && cellCord.x < _container.getColumnCount()) {
+        final TableColumn column = _container.getColumn(cellCord.x);
+        if (column.isMoveable()) {
+          _shell.setAlpha(200);
+        } else {
+          _shell.setAlpha(100);
+        }
+      }
+
+      final int max = _table.getClientArea().width - _shell.getBounds().width;
       final Point p = _container.toDisplay(_table.getLocation());
-      p.x += Math.max(Math.min(e.x + _offset.x, rLastCol.x), 0);
+      p.x += Math.max(Math.min(e.x + _offset.x, max), 0);
       _shell.setLocation(p);
     }
 
@@ -322,7 +331,7 @@ final class TimeSeriesColumnManager {
       final Point cell = _table.getCellForCoordinates(cord.x, cord.y);
       if (cell.y < _table.getModel().getFixedHeaderRowCount()) {
         final Menu menu = buildMenu(cell.x);
-        menu.setData(TimeSeriesTable.DATA_COLUMN, cell.x);
+        menu.setData(Table.DATA_COLUMN, cell.x);
         if (menu != null && !menu.isDisposed()) {
           menu.setLocation(e.x, e.y);
           menu.setVisible(true);

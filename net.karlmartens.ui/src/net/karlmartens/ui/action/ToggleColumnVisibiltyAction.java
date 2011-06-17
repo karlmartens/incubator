@@ -17,16 +17,16 @@
  */
 package net.karlmartens.ui.action;
 
-import net.karlmartens.ui.widget.TimeSeriesTableColumn;
+import net.karlmartens.ui.widget.TableColumn;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 
 public class ToggleColumnVisibiltyAction extends Action implements IAction {
 
-  private final TimeSeriesTableColumn _column;
+  private final TableColumn _column;
 
-  public ToggleColumnVisibiltyAction(TimeSeriesTableColumn column) {
+  public ToggleColumnVisibiltyAction(TableColumn column) {
     super(column.getText(), IAction.AS_CHECK_BOX);
     setChecked(column.isVisible());
 

@@ -17,48 +17,48 @@
  */
 package net.karlmartens.ui.viewer;
 
-import net.karlmartens.ui.widget.TimeSeriesTable;
-import net.karlmartens.ui.widget.TimeSeriesTableColumn;
+import net.karlmartens.ui.widget.Table;
+import net.karlmartens.ui.widget.TableColumn;
 
 import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.ViewerColumn;
 
-public final class TimeSeriesTableViewerColumn extends ViewerColumn {
+public class TableViewerColumn extends ViewerColumn {
 
-  private final TimeSeriesTableColumn _column;
+  private final TableColumn _column;
   private EditingSupport _editingSupport;
 
-  public TimeSeriesTableViewerColumn(TimeSeriesTableViewer viewer, int style) {
+  public TableViewerColumn(TableViewer viewer, int style) {
     this(viewer, style, -1);
   }
 
-  public TimeSeriesTableViewerColumn(TimeSeriesTableViewer viewer, int style, int index) {
+  public TableViewerColumn(TableViewer viewer, int style, int index) {
     this(viewer, createColumn(viewer.getControl(), style, index));
   }
 
-  TimeSeriesTableViewerColumn(TimeSeriesTableViewer viewer, TimeSeriesTableColumn column) {
+  TableViewerColumn(TableViewer viewer, TableColumn column) {
     super(viewer, column);
     _column = column;
   }
 
-  public TimeSeriesTableColumn getColumn() {
+  public TableColumn getColumn() {
     return _column;
   }
 
   @Override
-  public void setEditingSupport(EditingSupport editingSupport) {
+  public final void setEditingSupport(EditingSupport editingSupport) {
     super.setEditingSupport(editingSupport);
     _editingSupport = editingSupport;
   }
 
-  EditingSupport doGetEditingSupport() {
+  final EditingSupport doGetEditingSupport() {
     return _editingSupport;
   }
 
-  private static TimeSeriesTableColumn createColumn(TimeSeriesTable table, int style, int index) {
+  protected static TableColumn createColumn(Table table, int style, int index) {
     if (index >= 0)
-      return new TimeSeriesTableColumn(table, style, index);
+      return new TableColumn(table, style, index);
 
-    return new TimeSeriesTableColumn(table, style);
+    return new TableColumn(table, style);
   }
 }

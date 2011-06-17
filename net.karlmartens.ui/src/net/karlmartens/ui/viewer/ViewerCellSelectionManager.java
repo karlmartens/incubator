@@ -17,40 +17,35 @@
  */
 package net.karlmartens.ui.viewer;
 
-import net.karlmartens.ui.widget.CellSelectionManager;
-import net.karlmartens.ui.widget.TimeSeriesTable;
-
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Control;
 
 public final class ViewerCellSelectionManager {
 
-  private final TimeSeriesTableViewer _viewer;
-  private final CellSelectionManager _manager;
+  private final TableViewer _viewer;
 
-  public ViewerCellSelectionManager(TimeSeriesTableViewer viewer) {
+  public ViewerCellSelectionManager(TableViewer viewer) {
     _viewer = viewer;
     viewer.addSelectionChangedListener(_listener);
 
-    final TimeSeriesTable control = _viewer.getControl();
-    _manager = control.getCellSelectionManager();
-
+    final Control control = _viewer.getControl();
     control.addDisposeListener(_listener);
   }
 
   private void handleDispose() {
     _viewer.removeSelectionChangedListener(_listener);
 
-    final TimeSeriesTable control = _viewer.getControl();
+    final Control control = _viewer.getControl();
     control.removeDisposeListener(_listener);
   }
 
   private void handleSelectionChanged() {
     if (_viewer.getSelection().isEmpty()) {
-      _manager.setFocusCell(null, false);
+      _viewer.doSetFocusCell(null, false);
     }
   }
 
@@ -69,12 +64,12 @@ public final class ViewerCellSelectionManager {
   }
 
   public Point getFocusCell() {
-    return _manager.getFocusCell();
+    return _viewer.doGetFocusCell();
   }
 
   public void setFocusCell(Point cell) {
     if (cell != null) {
-      _manager.setFocusCell(cell, false);
+      _viewer.doSetFocusCell(cell, false);
     }
   }
 }

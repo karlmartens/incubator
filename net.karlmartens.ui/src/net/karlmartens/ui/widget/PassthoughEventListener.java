@@ -28,7 +28,10 @@ import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.MouseMoveListener;
-import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.events.TypedEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 
@@ -54,6 +57,7 @@ final class PassthoughEventListener {
   }
 
   private void hookControl(Control control) {
+    control.addPaintListener(_listener);
     control.addMouseListener(_listener);
     control.addMouseMoveListener(_listener);
     control.addKeyListener(_listener);
@@ -61,13 +65,14 @@ final class PassthoughEventListener {
   }
 
   private void releaseControl(Control control) {
+    control.removePaintListener(_listener);
     control.removeMouseListener(_listener);
     control.removeMouseMoveListener(_listener);
     control.removeKeyListener(_listener);
     control.removeDisposeListener(_listener);
   }
 
-  private class ListenerImpl implements MouseListener, MouseMoveListener, KeyListener, DisposeListener {
+  private class ListenerImpl implements PaintListener, MouseListener, MouseMoveListener, KeyListener, DisposeListener {
 
     @Override
     public void widgetDisposed(DisposeEvent e) {
@@ -79,6 +84,11 @@ final class PassthoughEventListener {
       } else {
         removeSource((Control) e.getSource());
       }
+    }
+
+    @Override
+    public void paintControl(PaintEvent e) {
+      _target.notifyListeners(SWT.Paint, convertEvent(e));
     }
 
     @Override
@@ -112,26 +122,54 @@ final class PassthoughEventListener {
     }
 
     private Event convertEvent(MouseEvent e) {
-      final Event event = new Event();
+      final Event event = convertEvent((TypedEvent) e);
+      event.x = e.x;
+      event.y = e.y;
       event.button = e.button;
       event.count = e.count;
-      event.data = e.data;
       event.stateMask = e.stateMask;
-      event.time = e.time;
-      final Rectangle r = ((Control) e.getSource()).getBounds();
-      event.x = e.x + r.x;
-      event.y = e.y + r.y;
+
+      updateCords(e.getSource(), event);
+      
       return event;
     }
 
     private Event convertEvent(KeyEvent e) {
-      final Event event = new Event();
+      final Event event = convertEvent((TypedEvent) e);
       event.character = e.character;
-      event.data = e.data;
       event.keyCode = e.keyCode;
       event.stateMask = e.stateMask;
+      return event;
+    }
+
+    private Event convertEvent(PaintEvent e) {
+      final Event event = convertEvent((TypedEvent) e);
+      event.x = e.x;
+      event.y = e.y;
+      event.gc = e.gc;
+      event.width = e.width;
+      event.height = e.height;
+      event.count = e.count;
+      
+      updateCords(e.getSource(), event);
+      
+      return event;
+    }
+
+    private Event convertEvent(TypedEvent e) {
+      final Event event = new Event();
+      event.data = e.data;
       event.time = e.time;
       return event;
+    }
+
+    private void updateCords(Object source, Event event) {
+      if (source instanceof Control) {
+        final Control c = (Control) source;
+        final Point pt = _target.toControl(c.toDisplay(event.x, event.y));
+        event.x = pt.x;
+        event.y = pt.y;
+      }
     }
   }
 }

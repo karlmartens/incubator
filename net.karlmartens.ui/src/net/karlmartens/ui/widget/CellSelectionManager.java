@@ -29,7 +29,7 @@ import org.eclipse.swt.widgets.Listener;
 
 public final class CellSelectionManager {
 
-  private final TimeSeriesTable _table;
+  private final Table _table;
   private final CellNavigationStrategy _navigationStrategy;
   private final TableListener _listener;
   private final ItemListener _itemListener;
@@ -38,7 +38,7 @@ public final class CellSelectionManager {
   private Point[] _selections = new Point[0];
   private boolean _dragExpand = false;
 
-  CellSelectionManager(TimeSeriesTable table) {
+  CellSelectionManager(Table table) {
     _table = table;
     _navigationStrategy = new CellNavigationStrategy();
     _listener = new TableListener();
@@ -54,7 +54,7 @@ public final class CellSelectionManager {
     if (NullSafe.equals(cell, _focusCell))
       return;
 
-    final TimeSeriesTableItem oldItem = getItemAtIndex(_focusCell);
+    final TableItem oldItem = getItemAtIndex(_focusCell);
     if (oldItem != null && !oldItem.isDisposed()) {
       oldItem.removeDisposeListener(_itemListener);
     }
@@ -68,7 +68,7 @@ public final class CellSelectionManager {
       _selections = new Point[0];
     }
 
-    final TimeSeriesTableItem newItem = getItemAtIndex(_focusCell);
+    final TableItem newItem = getItemAtIndex(_focusCell);
     if (newItem != null && !newItem.isDisposed()) {
       newItem.addDisposeListener(_itemListener);
     }
@@ -105,8 +105,8 @@ public final class CellSelectionManager {
     final int dirY = _focusCell.y > cell.y ? -1 : 1;
 
     final Point vCell = new Point(cell.x, cell.y);
-    final Rectangle visible = _table.getVisibleDataCells();
-    final int numFixedCols = _table.getColumnCount();
+    final Rectangle visible = _table.getVisibleScrollableCells();
+    final int numFixedCols = _table.getFixedColumnCount();
     if (visible.x > 0) {
       if (dirX < 0 && cell.x == numFixedCols - 1) {
         vCell.x = numFixedCols + visible.x - 1;
@@ -145,7 +145,7 @@ public final class CellSelectionManager {
     _table.showItem(_table.getItem(vCell.y));
   }
 
-  private TimeSeriesTableItem getItemAtIndex(Point pt) {
+  private TableItem getItemAtIndex(Point pt) {
     if (pt == null)
       return null;
 
@@ -216,23 +216,23 @@ public final class CellSelectionManager {
     if (_focusCell == null || getItemAtIndex(_focusCell) == e.item || e.item == null || e.item.isDisposed())
       return;
 
-    final int row = _table.indexOf((TimeSeriesTableItem) e.item);
+    final int row = _table.indexOf((TableItem) e.item);
     setFocusCell(new Point(_focusCell.x, row), false);
   }
 
   private void handleFocusIn(Event e) {
-    if (_focusCell != null || _table.isDisposed() || _table.getItemCount() <= 0 || _table.getColumnCount() + _table.getPeriodCount() <= 0)
+    if (_focusCell != null || _table.isDisposed() || _table.getItemCount() <= 0 || _table.getColumnCount() <= 0)
       return;
 
     setFocusCell(new Point(0, 0), false);
   }
 
   private Point getCell(Point position) {
-    final TimeSeriesTableItem item = _table.getItem(position);
+    final TableItem item = _table.getItem(position);
     if (item == null)
       return null;
 
-    for (int i = 0; i < _table.getColumnCount() + _table.getPeriodCount(); i++) {
+    for (int i = 0; i < _table.getColumnCount(); i++) {
       if (_table.getBounds(item, i).contains(position)) {
         return new Point(i, _table.indexOf(item));
       }

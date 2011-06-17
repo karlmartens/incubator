@@ -28,18 +28,20 @@ final class TestTextEditingSupport extends EditingSupport {
 
   private final ColumnViewer _viewer;
   private final int _index;
+  private final int _style;
   private TextCellEditor _cellEditor;
 
-  public TestTextEditingSupport(ColumnViewer viewer, int index) {
+  public TestTextEditingSupport(ColumnViewer viewer, int index, int style) {
     super(viewer);
     _viewer = viewer;
     _index = index;
+    _style = style;
   }
 
   @Override
   protected CellEditor getCellEditor(Object element) {
     if (_cellEditor == null) {
-      _cellEditor = new TextCellEditor((Composite) _viewer.getControl());
+      _cellEditor = new TextCellEditor((Composite) _viewer.getControl(), _style);
     }
     return _cellEditor;
   }

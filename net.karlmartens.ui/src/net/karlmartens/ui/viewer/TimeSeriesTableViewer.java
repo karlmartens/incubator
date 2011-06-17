@@ -17,260 +17,197 @@
  */
 package net.karlmartens.ui.viewer;
 
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.Arrays;
+import java.util.BitSet;
 
-import net.karlmartens.ui.widget.TimeSeriesTable;
-import net.karlmartens.ui.widget.TimeSeriesTableColumn;
-import net.karlmartens.ui.widget.TimeSeriesTableItem;
+import net.karlmartens.platform.text.LocalDateFormat;
+import net.karlmartens.platform.util.ArraySupport;
+import net.karlmartens.platform.util.NullSafe;
+import net.karlmartens.ui.widget.CellNavigationStrategy;
+import net.karlmartens.ui.widget.SparklineScrollBar;
+import net.karlmartens.ui.widget.Table;
+import net.karlmartens.ui.widget.TableColumn;
+import net.karlmartens.ui.widget.TableItem;
 
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.jface.viewers.AbstractTableViewer;
 import org.eclipse.jface.viewers.CellLabelProvider;
-import org.eclipse.jface.viewers.ColumnViewerEditor;
 import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.FormAttachment;
+import org.eclipse.swt.layout.FormData;
+import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Item;
-import org.eclipse.swt.widgets.Widget;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.joda.time.LocalDate;
+import org.joda.time.format.DateTimeFormat;
 
-public final class TimeSeriesTableViewer extends AbstractTableViewer {
+import de.kupzog.ktable.SWTX;
 
-  private final TimeSeriesTable _control;
+public final class TimeSeriesTableViewer extends TableViewer {
+
+  public enum ScrollDataMode {
+    FOCUS_CELL, SELECTED_ROWS
+  }
+
+  private final Table _table;
+  private SparklineScrollBar _scroll;
+
   private TimeSeriesEditingSupport _editingSupport;
-  private TimeSeriesTableViewerRow _cachedRow;
-  private TimeSeriesTableViewerColumn _periodColumn;
+  private LocalDateFormat _dateFormat = new LocalDateFormat(DateTimeFormat.shortDate());
+  private NumberFormat _numberFormat = NumberFormat.getNumberInstance();
+  private ScrollDataMode _scrollDataMode = ScrollDataMode.FOCUS_CELL;
 
-  public TimeSeriesTableViewer(Composite parent) {
-    this(parent, SWT.NONE);
-  }
-
-  public TimeSeriesTableViewer(Composite parent, int style) {
-    this(new TimeSeriesTable(parent, style));
-  }
-
-  public TimeSeriesTableViewer(TimeSeriesTable control) {
-    _control = control;
-    hookControl(control);
-  }
-
-  public void setEditingSupport(TimeSeriesEditingSupport editingSupport) {
-    _editingSupport = editingSupport;
-  }
-
-  public void addClipboardSupport(int operations) {
-    new ViewerClipboardManager(this, operations);
-  }
-
-  public void addDeleteCellSelectionSupport() {
-    new DeleteCellSelectionSupport(this);
+  private TimeSeriesTableViewer(Table table) {
+    super(table);
+    _table = table;
+    hook();
   }
 
   TimeSeriesEditingSupport getEditingSupport() {
     return _editingSupport;
   }
 
-  @Override
-  protected TimeSeriesTableViewerRow internalCreateNewRowPart(int style, int rowIndex) {
-    final TimeSeriesTableItem item;
-    if (rowIndex >= 0) {
-      item = new TimeSeriesTableItem(_control, rowIndex);
-    } else {
-      item = new TimeSeriesTableItem(_control);
-    }
+  public void setEditingSupport(TimeSeriesEditingSupport editingSupport) {
+    if (NullSafe.equals(_editingSupport, editingSupport))
+      return;
 
-    return getViewerRowFromItem(item);
+    _editingSupport = editingSupport;
+    refresh(true);
   }
 
-  @Override
-  protected int doIndexOf(Item item) {
-    return _control.indexOf((TimeSeriesTableItem) item);
+  public void setDateFormat(LocalDateFormat format) {
+    if (format == null)
+      SWT.error(SWT.ERROR_NULL_ARGUMENT);
+
+    _dateFormat = format;
+    refresh(true);
+  }
+  
+  NumberFormat getNumberFormat() {
+    return _numberFormat;
   }
 
-  @Override
-  protected int doGetItemCount() {
-    return _control.getItemCount();
+  public void setNumberFormat(NumberFormat format) {
+    if (format == null)
+      SWT.error(SWT.ERROR_NULL_ARGUMENT);
+
+    _numberFormat = format;
+    refresh(false);
   }
 
-  @Override
-  protected void doSetItemCount(int count) {
-    _control.setItemCount(count);
+  public void setScrollDataMode(ScrollDataMode mode) {
+    if (mode == null)
+      SWT.error(SWT.ERROR_NULL_ARGUMENT);
+
+    _scrollDataMode = mode;
+    refresh(false);
   }
 
-  @Override
-  protected TimeSeriesTableItem[] doGetItems() {
-    return _control.getItems();
-  }
+  public static TimeSeriesTableViewer newTimeSeriesTable(Composite parent) {
+    final Table table = new Table(parent, SWT.V_SCROLL | SWT.MULTI | SWTX.MARK_FOCUS_HEADERS);
+    table.setBackground(parent.getBackground());
+    table.setForeground(parent.getForeground());
+    table.setFont(parent.getFont());
+    table.setLayout(new FormLayout());
+    
+    final Font labelFont = new Font(parent.getDisplay(), "Arial", 7, SWT.BOLD);
+    
+    final SparklineScrollBar scroll = new SparklineScrollBar(table, SWT.BORDER);
+    scroll.setMinimum(0);
+    scroll.setLabelFont(labelFont);
 
-  @Override
-  protected TimeSeriesTableColumn doGetColumn(int index) {
-    return _control.getColumn(index);
-  }
+    final FormData tableData = new FormData();
+    tableData.top = new FormAttachment(0, 100, 0);
+    tableData.left = new FormAttachment(scroll, 0, SWT.LEFT);
+    tableData.bottom = new FormAttachment(scroll, -5, SWT.TOP);
+    tableData.right = new FormAttachment(scroll, 0, SWT.RIGHT);
 
-  @Override
-  protected TimeSeriesTableItem doGetItem(int index) {
-    return _control.getItem(index);
-  }
+    final FormData scrollData = new FormData();
+    scrollData.left = new FormAttachment(0, 100, 0);
+    scrollData.bottom = new FormAttachment(100, 100, 0);
+    scrollData.right = new FormAttachment(100, 100, 0);
+    scrollData.height = 40;
 
-  @Override
-  protected TimeSeriesTableItem[] doGetSelection() {
-    return _control.getSelection();
-  }
+    table.getChildren()[0].setLayoutData(tableData);
+    scroll.setLayoutData(scrollData);
 
-  @Override
-  protected int[] doGetSelectionIndices() {
-    return _control.getSelectionIndices();
-  }
-
-  @Override
-  protected void doClearAll() {
-    _control.clearAll();
-  }
-
-  @Override
-  protected void doResetItem(Item item) {
-    final TimeSeriesTableItem tableItem = (TimeSeriesTableItem) item;
-    final int columnCount = Math.max(1, _control.getColumnCount());
-    for (int i = 0; i < columnCount; i++) {
-      tableItem.setText(i, "");
-    }
-
-    final int periodCount = Math.max(1, _control.getPeriodCount());
-    for (int i = 0; i < periodCount; i++) {
-      tableItem.setValue(i, 0.0);
-    }
-  }
-
-  @Override
-  protected void doRemove(int start, int end) {
-    _control.remove(start, end);
-  }
-
-  @Override
-  protected void doRemoveAll() {
-    _control.removeAll();
-  }
-
-  @Override
-  protected void doRemove(int[] indices) {
-    _control.remove(indices);
-  }
-
-  @Override
-  protected void doShowItem(Item item) {
-    _control.showItem((TimeSeriesTableItem) item);
-  }
-
-  @Override
-  protected void doDeselectAll() {
-    _control.deselectAll();
-  }
-
-  @Override
-  protected void doSetSelection(Item[] items) {
-    final TimeSeriesTableItem[] tableItems = new TimeSeriesTableItem[items.length];
-    System.arraycopy(items, 0, tableItems, 0, tableItems.length);
-    _control.setSelection(tableItems);
-  }
-
-  @Override
-  protected void doShowSelection() {
-    _control.showSelection();
-  }
-
-  @Override
-  protected void doSetSelection(int[] indices) {
-    _control.setSelection(indices);
-  }
-
-  @Override
-  protected void doClear(int index) {
-    _control.clear(index);
-  }
-
-  @Override
-  protected void doSelect(int[] indices) {
-    _control.select(indices);
-  }
-
-  @Override
-  protected TimeSeriesTableViewerEditor createViewerEditor() {
-    return new TimeSeriesTableViewerEditor(this, //
-        new TimeSeriesEditorActivationStrategy(this), ColumnViewerEditor.TABBING_HORIZONTAL | ColumnViewerEditor.TABBING_MOVE_TO_ROW_NEIGHBOR
-            | ColumnViewerEditor.TABBING_VERTICAL | ColumnViewerEditor.KEYBOARD_ACTIVATION);
-  }
-
-  @Override
-  protected TimeSeriesTableViewerRow getViewerRowFromItem(Widget item) {
-    if (_cachedRow == null) {
-      _cachedRow = new TimeSeriesTableViewerRow((TimeSeriesTableItem) item);
-    } else {
-      _cachedRow.setItem((TimeSeriesTableItem) item);
-    }
-
-    return _cachedRow;
-  }
-
-  @Override
-  protected TimeSeriesTableItem getItemAt(Point point) {
-    return _control.getItem(point);
-  }
-
-  @Override
-  protected int doGetColumnCount() {
-    return _control.getColumnCount() + _control.getPeriodCount();
-  }
-
-  @Override
-  public TimeSeriesTable getControl() {
-    return _control;
-  }
-
-  @Override
-  protected void preservingSelection(Runnable updateCode) {
-    final Point[] selection = _control.getCellSelections();
-    try {
-      updateCode.run();
-    } finally {
-
-      final int rowCount = doGetItemCount();
-      final int columnCount = doGetColumnCount();
-
-      final Point[] s = new Point[selection.length];
-      int index = 0;
-      for (int i = 0; i < selection.length; i++) {
-        final Point pt = selection[i];
-        if (pt.x >= 0 && pt.x < columnCount && pt.y >= 0 && pt.y < rowCount) {
-          s[index++] = pt;
-        }
+    final TimeSeriesTableViewer viewer = new TimeSeriesTableViewer(table);
+    viewer.register(scroll);
+    
+    table.addDisposeListener(new DisposeListener() {
+      @Override
+      public void widgetDisposed(DisposeEvent e) {
+        labelFont.dispose();
       }
+    });
 
-      final Point[] newSelection = Arrays.copyOf(s, index);
-      _control.setCellSelections(newSelection);
-    }
+    return viewer;
   }
 
   @Override
   protected void internalRefresh(Object element, boolean updateLabels) {
-    if (updateLabels) {
-      final TimeSeriesContentProvider cp = (TimeSeriesContentProvider) getContentProvider();
-      if (cp == null)
-        throw new IllegalStateException();
+    final TimeSeriesContentProvider cp = (TimeSeriesContentProvider) getContentProvider();
+    if (updateLabels && cp != null) {
+      LocalDate[] dates = cp.getDates();
+      if (dates == null)
+        dates = new LocalDate[0];
 
-      final LocalDate[] dates = cp.getDates();
-      if (dates != null) {
-        _control.setPeriods(dates);
+      final int fixedColumnCount = _table.getFixedColumnCount();
+      final int tsColumnCount = _table.getColumnCount() - fixedColumnCount;
+      if (tsColumnCount > dates.length) {
+        _updateThumb = true;
+        _table.setColumnCount(fixedColumnCount + tsColumnCount);
+      } else if (tsColumnCount < dates.length) {
+        _updateThumb = true;
 
-        if (_periodColumn == null) {
-          _periodColumn = new TimeSeriesTableViewerColumn(this, _control.getColumn(_control.getColumnCount()));
-          _periodColumn.setLabelProvider(new PeriodLabelProvider(cp));
-          _periodColumn.setEditingSupport(new TimeSeriesTableValueEditingSupport(this));
+        final GC gc = new GC(_table);
+        gc.setFont(_table.getFont());
+        final int defaultWidth = gc.getCharWidth('W') * 8;
+        gc.dispose();
+
+        for (int i = tsColumnCount; i < dates.length; i++) {
+          final TableColumn column = new TableColumn(_table, SWT.RIGHT);
+          column.setMoveable(false);
+          column.setHideable(false);
+          column.setWidth(defaultWidth);
+
+          final TableViewerColumn viewerColumn = new TableViewerColumn(this, column);
+          viewerColumn.setLabelProvider(new PeriodLabelProvider(cp));
+
+          if (_editingSupport != null) {
+            viewerColumn.setEditingSupport(new TimeSeriesTableValueEditingSupport(this));
+          }
         }
-      } else {
-        _control.setPeriods(new LocalDate[] {});
       }
+
+      if (_updateThumb) {
+        _scroll.setMaximum(Math.max(dates.length - 1, 1));
+      }
+
+      final int scrollSelection = _scroll.getSelection();
+      for (int i = 0; i < dates.length; i++) {
+        final TableColumn column = _table.getColumn(fixedColumnCount + i);
+        final String text = _dateFormat.format(dates[i]);
+        column.setText(text);
+
+        if (i == scrollSelection) {
+          _scroll.setLabel(text);
+        }
+      }
+      
+      updateHighlights();
+      updateData();
     }
 
     super.internalRefresh(element, updateLabels);
@@ -279,6 +216,186 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
   @Override
   protected void assertContentProviderType(IContentProvider provider) {
     Assert.isTrue(provider instanceof TimeSeriesContentProvider);
+  }
+
+  private void register(SparklineScrollBar scroll) {
+    release();
+    _scroll = scroll;
+    hook();
+  }
+
+  private void hook() {
+    if (_scroll == null || _table == null)
+      return;
+
+    _scroll.addListener(SWT.Selection, _listener);
+    
+    _table.addListener(SWT.Resize, _listener);
+    _table.addListener(SWT.Paint, _listener);
+    _table.addListener(SWT.KeyDown, _listener);
+    _table.addListener(SWT.MouseDown, _listener);
+    _table.addListener(SWT.MouseUp, _listener);
+    _table.addListener(SWT.MouseMove, _listener);
+    _table.addListener(SWT.Selection, _listener);
+  }
+
+  private void release() {
+    if (_scroll != null) {
+      _scroll.removeListener(SWT.Selection, _listener);
+    }
+
+    if (_table != null) {
+      _table.removeListener(SWT.Resize, _listener);
+      _table.removeListener(SWT.Paint, _listener);
+      _table.removeListener(SWT.KeyDown, _listener);
+      _table.removeListener(SWT.MouseDown, _listener);
+      _table.removeListener(SWT.MouseUp, _listener);
+      _table.removeListener(SWT.MouseMove, _listener);
+      _table.removeListener(SWT.Selection, _listener);
+    }
+
+  }
+
+  private int _scrollEventId = 0;
+
+  private void handleSelection(Event e) {
+    final Object source = e.widget;
+    if (source == _table) {
+      updateData();
+    }
+    
+    if (source == _scroll) {
+      final int id = ++_scrollEventId;
+      final Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+          if (id != _scrollEventId)
+            return;
+
+          final Rectangle rect = _table.getVisibleScrollableCells();
+          final Point pt = new Point(rect.x, rect.y);
+          pt.x = _table.getFixedColumnCount() + _scroll.getSelection();
+          _table.scroll(pt);
+          
+          final TableColumn column = _table.getColumn(pt.x);
+          _scroll.setLabel(column.getText());
+        }
+      };
+
+      final Display display = _table.getDisplay();
+      if (_scrollEventId % 7 == 0) {
+        display.syncExec(runnable);
+      } else {
+        display.asyncExec(runnable);
+      }
+    }
+  }
+
+  private final CellNavigationStrategy _navigationStrategy = new CellNavigationStrategy();
+
+  private void handleKeyPressed(Event e) {
+    if (!_navigationStrategy.isNavigationEvent(e) && !_navigationStrategy.isExpandEvent(e))
+      return;
+    
+    final Rectangle rect = _table.getVisibleScrollableCells();
+    _scroll.setSelection(rect.x - _table.getFixedColumnCount());
+    
+    final TableColumn column = _table.getColumn(rect.x);
+    _scroll.setLabel(column.getText());
+    
+    updateHighlights();
+  }
+  
+  private boolean _updateThumb = true;
+  
+  private void handleResize() {
+    _updateThumb = true;
+  }
+  
+  private void handlePaint() {
+    if (!_updateThumb)
+      return;
+    
+    final Rectangle rect = _table.getVisibleScrollableCells();
+    final int max = _scroll.getMaximum() - _scroll.getMinimum() - 1;
+    final int tWidth = Math.min(Math.max(1, rect.width), max);
+    _scroll.setThumb(tWidth);
+    _scroll.setEnabled(tWidth != max);
+  }
+  
+  private boolean _mouseActive = false;
+
+  private void handleMouseDown(Event e) {
+    _mouseActive = (e.button == 1);
+    if (_mouseActive) {
+      updateHighlights();
+    }
+  }
+  
+  private void handleMouseMove() {
+    if (_mouseActive)
+      updateHighlights();
+  }
+  
+  private void handleMouseUp(Event e) {
+    if (e.button == 1) {
+      updateHighlights();
+      _mouseActive = false;
+    }
+  }
+  
+  private void updateHighlights() {
+    final int fixedColumnCount = _table.getFixedColumnCount();
+    final int min = _scroll.getMinimum();
+    final int max = _scroll.getMaximum();
+    
+    final BitSet selected = new BitSet();
+    for (Point pt : _table.getCellSelections()) {
+      final int index = pt.x - fixedColumnCount;
+      if (index < min || index > max)
+        continue;
+      
+      selected.set(index);
+
+      final int[] indices = ArraySupport.toArray(selected);
+      _scroll.setHighlights(indices);
+    }
+  }
+  
+  private void updateData() {
+    final int[] indices;
+    switch (_scrollDataMode) {
+      case FOCUS_CELL:
+        final Point focus = _table.getFocusCell();
+        if (focus != null) {
+          indices = new int[] { focus.y };
+        } else {
+          indices = new int[] {};
+        }
+        break;
+
+      case SELECTED_ROWS:
+        indices = _table.getSelectionIndices();
+        break;
+
+      default:
+        indices = new int[] {};
+    }
+    
+    final int fixedColumnCount = _table.getFixedColumnCount();
+    final double[] data = new double[_scroll.getMaximum() - _scroll.getMinimum() + 1];
+    Arrays.fill(data, 0.0);
+    for (int index : indices) {
+      final TableItem item = _table.getItem(index);
+      for (int j = 0; j < data.length; j++) {
+        try {
+          data[j] += _numberFormat.parse(item.getText(fixedColumnCount + j)).doubleValue();
+        } catch (ParseException e) {
+          // ignore
+        }
+      }
+    }
+    _scroll.setDataPoints(data);
   }
 
   private final class PeriodLabelProvider extends CellLabelProvider {
@@ -291,9 +408,44 @@ public final class TimeSeriesTableViewer extends AbstractTableViewer {
 
     @Override
     public void update(ViewerCell cell) {
-      final int index = cell.getColumnIndex() - _control.getColumnCount();
-      final double value = _base.getValue(cell.getElement(), index);
-      ((TimeSeriesTableItem) cell.getItem()).setValue(index, value);
+      final int index = cell.getColumnIndex();
+      final double value = _base.getValue(cell.getElement(), index - _table.getFixedColumnCount());
+      ((TableItem) cell.getItem()).setText(index, _numberFormat.format(value));
     }
   }
+
+  private final Listener _listener = new Listener() {
+    @Override
+    public void handleEvent(Event event) {
+      switch (event.type) {
+        case SWT.Selection:
+          handleSelection(event);
+          break;
+
+        case SWT.KeyDown:
+          handleKeyPressed(event);
+          break;
+          
+        case SWT.Resize:
+          handleResize();
+          break;
+          
+        case SWT.Paint:
+          handlePaint();
+          break;
+          
+        case SWT.MouseDown:
+          handleMouseDown(event);
+          break;
+          
+        case SWT.MouseUp:
+          handleMouseUp(event);
+          break;
+          
+        case SWT.MouseMove:
+          handleMouseMove();
+          break;
+      }
+    }
+  };
 }

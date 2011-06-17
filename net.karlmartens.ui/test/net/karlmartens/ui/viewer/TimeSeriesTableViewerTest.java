@@ -33,8 +33,8 @@ import net.karlmartens.ui.SwtTester;
 import net.karlmartens.ui.SwtTester.Initializer;
 import net.karlmartens.ui.SwtTester.Task;
 import net.karlmartens.ui.action.ResizeAllColumnsAction;
-import net.karlmartens.ui.widget.TimeSeriesTable;
-import net.karlmartens.ui.widget.TimeSeriesTable.ScrollDataMode;
+import net.karlmartens.ui.viewer.TimeSeriesTableViewer.ScrollDataMode;
+import net.karlmartens.ui.widget.Table;
 
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -71,7 +71,7 @@ public final class TimeSeriesTableViewerTest {
         .add(new Task<TimeSeriesTableViewer>() {
           @Override
           public void run(TimeSeriesTableViewer context) {
-            final TimeSeriesTable control = context.getControl();
+            final Table control = context.getControl();
 
             assertEquals(500, control.getItemCount());
 
@@ -119,8 +119,8 @@ public final class TimeSeriesTableViewerTest {
         .add(new Task<TimeSeriesTableViewer>() {
           @Override
           public void run(TimeSeriesTableViewer context) {
-            final TimeSeriesTable table = context.getControl();
-            new ResizeAllColumnsAction(context.getControl()).run();
+            final Table table = context.getControl();
+            new ResizeAllColumnsAction(table).run();
             final int[] expectedWidths = getColumnWidths(table);
             context.refresh();
             final int[] actualWidths = getColumnWidths(table);
@@ -137,7 +137,7 @@ public final class TimeSeriesTableViewerTest {
         .add(new Task<TimeSeriesTableViewer>() {
           @Override
           public void run(TimeSeriesTableViewer context) {
-            final TimeSeriesTable table = context.getControl();
+            final Table table = context.getControl();
             tables[0] = _initializer.run(table.getShell());
             assertTrue(tables[0].getControl().setFocus());
 
@@ -168,8 +168,8 @@ public final class TimeSeriesTableViewerTest {
         }).run();
   }
 
-  private static int[] getColumnWidths(TimeSeriesTable table) {
-    final int columnCount = table.getColumnCount() + table.getPeriodCount();
+  private static int[] getColumnWidths(Table table) {
+    final int columnCount = table.getColumnCount();
     final int[] widths = new int[columnCount];
     for (int i = 0; i < columnCount; i++) {
       widths[i] = table.getColumn(i).getWidth();
@@ -186,7 +186,7 @@ public final class TimeSeriesTableViewerTest {
     final TimeSeriesTableViewer viewer = test._initializer.run(shell);
     viewer.setComparator(new ViewerComparator(new NumberStringComparator()));
 
-    final TimeSeriesTable table = viewer.getControl();
+    final Table table = viewer.getControl();
     table.getColumn(0).addSelectionListener(new TestSelectionListener("Period Column"));
 
     viewer.addSelectionChangedListener(new ISelectionChangedListener() {
@@ -214,32 +214,33 @@ public final class TimeSeriesTableViewerTest {
     public TimeSeriesTableViewer run(Shell shell) {
       final Display display = shell.getDisplay();
 
-      final TimeSeriesTableViewer viewer = new TimeSeriesTableViewer(shell, SWT.MULTI);
-      viewer.setContentProvider(new TestTimeSeriesContentProvider(_dates, 3));
+      final TimeSeriesTableViewer viewer = TimeSeriesTableViewer.newTimeSeriesTable(shell);
       viewer.setLabelProvider(new TestColumnLabelProvider(0));
       viewer.setEditingSupport(new TestTimeSeriesEditingSupport(new DecimalFormat("#,##0.0000"), 3));
+      viewer.setDateFormat(new LocalDateFormat(DateTimeFormat.forPattern("MMM yyyy")));
+      viewer.setNumberFormat(new DecimalFormat("#,##0.00"));
+      viewer.setScrollDataMode(ScrollDataMode.SELECTED_ROWS);
 
-      final TimeSeriesTable table = viewer.getControl();
-      table.setHeaderVisible(true);
-      table.setBackground(display.getSystemColor(SWT.COLOR_WHITE));
-      table.setFont(new Font(display, "Arial", 10, SWT.NORMAL));
-      table.setDateFormat(new LocalDateFormat(DateTimeFormat.forPattern("MMM yyyy")));
-      table.setNumberFormat(new DecimalFormat("#,##0.00"));
-      table.setScrollDataMode(ScrollDataMode.SELECTED_ROWS);
-      table.addColumnSortSupport();
-
-      final TimeSeriesTableViewerColumn c1 = new TimeSeriesTableViewerColumn(viewer, SWT.NONE);
+      final TableViewerColumn c1 = new TableViewerColumn(viewer, SWT.NONE);
       c1.setLabelProvider(new TestColumnLabelProvider(0));
-      c1.setEditingSupport(new TestTextEditingSupport(viewer, 0));
+      c1.setEditingSupport(new TestTextEditingSupport(viewer, 0, SWT.LEFT));
       c1.getColumn().setText("Test");
       c1.getColumn().setWidth(75);
 
-      final TimeSeriesTableViewerColumn c2 = new TimeSeriesTableViewerColumn(viewer, SWT.CHECK);
+      final TableViewerColumn c2 = new TableViewerColumn(viewer, SWT.CHECK);
       c2.setLabelProvider(new TestColumnLabelProvider(1));
       c2.setEditingSupport(new TestBooleanEditingSupport(viewer, 1));
       c2.getColumn().setText("Test 2");
       c2.getColumn().setWidth(60);
 
+      final Table table = viewer.getControl();
+      table.setHeaderVisible(true);
+      table.setFixedColumnCount(2);
+      table.setBackground(display.getSystemColor(SWT.COLOR_WHITE));
+      table.setFont(new Font(display, "Arial", 8, SWT.NORMAL));
+      table.addColumnSortSupport();
+
+      viewer.setContentProvider(new TestTimeSeriesContentProvider(_dates, 3));
       viewer.setInput(_input);
 
       return viewer;

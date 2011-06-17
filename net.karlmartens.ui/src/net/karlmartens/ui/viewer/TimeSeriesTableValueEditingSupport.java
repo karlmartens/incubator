@@ -20,7 +20,7 @@ package net.karlmartens.ui.viewer;
 import java.text.NumberFormat;
 import java.text.ParseException;
 
-import net.karlmartens.ui.widget.TimeSeriesTableItem;
+import net.karlmartens.ui.widget.TableItem;
 
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.EditingSupport;
@@ -78,7 +78,7 @@ class TimeSeriesTableValueEditingSupport extends EditingSupport {
       return;
 
     final double value = cp.getValue(cell.getElement(), computePeriodIndex(cell));
-    final NumberFormat format = getNumberFormat(editingSupport);
+    final NumberFormat format = getEditingNumberFormat(editingSupport);
     cellEditor.setValue(format.format(value));
   }
 
@@ -99,7 +99,7 @@ class TimeSeriesTableValueEditingSupport extends EditingSupport {
     }
 
     try {
-      final NumberFormat format = getNumberFormat(editingSupport);
+      final NumberFormat format = getEditingNumberFormat(editingSupport);
       final Number n = format.parse(source);
       update(cell, n.doubleValue());
     } catch (ParseException e) {
@@ -109,18 +109,16 @@ class TimeSeriesTableValueEditingSupport extends EditingSupport {
 
   private void update(ViewerCell cell, double value) {
     _viewer.getEditingSupport().setValue(cell.getElement(), computePeriodIndex(cell), value);
-
-    final TimeSeriesTableItem item = (TimeSeriesTableItem) cell.getItem();
-    item.setValue(computePeriodIndex(cell), value);
-
+    final TableItem item = (TableItem) cell.getItem();
+    item.setText(cell.getColumnIndex(), _viewer.getNumberFormat().format(value));
     _viewer.getControl().redraw();
   }
 
   private int computePeriodIndex(ViewerCell cell) {
-    return cell.getColumnIndex() - _viewer.getControl().getColumnCount();
+    return cell.getColumnIndex() - _viewer.getControl().getFixedColumnCount();
   }
 
-  private NumberFormat getNumberFormat(TimeSeriesEditingSupport editingSupport) {
+  private static NumberFormat getEditingNumberFormat(TimeSeriesEditingSupport editingSupport) {
     NumberFormat format = editingSupport.getNumberFormat();
     if (format != null)
       return format;

@@ -54,11 +54,11 @@ import au.com.bytecode.opencsv.CSVWriter;
 
 final class ViewerClipboardManager extends CellSelectionModifier {
 
-  private final TimeSeriesTableViewer _viewer;
+  private final TableViewer _viewer;
   private final int _operations;
   private final ClipboardStrategy _clipboardStrategy;
 
-  ViewerClipboardManager(TimeSeriesTableViewer viewer, int operations) {
+  ViewerClipboardManager(TableViewer viewer, int operations) {
     super(viewer);
     _viewer = viewer;
     _operations = operations;
@@ -82,7 +82,7 @@ final class ViewerClipboardManager extends CellSelectionModifier {
     BusyIndicator.showWhile(_viewer.getControl().getDisplay(), new Runnable() {
       @Override
       public void run() {
-        final Point[] cells = _viewer.getControl().getCellSelections();
+        final Point[] cells = _viewer.doGetCellSelections();
         Arrays.sort(cells, _comparator);
         final int length = computeRegion(cells);
         if (length <= 0) {
@@ -124,7 +124,7 @@ final class ViewerClipboardManager extends CellSelectionModifier {
     BusyIndicator.showWhile(_viewer.getControl().getDisplay(), new Runnable() {
       @Override
       public void run() {
-        final Point[] cells = _viewer.getControl().getCellSelections();
+        final Point[] cells = _viewer.doGetCellSelections();
         Arrays.sort(cells, _comparator);
         final int length = computeRegion(cells);
         if (length <= 0) {
@@ -212,7 +212,7 @@ final class ViewerClipboardManager extends CellSelectionModifier {
     BusyIndicator.showWhile(_viewer.getControl().getDisplay(), new Runnable() {
       @Override
       public void run() {
-        final Point[] cells = _viewer.getControl().getCellSelections();
+        final Point[] cells = _viewer.doGetCellSelections();
         if (cells == null || cells.length == 0) {
           result[0] = true;
           return;

@@ -17,32 +17,35 @@
  */
 package net.karlmartens.ui.widget;
 
+import java.util.Arrays;
+
 import net.karlmartens.ui.action.ToggleColumnVisibiltyAction;
 
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.ui.actions.CompoundContributionItem;
 
-/**
- * @author karl
- * 
- */
 final class VisibleColumnsContribution extends CompoundContributionItem {
 
-  private final TimeSeriesTable _table;
+  private final Table _table;
 
-  public VisibleColumnsContribution(TimeSeriesTable table) {
+  public VisibleColumnsContribution(Table table) {
     _table = table;
   }
 
   @Override
   protected IContributionItem[] getContributionItems() {
     final IContributionItem[] items = new IContributionItem[_table.getColumnCount()];
+    int index = 0;
     for (int i = 0; i < items.length; i++) {
-      final TimeSeriesTableColumn column = _table.getColumn(i);
-      items[i] = new ActionContributionItem(new ToggleColumnVisibiltyAction(column));
+      final TableColumn column = _table.getColumn(i);
+      if (!column.isHideable())
+        continue;
+      
+      items[index++] = new ActionContributionItem(new ToggleColumnVisibiltyAction(column));
     }
-    return items;
+    
+    return Arrays.copyOf(items, index);
   }
 
 }

@@ -22,9 +22,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ResourceBundle;
 
-import net.karlmartens.ui.widget.TimeSeriesTable;
-import net.karlmartens.ui.widget.TimeSeriesTableColumn;
-import net.karlmartens.ui.widget.TimeSeriesTableItem;
+import net.karlmartens.ui.widget.Table;
+import net.karlmartens.ui.widget.TableColumn;
+import net.karlmartens.ui.widget.TableItem;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.swt.SWT;
@@ -40,10 +40,10 @@ public class ResizeColumnAction extends Action {
   private static final int IMAGE_SPACER = 6;
   private static final int TEXT_SPACER = 12;
 
-  private final TimeSeriesTable _table;
+  private final Table _table;
   private int _columnIndex;
 
-  public ResizeColumnAction(TimeSeriesTable table, int columnIndex) {
+  public ResizeColumnAction(Table table, int columnIndex) {
     _table = table;
     setColumnIndex(columnIndex);
 
@@ -65,7 +65,7 @@ public class ResizeColumnAction extends Action {
     final Font font = createColumnHeaderFont();
     gc.setFont(font);
 
-    final TimeSeriesTableColumn column = _table.getColumn(_columnIndex);
+    final TableColumn column = _table.getColumn(_columnIndex);
     int width = gc.textExtent(column.getText()).x + TEXT_SPACER;
 
     if ((column.getStyle() & SWT.CHECK) > 0) {
@@ -74,7 +74,7 @@ public class ResizeColumnAction extends Action {
       final Map<Font, String> messages = new HashMap<Font, String>();
 
       for (int i = 0; i < _table.getItemCount(); i++) {
-        final TimeSeriesTableItem item = _table.getItem(i);
+        final TableItem item = _table.getItem(i);
         final Font f = item.getFont(_columnIndex);
         final String m1 = messages.get(f);
         final String m2 = item.getText(_columnIndex);
@@ -118,7 +118,7 @@ public class ResizeColumnAction extends Action {
 
   private void updateEnablement() {
     setEnabled(_columnIndex >= 0 && //
-        _columnIndex < (_table.getColumnCount() + _table.getPeriodCount()) && //
+        _columnIndex < (_table.getColumnCount()) && //
         _table.getColumn(_columnIndex).isVisible());
   }
 }

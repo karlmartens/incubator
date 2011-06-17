@@ -17,11 +17,6 @@
  */
 package net.karlmartens.ui.widget;
 
-import java.text.DecimalFormat;
-
-import net.karlmartens.platform.text.LocalDateFormat;
-import net.karlmartens.ui.widget.TimeSeriesTable.ScrollDataMode;
-
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -30,42 +25,30 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.joda.time.LocalDate;
-import org.joda.time.format.DateTimeFormat;
 
-public class TimeSeriesTableTest {
-
-  private static final LocalDate DEFAULT_DATE = new LocalDate(2000, 1, 1);
+public class TableTest {
 
   public static void main(String[] args) throws Exception {
     final Shell shell = new Shell();
     final Display display = shell.getDisplay();
     shell.setLayout(new FillLayout());
 
-    final LocalDate[] periods = new LocalDate[60];
-    for (int i = 0; i < periods.length; i++) {
-      periods[i] = DEFAULT_DATE.plusMonths(i);
-    }
-
-    final TimeSeriesTable table = new TimeSeriesTable(shell, SWT.NONE);
+    final Table table = new Table(shell, SWT.NONE);
     table.setHeaderVisible(true);
-    table.setScrollDataMode(ScrollDataMode.SELECTED_ROWS);
-    table.setPeriods(periods);
-    table.setNumberFormat(new DecimalFormat("#,##0.00"));
-    table.setDateFormat(new LocalDateFormat(DateTimeFormat.forPattern("MMM yyyy")));
     table.setBackground(display.getSystemColor(SWT.COLOR_WHITE));
     table.setFont(new Font(display, "Arial", 10, SWT.NONE));
 
     IMenuManager menuManager = table.getColumnMenuManager();
-    menuManager.appendToGroup(TimeSeriesTable.GROUP_COMMAND, new Action("Test") {
+    menuManager.appendToGroup(Table.GROUP_COMMAND, new Action("Test") {
       @Override
       public void run() {
         MessageDialog.openInformation(shell, "Test", "Test");
       }
     });
 
-    final TimeSeriesTableColumn[] columns = { new TimeSeriesTableColumn(table, SWT.NONE), //
-        new TimeSeriesTableColumn(table, SWT.CHECK), //
+    final TableColumn[] columns = { //
+        new TableColumn(table, SWT.NONE), //
+        new TableColumn(table, SWT.CHECK), //
     };
 
     columns[0].setText("Target");
@@ -74,11 +57,11 @@ public class TimeSeriesTableTest {
     columns[1].setText("Enabled");
     columns[1].setWidth(60);
 
-    final TimeSeriesTableItem[] items = { new TimeSeriesTableItem(table), //
-        new TimeSeriesTableItem(table), //
-        new TimeSeriesTableItem(table), //
-        new TimeSeriesTableItem(table), //
-        new TimeSeriesTableItem(table), //
+    final TableItem[] items = { new TableItem(table), //
+        new TableItem(table), //
+        new TableItem(table), //
+        new TableItem(table), //
+        new TableItem(table), //
     };
 
     items[0].setText(new String[] { "Rigs", "true" });
@@ -90,16 +73,6 @@ public class TimeSeriesTableTest {
     items[2].setText(new String[] { "Oil", "true" });
     items[3].setText(new String[] { "Water", "true" });
     items[4].setText(new String[] { "Steel", "true" });
-
-    for (int i = 0; i < items.length; i++) {
-      final double[] data = new double[periods.length];
-      for (int j = 0; j < data.length; j++) {
-        data[j] = Math.random() * 10000;
-      }
-      items[i].setValue(data);
-    }
-
-    table.scrollColumnTo(new LocalDate(2000, 2, 1));
 
     shell.open();
     while (!shell.isDisposed()) {

@@ -19,20 +19,20 @@ package net.karlmartens.ui.widget;
 
 import java.util.Comparator;
 
-final class TimeSeriesTableItemComparator implements Comparator<TimeSeriesTableItem> {
+final class TableItemComparator implements Comparator<TableItem> {
 
   private final Comparator<String> _comparator;
   private final int _index;
   private final int _direction;
 
-  public TimeSeriesTableItemComparator(Comparator<String> comparator, int index, int direction) {
+  public TableItemComparator(Comparator<String> comparator, int index, int direction) {
     _comparator = comparator;
     _index = index;
     _direction = direction;
   }
 
   @Override
-  public int compare(TimeSeriesTableItem o1, TimeSeriesTableItem o2) {
+  public int compare(TableItem o1, TableItem o2) {
     if (o1 == null) {
       if (o2 == null) {
         return 0;

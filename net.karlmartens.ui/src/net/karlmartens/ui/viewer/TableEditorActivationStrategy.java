@@ -25,12 +25,12 @@ import org.eclipse.jface.viewers.ColumnViewerEditorActivationStrategy;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Event;
 
-final class TimeSeriesEditorActivationStrategy extends ColumnViewerEditorActivationStrategy {
+final class TableEditorActivationStrategy extends ColumnViewerEditorActivationStrategy {
 
   private final CellNavigationStrategy _navigationStrategy = new CellNavigationStrategy();
   private final ClipboardStrategy _clipboardStrategy = new ClipboardStrategy();
 
-  public TimeSeriesEditorActivationStrategy(TimeSeriesTableViewer viewer) {
+  public TableEditorActivationStrategy(TableViewer viewer) {
     super(viewer);
   }
 

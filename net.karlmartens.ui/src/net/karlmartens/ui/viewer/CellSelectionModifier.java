@@ -17,21 +17,17 @@
  */
 package net.karlmartens.ui.viewer;
 
-import java.text.NumberFormat;
-import java.text.ParseException;
-
-import net.karlmartens.ui.widget.TimeSeriesTable;
-import net.karlmartens.ui.widget.TimeSeriesTableColumn;
-import net.karlmartens.ui.widget.TimeSeriesTableItem;
+import net.karlmartens.ui.widget.TableColumn;
+import net.karlmartens.ui.widget.TableItem;
 
 import org.eclipse.jface.util.Policy;
 import org.eclipse.swt.graphics.Point;
 
 public abstract class CellSelectionModifier {
-  private final TimeSeriesTableViewer _viewer;
+  private final TableViewer _viewer;
   private final EditingSupportProxy _editSupport;
 
-  protected CellSelectionModifier(TimeSeriesTableViewer viewer) {
+  protected CellSelectionModifier(TableViewer viewer) {
     _viewer = viewer;
     _editSupport = new EditingSupportProxy(viewer);
   }
@@ -41,7 +37,7 @@ public abstract class CellSelectionModifier {
       final Point cell = cells[i];
       _editSupport._base = getViewerColumn(cell.x).doGetEditingSupport();
 
-      final TimeSeriesTableItem item = _viewer.doGetItem(cell.y);
+      final TableItem item = _viewer.doGetItem(cell.y);
       if (!_editSupport.canEdit(item.getData())) {
         return false;
       }
@@ -51,57 +47,26 @@ public abstract class CellSelectionModifier {
   }
 
   protected final String[] getValues(Point[] cells) {
-    final TimeSeriesTable control = _viewer.getControl();
-    final int numFixedColumns = control.getColumnCount();
-    final NumberFormat format = _viewer.getEditingSupport().getNumberFormat();
-
     final String[] strings = new String[cells.length];
     for (int i = 0; i < strings.length; i++) {
       final Point cell = cells[i];
-      final TimeSeriesTableItem item = _viewer.doGetItem(cell.y);
-      if (cell.x < numFixedColumns) {
-        strings[i] = item.getText(cell.x);
-        continue;
-      }
-
-      final double v = item.getValue(cell.x - numFixedColumns);
-      strings[i] = format.format(v);
+      final TableItem item = _viewer.doGetItem(cell.y);
+      strings[i] = item.getText(cell.x);
     }
-
     return strings;
   }
 
   protected final void setValues(Point[] cells, String[] values) {
-    final TimeSeriesTable control = _viewer.getControl();
-    final int numFixedColumns = control.getColumnCount();
     for (int i = 0; i < cells.length; i++) {
       final Point cell = cells[i];
-      final TimeSeriesTableItem item = _viewer.doGetItem(cell.y);
-      if (cell.x < numFixedColumns) {
-        _editSupport._base = getViewerColumn(cell.x).doGetEditingSupport();
-        _editSupport.setValue(item.getData(), values[i]);
-      } else {
-        final TimeSeriesEditingSupport valueEditSupport = _viewer.getEditingSupport();
-
-        double value = 0.0;
-        try {
-          final NumberFormat format = valueEditSupport.getNumberFormat();
-          final Number n = format.parse(values[i]);
-          if (n != null) {
-            value = n.doubleValue();
-          }
-        } catch (ParseException e) {
-          // ignore
-        }
-
-        final int index = cell.x - numFixedColumns;
-        valueEditSupport.setValue(item.getData(), index, value);
-      }
+      final TableItem item = _viewer.doGetItem(cell.y);
+      _editSupport._base = getViewerColumn(cell.x).doGetEditingSupport();
+      _editSupport.setValue(item.getData(), values[i]);
     }
   }
 
-  private TimeSeriesTableViewerColumn getViewerColumn(int index) {
-    final TimeSeriesTableColumn column = (TimeSeriesTableColumn) _viewer.doGetColumn(index);
-    return (TimeSeriesTableViewerColumn) column.getData(Policy.JFACE + ".columnViewer");
+  private TableViewerColumn getViewerColumn(int index) {
+    final TableColumn column = (TableColumn) _viewer.doGetColumn(index);
+    return (TableViewerColumn) column.getData(Policy.JFACE + ".columnViewer");
   }
 }
