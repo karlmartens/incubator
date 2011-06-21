@@ -303,7 +303,7 @@ public final class Table extends Composite {
     rect.height = Math.min(rows, rect.height);
 
     // Adjust height for fully visible columns
-    while (!_table.isCellFullyVisible(tableTopLeft.x + rect.width - 1, tableTopLeft.y + rect.height - 1)) {
+    while (!_table.isCellFullyVisible(tableTopLeft.x + rect.width - 1, tableTopLeft.y + rect.height - 1) && rect.width > 0) {
       rect.width--;
     }
 
