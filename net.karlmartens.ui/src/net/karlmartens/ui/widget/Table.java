@@ -88,7 +88,7 @@ public final class Table extends Composite {
   }
 
   public Table(Composite parent, int style) {
-    super(parent, SWT.NONE);
+    super(parent, checkStyle(style));
 
     _listener = new TableListener();
     updateFontData();
@@ -839,6 +839,11 @@ public final class Table extends Composite {
       return row + _table.getModel().getFixedHeaderRowCount();
 
     return row;
+  }
+  
+  private static int checkStyle(int style) {
+    final int mask = SWT.BORDER | SWT.MULTI;
+    return style & mask;
   }
 
   private void checkColumnIndex(int index) {

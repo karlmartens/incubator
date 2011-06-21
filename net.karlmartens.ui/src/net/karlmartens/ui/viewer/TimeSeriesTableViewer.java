@@ -52,8 +52,6 @@ import org.eclipse.swt.widgets.Listener;
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 
-import de.kupzog.ktable.SWTX;
-
 public final class TimeSeriesTableViewer extends TableViewer {
 
   public enum ScrollDataMode {
@@ -115,7 +113,7 @@ public final class TimeSeriesTableViewer extends TableViewer {
   }
 
   public static TimeSeriesTableViewer newTimeSeriesTable(Composite parent) {
-    final Table table = new Table(parent, SWT.V_SCROLL | SWT.MULTI | SWTX.MARK_FOCUS_HEADERS);
+    final Table table = new Table(parent, SWT.V_SCROLL | SWT.MULTI);
     table.setBackground(parent.getBackground());
     table.setForeground(parent.getForeground());
     table.setFont(parent.getFont());
@@ -167,7 +165,7 @@ public final class TimeSeriesTableViewer extends TableViewer {
       final int tsColumnCount = _table.getColumnCount() - fixedColumnCount;
       if (tsColumnCount > dates.length) {
         _updateThumb = true;
-        _table.setColumnCount(fixedColumnCount + tsColumnCount);
+        _table.setColumnCount(fixedColumnCount + dates.length);
       } else if (tsColumnCount < dates.length) {
         _updateThumb = true;
 
