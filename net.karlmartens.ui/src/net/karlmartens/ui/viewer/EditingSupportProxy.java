@@ -22,6 +22,7 @@ import net.karlmartens.platform.util.ReflectSupport;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.EditingSupport;
+import org.eclipse.jface.viewers.ViewerCell;
 
 class EditingSupportProxy extends EditingSupport {
 
@@ -33,27 +34,42 @@ class EditingSupportProxy extends EditingSupport {
 
   @Override
   protected CellEditor getCellEditor(Object element) {
-    throw new UnsupportedOperationException();
+    checkBase();
+    return (CellEditor) ReflectSupport.invoke("getCellEditor", _base, Object.class, element);
   }
 
   @Override
   protected boolean canEdit(Object element) {
-    if (_base == null)
-      return false;
-
+    checkBase();
     return Boolean.TRUE.equals(ReflectSupport.invoke("canEdit", _base, Object.class, element));
   }
 
   @Override
   protected Object getValue(Object element) {
-    throw new UnsupportedOperationException();
+    checkBase();
+    return ReflectSupport.invoke("getValue", _base, Object.class, element);
   }
 
   @Override
   protected void setValue(Object element, Object value) {
-    if (_base == null)
-      return;
-
+    checkBase();
     ReflectSupport.invoke("setValue", _base, new Class[] { Object.class, Object.class }, new Object[] { element, value });
+  }
+  
+  @Override
+  protected void initializeCellEditorValue(CellEditor cellEditor, ViewerCell cell) {
+    checkBase();
+    ReflectSupport.invoke("initializeCellEditorValue", _base, new Class[] { CellEditor.class, ViewerCell.class }, new Object[] { cellEditor, cell });
+  }
+  
+  @Override
+  protected void saveCellEditorValue(CellEditor cellEditor, ViewerCell cell) {
+    checkBase();
+    ReflectSupport.invoke("saveCellEditorValue", _base, new Class[] { CellEditor.class, ViewerCell.class }, new Object[] { cellEditor, cell });
+  }
+
+  private void checkBase() {
+    if (_base == null)
+      throw new IllegalStateException();;
   }
 }

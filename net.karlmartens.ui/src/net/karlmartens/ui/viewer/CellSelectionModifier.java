@@ -21,6 +21,8 @@ import net.karlmartens.ui.widget.TableColumn;
 import net.karlmartens.ui.widget.TableItem;
 
 import org.eclipse.jface.util.Policy;
+import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Point;
 
 public abstract class CellSelectionModifier {
@@ -60,8 +62,15 @@ public abstract class CellSelectionModifier {
     for (int i = 0; i < cells.length; i++) {
       final Point cell = cells[i];
       final TableItem item = _viewer.doGetItem(cell.y);
+      final TableViewerRow row = _viewer.getViewerRowFromItem(item);
+      final ViewerCell vCell = row.getCell(cell.x);
+      
       _editSupport._base = getViewerColumn(cell.x).doGetEditingSupport();
-      _editSupport.setValue(item.getData(), values[i]);
+      
+      final CellEditor editor = _editSupport.getCellEditor(item.getData());
+      editor.setValue(values[i]);
+      
+      _editSupport.saveCellEditorValue(editor, vCell);
     }
   }
 
