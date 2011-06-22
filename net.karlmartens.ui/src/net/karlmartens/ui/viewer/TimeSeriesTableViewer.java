@@ -408,7 +408,16 @@ public final class TimeSeriesTableViewer extends TableViewer {
     public void update(ViewerCell cell) {
       final int index = cell.getColumnIndex();
       final double value = _base.getValue(cell.getElement(), index - _table.getFixedColumnCount());
-      ((TableItem) cell.getItem()).setText(index, _numberFormat.format(value));
+      
+      final String string;
+      if (value == 0.0) {
+        string = "";
+      } else {
+        string = _numberFormat.format(value);
+      }
+      
+      final TableItem item = ((TableItem) cell.getItem()); 
+      item.setText(index, string);
     }
   }
 
