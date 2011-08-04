@@ -148,6 +148,9 @@ public final class CellSelectionManager {
   private TableItem getItemAtIndex(Point pt) {
     if (pt == null)
       return null;
+    
+    if (pt.y >= _table.getItemCount())
+      return null;
 
     return _table.getItem(pt.y);
   }
@@ -213,7 +216,9 @@ public final class CellSelectionManager {
   }
 
   private void handleSelection(Event e) {
-    if (_focusCell == null || getItemAtIndex(_focusCell) == e.item || e.item == null || e.item.isDisposed())
+    if (_focusCell == null || _focusCell.x >= _table.getColumnCount() 
+        || getItemAtIndex(_focusCell) == e.item || e.item == null 
+        || e.item.isDisposed())
       return;
 
     final int row = _table.indexOf((TableItem) e.item);
