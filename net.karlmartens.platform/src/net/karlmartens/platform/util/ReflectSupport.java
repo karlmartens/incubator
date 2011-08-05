@@ -24,7 +24,7 @@ public final class ReflectSupport {
 
   public static Object invoke(String methodName, Object instance, Class<?>[] argTypes, Object[] args) {
     try {
-      final Method method = instance.getClass().getDeclaredMethod(methodName, argTypes);
+      final Method method = getMethod(instance.getClass(), methodName, argTypes);
       method.setAccessible(true);
       return method.invoke(instance, args);
     } catch (NoSuchMethodException e) {
@@ -34,6 +34,21 @@ public final class ReflectSupport {
     } catch (IllegalAccessException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private static Method getMethod(Class<?> clazz, String methodName, Class<?>[] argTypes) throws SecurityException, NoSuchMethodException {
+    Class<?> c = clazz;
+    while (c != null) {
+      try {
+        return c.getDeclaredMethod(methodName, argTypes);
+      } catch (NoSuchMethodException e) {
+        // ignore
+      }
+      
+      c = c.getSuperclass();
+    }
+
+    throw new NoSuchMethodException();
   }
 
   public static Object invoke(String methodName, Object instance, Class<?> argType, Object arg) {
