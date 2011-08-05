@@ -350,12 +350,12 @@ final class ViewerClipboardManager extends CellSelectionModifier {
           break;
 
         case OPERATION_PASTE:
-          if ((_operations & OPERATION_COPY) > 0)
+          if ((_operations & OPERATION_PASTE) > 0)
             paste();
           break;
 
         case OPERATION_CUT:
-          if ((_operations & OPERATION_COPY) > 0)
+          if ((_operations & OPERATION_CUT) > 0)
             cut();
           break;
       }
