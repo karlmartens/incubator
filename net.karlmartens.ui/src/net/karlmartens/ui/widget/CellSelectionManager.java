@@ -51,7 +51,7 @@ public final class CellSelectionManager {
   }
 
   public void setFocusCell(Point cell, boolean multi) {
-    if (NullSafe.equals(cell, _focusCell))
+    if (NullSafe.equals(cell, _focusCell) && NullSafe.equals(_focusCell, _expansionCell))
       return;
 
     final TableItem oldItem = getItemAtIndex(_focusCell);
