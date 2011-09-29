@@ -199,8 +199,74 @@ public final class CellSelectionManager {
     if (!_dragExpand)
       return;
 
-    final Point cell = getCell(new Point(e.x, e.y));
+    Point cell = getCell(new Point(e.x, e.y));
+    if (cell == null) {
+      final Rectangle rect = computeSelectionBounds();
+      if (rect != null) {
+        final Point delta = new Point(0, 0);
+        if (e.x < rect.x) {
+          delta.x = -1;
+        } else if (e.x >= rect.x + rect.width) {
+          delta.x = 1;
+        }
+
+        if (e.y < rect.y) {
+          delta.y = -1;
+        } else if (e.y >= rect.y + rect.height) {
+          delta.y = 1;
+        }
+        
+        cell = new Point(_expansionCell.x, _expansionCell.y);
+        final Rectangle selection = computeSelection();
+        if (delta.x < 0) {
+          cell.x = Math.max(selection.x - 1, 0);
+        } else if (delta.x > 0) {
+          cell.x = Math.min(selection.x + selection.width, _table.getColumnCount() - 1);
+        }
+        
+        if (delta.y < 0) {
+          cell.y = Math.max(selection.y - 1, 0);
+        } else if (delta.y > 0) {
+          cell.y = Math.min(selection.y + selection.height, _table.getItemCount() - 1);
+        }
+      }
+    }
+    
     expandSelection(cell, isMulti(e));
+  }
+  
+  private Rectangle computeSelection() {
+    if (_focusCell == null)
+      return null;
+    
+    if (_expansionCell == null || _focusCell.equals(_expansionCell))
+      return new Rectangle(_focusCell.x, _focusCell.y, 1, 1);
+    
+    final Rectangle result = new Rectangle(-1, -1, 0, 0);
+    result.x = Math.min(_focusCell.x, _expansionCell.x);
+    result.y = Math.min(_focusCell.y, _expansionCell.y);
+    result.width = Math.abs(_focusCell.x - _expansionCell.x) + 1;
+    result.height = Math.abs(_focusCell.y - _expansionCell.y) + 1;
+    return result;
+  }
+
+  private Rectangle computeSelectionBounds() {
+    final Rectangle rect = computeSelection();
+    if (rect == null)
+      return null;
+    
+    final TableItem tlItem = _table.getItem(rect.y);
+    final Rectangle tlRect = _table.getBounds(tlItem, rect.x);
+    
+    final TableItem brItem = _table.getItem(rect.y + rect.height - 1);
+    final Rectangle brRect = _table.getBounds(brItem, rect.x + rect.width - 1);
+    
+    final Rectangle result = new Rectangle(-1, -1, 0, 0);
+    result.x = tlRect.x;
+    result.y = tlRect.y;
+    result.width = brRect.x + brRect.width - result.x;
+    result.height = brRect.y + brRect.height - result.y;
+    return result;
   }
 
   private void handleKeyDown(Event e) {
