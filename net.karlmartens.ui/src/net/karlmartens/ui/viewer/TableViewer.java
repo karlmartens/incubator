@@ -37,6 +37,7 @@ public class TableViewer extends AbstractTableViewer {
 
   public TableViewer(Composite parent) {
     this(new Table(parent));
+    throw new RuntimeException();
   }
 
   public TableViewer(Composite parent, int style) {
