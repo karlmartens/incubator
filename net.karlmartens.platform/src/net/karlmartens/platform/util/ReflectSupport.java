@@ -22,6 +22,24 @@ import java.lang.reflect.Method;
 
 public final class ReflectSupport {
 
+  public static <T> T newInstance(Class<T> instanceType) {
+    try {
+      return (T) instanceType.getConstructor().newInstance();
+    } catch (IllegalArgumentException e) {
+      throw new RuntimeException(e);
+    } catch (SecurityException e) {
+      throw new RuntimeException(e);
+    } catch (InstantiationException e) {
+      throw new RuntimeException(e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    } catch (InvocationTargetException e) {
+      throw new RuntimeException(e);
+    } catch (NoSuchMethodException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public static Object invoke(String methodName, Object instance, Class<?>[] argTypes, Object[] args) {
     try {
       final Method method = getMethod(instance.getClass(), methodName, argTypes);
