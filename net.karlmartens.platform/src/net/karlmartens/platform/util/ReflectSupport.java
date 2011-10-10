@@ -17,6 +17,7 @@
  */
 package net.karlmartens.platform.util;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -24,7 +25,9 @@ public final class ReflectSupport {
 
   public static <T> T newInstance(Class<T> instanceType) {
     try {
-      return (T) instanceType.getConstructor().newInstance();
+      final Constructor<T> constructor = instanceType.getDeclaredConstructor();
+      constructor.setAccessible(true);
+      return (T) constructor.newInstance();
     } catch (IllegalArgumentException e) {
       throw new RuntimeException(e);
     } catch (SecurityException e) {

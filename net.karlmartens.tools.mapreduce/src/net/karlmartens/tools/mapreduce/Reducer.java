@@ -19,8 +19,10 @@
  */
 package net.karlmartens.tools.mapreduce;
 
+import net.karlmartens.platform.util.Pair;
+
 public interface Reducer<InKey, InValue, OutValue> {
 
-  void reduce(InKey key, Iterable<InValue> values, Emitter<OutValue> emitter);
+  void reduce(InKey key, Iterable<InValue> values, Emitter<Pair<InKey, OutValue>> emitter);
 
 }

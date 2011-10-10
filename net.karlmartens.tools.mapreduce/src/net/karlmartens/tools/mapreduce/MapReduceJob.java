@@ -27,32 +27,47 @@ import net.karlmartens.platform.util.ReflectSupport;
 
 public final class MapReduceJob<K, V, K1, V1, V2> {
 
-  private final Iterable<Pair<K, V>> _input;
-  private final Class<? extends Mapper<K, V, K1, V1>> _mapper;
-  private final Comparator<K1> _comparator;
-  private final Class<? extends Reducer<K1, V1, V2>> _reducer;
+	private final Iterable<Pair<K, V>> _input;
+	private final Class<? extends Mapper<K, V, K1, V1>> _mapper;
+	private final HashPartitioner<K1> _partitioner;
+	private final Comparator<K1> _comparator;
+	private final Class<? extends Reducer<K1, V1, V2>> _reducer;
 
-  public MapReduceJob(Class<? extends Mapper<K, V, K1, V1>> mapper, Class<? extends Reducer<K1, V1, V2>> reducer, Comparator<K1> comparator,
-      Iterable<Pair<K, V>> input) {
-    _input = input;
-    _mapper = mapper;
-    _comparator = comparator;
-    _reducer = reducer;
-  }
+	public MapReduceJob(Class<? extends Mapper<K, V, K1, V1>> mapper,
+			Class<? extends Reducer<K1, V1, V2>> reducer,
+			Comparator<K1> comparator, Iterable<Pair<K, V>> input) {
+		_input = input;
+		_mapper = mapper;
+		_partitioner = new HashPartitioner<K1>();
+		_comparator = comparator;
+		_reducer = reducer;
+	}
 
-  public Iterator<Pair<K, V>> getInput() {
-    return _input.iterator();
-  }
+	public Iterator<Pair<K, V>> getInput() {
+		return _input.iterator();
+	}
 
-  public Mapper<K, V, K1, V1> newMappper() {
-    return ReflectSupport.newInstance(_mapper);
-  }
+	public Mapper<K, V, K1, V1> newMappper() {
+		return ReflectSupport.newInstance(_mapper);
+	}
 
-  public Comparator<K1> getComparator() {
-    return _comparator;
-  }
+	public Partitioner<K1> getPartitioner() {
+		return _partitioner;
+	}
 
-  public Reducer<K1, V1, V2> newReducer() {
-    return ReflectSupport.newInstance(_reducer);
-  }
+	public Comparator<K1> getComparator() {
+		return _comparator;
+	}
+
+	public Reducer<K1, V1, V2> newReducer() {
+		return ReflectSupport.newInstance(_reducer);
+	}
+
+	public static <K, V, K1, V1, V2> MapReduceJob<K, V, K1, V1, V2> of(
+			Class<? extends Mapper<K, V, K1, V1>> mapper,
+			Class<? extends Reducer<K1, V1, V2>> reducer,
+			Comparator<K1> comparator, Iterable<Pair<K, V>> input) {
+		return new MapReduceJob<K, V, K1, V1, V2>(mapper, reducer, comparator,
+				input);
+	}
 }
