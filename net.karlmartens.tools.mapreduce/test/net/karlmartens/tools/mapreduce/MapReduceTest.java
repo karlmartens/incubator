@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.BreakIterator;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -34,8 +35,11 @@ public final class MapReduceTest {
 						new StringComparator(true), //
 						input);
 
-		final Collection<Pair<String, Integer>> actuals = new TreeSet<Pair<String, Integer>>(new PairKeyComparator<String, Integer>(new StringComparator(false)));
-		actuals.addAll(MapReduceExecutor.run(job));
+		Collection<Pair<String, Integer>> a = new TreeSet<Pair<String, Integer>>(new PairKeyComparator<String, Integer>(new StringComparator(false)));
+		a.addAll(MapReduceExecutor.run(job));
+
+		final Collection<Pair<?,?>> actuals = new ArrayList<Pair<?,?>>();
+		actuals.addAll(a);
 
 		final TestSummarizer summarizer = new TestSummarizer()//
 				.expected(//
@@ -45,6 +49,34 @@ public final class MapReduceTest {
 						"of 2", //
 						"wisdom 2", //
 						"words 2");
+		summarize(actuals, summarizer);
+		summarizer.check();
+	}
+
+	@Test
+	public void testMapReduceAverageWordCount() throws Exception {
+		@SuppressWarnings("unchecked")
+		final Iterable<Pair<String, String>> input = Arrays.asList(//
+				Pair.of("document", "A few words of wisdom."), //
+				Pair.of("document", "A few more words of wisdom."));
+
+		final MapReduceJob<String, String, String, Integer, Integer> job = MapReduceJob
+				.of(WordMapper.class, //
+						SumReducer.class, //
+						new StringComparator(true), //
+						input);
+
+		final MapReduceJob<String, Integer, String, Integer, Double> job2 = MapReduceJob
+				.of(NoneMapper.class, //
+						AverageReducer.class, //
+						new StringComparator(true), //
+						new KeyedInputReader("document", MapReduceExecutor.run(job)));
+		
+		final Collection<Pair<?,?>> actuals = new ArrayList<Pair<?,?>>();
+		actuals.addAll(MapReduceExecutor.run(job2));
+		
+		final TestSummarizer summarizer = new TestSummarizer()//
+				.expected("document       0.55");
 		summarize(actuals, summarizer);
 		summarizer.check();
 	}
@@ -86,16 +118,48 @@ public final class MapReduceTest {
 		}
 	}
 
-	private static void summarize(Pair<String, Integer>[] items, TestSummarizer summarizer) {
-		for (Pair<String, Integer> item : items) {
-			summarizer.actual("%1$s %2$d", item.a(), item.b());
-		}
+	private static void summarize(Pair<?, ?>[] items, TestSummarizer summarizer) {
+		summarize(Arrays.asList(items), summarizer);
 	}
 
-	private static void summarize(Iterable<Pair<String, Integer>> items, TestSummarizer summarizer) {
-		for (Pair<String, Integer> item : items) {
-			summarizer.actual("%1$s %2$d", item.a(), item.b());
+	private static void summarize(Iterable<Pair<?, ?>> items, TestSummarizer summarizer) {
+		for (Pair<?, ?> item : items) {
+			final String format = new StringBuilder() //
+				.append(getFormat(1, item.a())) //
+				.append(" ") //
+				.append(getFormat(2, item.b())) //
+				.toString();
+			
+			summarizer.actual(format, item.a(), item.b());
 		}
+	}
+	
+	private static String getFormat(int index, Object o) {
+		final String format;
+		if (o instanceof Double) {
+			format = "10.2f";
+		} else if (o instanceof Integer) {
+			format ="d";
+		} else {
+			format = "s";
+		}
+
+		return new StringBuilder() //
+			.append("%") //
+			.append(index) //
+			.append("$") //
+			.append(format) //
+			.toString();
+	}
+
+	public static class NoneMapper implements Mapper<String, Integer, String, Integer> {
+
+		@Override
+		public void map(String key, Integer value,
+				Emitter<Pair<String, Integer>> emitter) {
+			emitter.emit(Pair.of(key, value));
+		}
+		
 	}
 
 	public static class WordMapper implements
@@ -135,6 +199,22 @@ public final class MapReduceTest {
 			emitter.emit(Pair.of(key, total));
 		}
 
+	}
+	
+	private static class AverageReducer implements Reducer<String, Integer, Double> {
+
+		@Override
+		public void reduce(String key, Iterable<Integer> values,
+				Emitter<Pair<String, Double>> emitter) {
+			int uWords = 0;
+			int tWords = 0;
+			for (Integer v : values) {
+				uWords++;
+				tWords += v.intValue();
+			}
+			emitter.emit(Pair.of(key, (double)uWords / (double)tWords));
+		}
+		
 	}
 	
 	private static class FileInputReader implements Iterable<Pair<String, String>> {
@@ -198,6 +278,42 @@ public final class MapReduceTest {
 					} finally {
 						_closed = true;
 					}
+				}
+			};
+		}
+		
+	}
+	
+	private static class KeyedInputReader implements Iterable<Pair<String, Integer>> {
+
+		private final String _document;
+		private final Collection<Pair<String, Integer>> _data;
+
+		public KeyedInputReader(String document,
+				Collection<Pair<String, Integer>> data) {
+			_document = document;
+			_data = data;
+		}
+
+		@Override
+		public Iterator<Pair<String, Integer>> iterator() {
+			final Iterator<Pair<String, Integer>> it = _data.iterator();
+			return new Iterator<Pair<String,Integer>>() {
+
+				@Override
+				public boolean hasNext() {
+					return it.hasNext();
+				}
+
+				@Override
+				public Pair<String, Integer> next() {
+					final Pair<String, Integer> orig = it.next();
+					return Pair.of(_document, orig.b());
+				}
+
+				@Override
+				public void remove() {
+					throw new UnsupportedOperationException();
 				}
 			};
 		}

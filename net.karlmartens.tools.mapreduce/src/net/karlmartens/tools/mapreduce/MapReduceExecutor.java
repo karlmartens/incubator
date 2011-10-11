@@ -90,7 +90,7 @@ public final class MapReduceExecutor<K, V, K1, V1, V2> implements
 	}
 
 	private Collection<Pair<K1, V1>>[] performPartition(Collection<Pair<K1, V1>> items) {
-		final int count = items.size() / 8;
+		final int count = Math.max(items.size() / 8, 1);
 		@SuppressWarnings("unchecked")
 		final Collection<Pair<K1, V1>>[] buckets = new Collection[count];
 		for (int i = 0; i < buckets.length; i++) {
