@@ -18,13 +18,11 @@
 
 package net.karlmartens.platform.util;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -42,7 +40,14 @@ public final class ParallelBucketSort {
   }
 
   public static <T> void sort(T[] arr, Comparator<T> comparator) {
-    final Collection<T>[] buckets = partition(arr, comparator);
+    if (arr.length <= 1)
+      return;
+    
+    // Try to prevent clustering 
+    ArraySupport.shuffle(arr);
+    
+    final Collection<T>[] buckets = initializeBuckets(arr);
+    partition(arr, comparator, buckets);
     
     final int threads = Runtime.getRuntime().availableProcessors();
     final ExecutorService service = Executors.newFixedThreadPool(threads);
@@ -71,26 +76,30 @@ public final class ParallelBucketSort {
     }
   }
   
-  private static <T> Collection<T>[] partition(T[] arr, Comparator<T> comparator) {
-    final int partitions = arr.length / 16;
+  private static <T> Collection<T>[] initializeBuckets(T[] arr) {
+    final int partitions = Math.max(arr.length / 8, 1);
     @SuppressWarnings("unchecked")
-    final T[] pivots = (T[]) Array.newInstance(arr.getClass().getComponentType(), partitions);
-    @SuppressWarnings("unchecked")
-    final Collection<T>[] buckets = new Collection[partitions+1];
-
-    final Random random = new Random();
-    for (int i=0; i<pivots.length; i++) {
-      pivots[i] = arr[random.nextInt(partitions)];
+    final Collection<T>[] buckets = new Collection[partitions];
+    for (int i = 0; i < buckets.length; i++) {
       buckets[i] = new ArrayList<T>();
     }
-    buckets[buckets.length -1] = new ArrayList<T>();
+    return buckets;
+  }
+
+  private static <T> Collection<T>[] partition(T[] arr, Comparator<T> comparator, Collection<T>[] buckets) {
+    final T[] pivots = Arrays.copyOf(arr, buckets.length);
+    sort(pivots, comparator);
+    for (int i=0; i<pivots.length; i++) {
+      buckets[i].add(pivots[i]);
+    }
     
-    Arrays.sort(pivots, comparator);
-    
-    for (int i=0; i<arr.length; i++) {
+    final int maxIdx = buckets.length - 1;
+    for (int i=buckets.length; i<arr.length; i++) {
       int index = Arrays.binarySearch(pivots, arr[i], comparator);
       if (index < 0) 
         index = -(index + 1);
+      
+      index = Math.min(index, maxIdx);
       
       buckets[index].add(arr[i]);
     }
