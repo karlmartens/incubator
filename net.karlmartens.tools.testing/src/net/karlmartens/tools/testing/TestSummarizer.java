@@ -1,15 +1,15 @@
 package net.karlmartens.tools.testing;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.junit.ComparisonFailure;
 
 public final class TestSummarizer {
 
-	private final List<String> _expected = new LinkedList<String>();
-	private final List<String> _actual = new LinkedList<String>();
+	private final List<String> _expected = new ArrayList<String>();
+	private final List<String> _actual = new ArrayList<String>();
 
 	public TestSummarizer expected(String... lines) {
 		_expected .addAll(Arrays.asList(lines));

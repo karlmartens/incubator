@@ -66,6 +66,17 @@ public final class Pair<A, B> {
       return false;
     return true;
   }
+  
+  @Override
+  public String toString() {
+    return new StringBuilder() //
+      .append("{\"") //
+      .append(NullSafe.toString(_a)) //
+      .append("\":\"") //
+      .append(NullSafe.toString(_b)) //
+      .append("\"}") //
+      .toString();
+  }
 
   public static <A, B> Pair<A, B> of(A a, B b) {
     return new Pair<A, B>(a, b);

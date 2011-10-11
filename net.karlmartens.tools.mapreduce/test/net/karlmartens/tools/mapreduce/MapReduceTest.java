@@ -11,6 +11,7 @@ import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.TreeSet;
 
+import net.karlmartens.platform.util.ArraySupport;
 import net.karlmartens.platform.util.Pair;
 import net.karlmartens.platform.util.PairKeyComparator;
 import net.karlmartens.platform.util.StringComparator;
@@ -48,6 +49,7 @@ public final class MapReduceTest {
 		summarizer.check();
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testLargeMapReduceWordCount() throws Exception {
 		Iterable<Pair<String, String>> input = new FileInputReader("pg2600.in.txt");
@@ -57,8 +59,8 @@ public final class MapReduceTest {
 						new StringComparator(false), //
 						input);
 
-		final Collection<Pair<String, Integer>> actuals = new TreeSet<Pair<String, Integer>>(new PairKeyComparator<String, Integer>(new StringComparator(false)));
-		actuals.addAll(MapReduceExecutor.run(job));
+		final Pair<String, Integer>[] actuals = MapReduceExecutor.run(job).toArray(new Pair[0]);
+		ArraySupport.sort(actuals, new PairKeyComparator<String, Integer>(new StringComparator(false)));
 
 		final TestSummarizer summarizer = new TestSummarizer();
 		readExpected("pg2600.out.txt", summarizer);
@@ -81,6 +83,12 @@ public final class MapReduceTest {
 			} catch (IOException e) {
 				// Ignore
 			}
+		}
+	}
+
+	private static void summarize(Pair<String, Integer>[] items, TestSummarizer summarizer) {
+		for (Pair<String, Integer> item : items) {
+			summarizer.actual("%1$s %2$d", item.a(), item.b());
 		}
 	}
 

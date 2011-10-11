@@ -18,6 +18,8 @@
 package net.karlmartens.platform.util;
 
 import java.util.BitSet;
+import java.util.Comparator;
+import java.util.Random;
 
 public final class ArraySupport {
 
@@ -126,6 +128,22 @@ public final class ArraySupport {
       set.flip(i);
 
     return toArray(set);
+  }
+
+  public static <T> void shuffle(T[] arr) {
+    final Random random = new Random();
+    final int len = arr.length;
+    for (int i=0; i<len; i++) {
+      swap(arr, i, random.nextInt(len));
+    }
+  }
+ 
+  public static <T extends Comparable<T>> void sort(T[] arr) {
+    ParallelBucketSort.sort(arr);
+  }
+  
+  public static <T> void sort(T[] arr, Comparator<T> comparator) {
+    ParallelBucketSort.sort(arr, comparator);
   }
 
   public static void swap(long[] arr, int firstIndex, int secondIndex) {
