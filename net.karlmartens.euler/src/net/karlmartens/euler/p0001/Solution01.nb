@@ -1,0 +1,115 @@
+(* Content-type: application/mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 7.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       145,          7]
+NotebookDataLength[      3045,        105]
+NotebookOptionsPosition[      2687,         88]
+NotebookOutlinePosition[      3028,        103]
+CellTagsIndexPosition[      2985,        100]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{
+   RowBox[{"t", "[", 
+    RowBox[{"{", 
+     RowBox[{"d_", ",", " ", "x_"}], "}"}], "]"}], " ", "=", " ", 
+   RowBox[{"{", 
+    RowBox[{"d", ",", " ", 
+     RowBox[{"Floor", "[", 
+      RowBox[{"x", "/", "d"}], "]"}]}], "}"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"s", "[", 
+    RowBox[{"{", 
+     RowBox[{"d_", ",", " ", "n_"}], "}"}], "]"}], " ", "=", " ", 
+   RowBox[{
+    RowBox[{"n", "/", "2"}], " ", "*", " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"2", " ", "d"}], "+", " ", 
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{"n", "-", "1"}], ")"}], "d"}]}], ")"}]}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"max", " ", "=", " ", "999"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Total", "[", 
+   RowBox[{"Map", "[", 
+    RowBox[{"s", ",", " ", 
+     RowBox[{"Map", "[", 
+      RowBox[{"t", ",", " ", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"3", ",", " ", "max"}], "}"}], ",", " ", 
+         RowBox[{"{", 
+          RowBox[{"5", ",", " ", "max"}], "}"}]}], "}"}]}], "]"}]}], "]"}], 
+   "]"}], " ", "-", " ", 
+  RowBox[{"Total", "[", 
+   RowBox[{"Map", "[", 
+    RowBox[{"s", ",", " ", 
+     RowBox[{"Map", "[", 
+      RowBox[{"t", ",", " ", 
+       RowBox[{"{", 
+        RowBox[{"{", 
+         RowBox[{"15", ",", " ", "max"}], "}"}], "}"}]}], "]"}]}], "]"}], 
+   "]"}]}]}], "Input",
+ CellChangeTimes->CompressedData["
+1:eJxTTMoPSmViYGAQBmIQPXceg+s6z1eOyyp3R4DoOQX+CSC67eNfMH0rQi8N
+RGsdsakC0RM/tE8H0QX/LWeD6Gvr3y4E0ctvOy0B0RIimw6A6Au5546A6P+3
+X58HqzuuextEM+xRfAiit6tffwaiKxxmfwTR/1beAtNO37L+gOgOG6Z/ILpK
+szVlPZB23JlWCKKFhP+Vgugppv5lINrmu0sDiHar/98Eoh8ILFoConc/OrIS
+RKe+m7sWROfs99sCog1kaw+C6G/35c6B6J7rcpfB5p5a9wEsH/mBYQOQzprQ
+yQyiI16WsIPo5ItTeUA0AGsDpnY=
+  "]],
+
+Cell[BoxData["233168"], "Output",
+ CellChangeTimes->{
+  3.528294212335125*^9, {3.5282942651002703`*^9, 3.5282942799281273`*^9}, {
+   3.528294414494524*^9, 3.528294429352806*^9}, 3.528294503626164*^9}]
+}, Open  ]],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.52829131219788*^9, 3.528291314616935*^9}}]
+},
+WindowSize->{640, 625},
+WindowMargins->{{174, Automatic}, {-11, Automatic}},
+FrontEndVersion->"7.0 for Mac OS X x86 (32-bit) (January 30, 2009)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[567, 22, 1807, 55, 88, "Input"],
+Cell[2377, 79, 200, 3, 27, "Output"]
+}, Open  ]],
+Cell[2592, 85, 91, 1, 27, "Input"]
+}
+]
+*)
+
+(* End of internal cache information *)
+
