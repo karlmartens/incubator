@@ -1,0 +1,82 @@
+(* Content-type: application/mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 7.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       145,          7]
+NotebookDataLength[      2086,         73]
+NotebookOptionsPosition[      1767,         57]
+NotebookOutlinePosition[      2104,         72]
+CellTagsIndexPosition[      2061,         69]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"(*", " ", "\[IndentingNewLine]", "    ", 
+   RowBox[{
+    RowBox[{
+    "The", " ", "prime", " ", "factors", " ", "of", " ", "13195", " ", "are", 
+     " ", "5"}], ",", "7", ",", 
+    RowBox[{
+    "13", " ", "and", " ", "29.", "\n", "    ", "What", " ", "is", " ", "the",
+      " ", "largest", " ", "prime", " ", "factor", " ", "of", " ", "the", " ",
+      "number", " ", 
+     RowBox[{"600851475143", "?"}]}]}], "\[IndentingNewLine]", "*)"}], 
+  "\[IndentingNewLine]", 
+  RowBox[{
+   RowBox[{
+    RowBox[{
+     RowBox[{"f", "[", 
+      RowBox[{"{", 
+       RowBox[{"a_", ",", " ", "b_"}], "}"}], "]"}], " ", "=", " ", "a"}], 
+    ";"}], "\[IndentingNewLine]", 
+   RowBox[{"Max", "[", 
+    RowBox[{"Map", "[", 
+     RowBox[{"f", ",", " ", 
+      RowBox[{"FactorInteger", "[", "600851475143", "]"}]}], "]"}], 
+    "]"}]}]}]], "Input",
+ CellChangeTimes->{{3.528310550891265*^9, 3.528310558799891*^9}, {
+  3.5283106500913963`*^9, 3.528310733815961*^9}, {3.528310992276752*^9, 
+  3.528311020064537*^9}}],
+
+Cell[BoxData["6857"], "Output",
+ CellChangeTimes->{
+  3.528310563382843*^9, {3.528310699192388*^9, 3.528310734689824*^9}, 
+   3.528311022746365*^9}]
+}, Open  ]]
+},
+WindowSize->{640, 625},
+WindowMargins->{{4, Automatic}, {Automatic, 4}},
+FrontEndVersion->"7.0 for Mac OS X x86 (32-bit) (January 30, 2009)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[567, 22, 1033, 27, 103, "Input"],
+Cell[1603, 51, 148, 3, 27, "Output"]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)
