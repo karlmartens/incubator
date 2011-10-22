@@ -315,7 +315,7 @@ public final class TimeSeriesTableViewer extends TableViewer {
       return;
     
     final Rectangle rect = _table.getVisibleScrollableCells();
-    final int max = _scroll.getMaximum() - _scroll.getMinimum() - 1;
+    final int max = _scroll.getMaximum() - _scroll.getMinimum() + 1;
     final int tWidth = Math.min(Math.max(1, rect.width), max);
     _scroll.setThumb(tWidth);
     _scroll.setEnabled(tWidth != max);
