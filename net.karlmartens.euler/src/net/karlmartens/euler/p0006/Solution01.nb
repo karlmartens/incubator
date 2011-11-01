@@ -1,0 +1,79 @@
+(* Content-type: application/mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 7.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       145,          7]
+NotebookDataLength[      1924,         70]
+NotebookOptionsPosition[      1603,         54]
+NotebookOutlinePosition[      1943,         69]
+CellTagsIndexPosition[      1900,         66]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"n", "=", "100"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"x", " ", "=", 
+   RowBox[{
+    FractionBox["1", "2"], " ", "n", " ", 
+    RowBox[{"(", 
+     RowBox[{"n", " ", "+", " ", "1"}], ")"}]}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"y", " ", "=", " ", 
+   RowBox[{
+    FractionBox["1", "6"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"2", " ", 
+       SuperscriptBox["n", "3"]}], "+", 
+      RowBox[{"3", " ", 
+       SuperscriptBox["n", "2"]}], "+", " ", "n"}], ")"}]}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  SuperscriptBox["x", "2"], " ", "-", " ", "y"}]}], "Input",
+ CellChangeTimes->{{3.529143943250168*^9, 3.5291440199841833`*^9}, 
+   3.529144119455714*^9, 3.5291442082897177`*^9, {3.5291442475700006`*^9, 
+   3.529144263247849*^9}, {3.529144368009248*^9, 3.529144388868726*^9}}],
+
+Cell[BoxData["25164150"], "Output",
+ CellChangeTimes->{3.529144021241458*^9, 3.529144162909359*^9, 
+  3.529144265816107*^9, 3.529144380714517*^9}]
+}, Open  ]]
+},
+WindowSize->{640, 750},
+WindowMargins->{{162, Automatic}, {91, Automatic}},
+FrontEndVersion->"7.0 for Mac OS X x86 (32-bit) (January 30, 2009)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[567, 22, 871, 25, 118, "Input"],
+Cell[1441, 49, 146, 2, 27, "Output"]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)
