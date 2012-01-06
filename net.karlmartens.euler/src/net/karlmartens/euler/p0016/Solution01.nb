@@ -1,0 +1,59 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 8.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       157,          7]
+NotebookDataLength[      1192,         49]
+NotebookOptionsPosition[       871,         32]
+NotebookOutlinePosition[      1227,         48]
+CellTagsIndexPosition[      1184,         45]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[BoxData[
+ RowBox[{"Plus", " ", "@@", " ", 
+  RowBox[{"IntegerDigits", "[", 
+   RowBox[{"2", "^", "1000"}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.5348076099729156`*^9, 3.534807637876375*^9}}],
+
+Cell[BoxData["1366"], "Output",
+ CellChangeTimes->{3.5348076383648977`*^9}]
+}, Open  ]]
+},
+WindowSize->{740, 867},
+WindowMargins->{{121, Automatic}, {Automatic, 94}},
+FrontEndVersion->"8.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (October 5, \
+2011)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[579, 22, 198, 4, 27, "Input"],
+Cell[780, 28, 75, 1, 27, "Output"]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)
+
