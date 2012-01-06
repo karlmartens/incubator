@@ -1,0 +1,3 @@
+In[297]:= f[y_] := Plus @@ Function[x, x^5] /@ IntegerDigits[y];
+Plus @@ Select[Range[2, 9999999], f[#] == # &]
+Out[298]= 443839
