@@ -1,0 +1,2 @@
+In[83]:= Take[IntegerDigits[Plus @@ Table[x^x, {x, 1, 1000}]], -10]
+Out[83]= {9,1,1,0,8,4,6,7,0,0}
