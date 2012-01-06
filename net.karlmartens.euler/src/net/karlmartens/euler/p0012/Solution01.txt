@@ -1,0 +1,6 @@
+f[x_] := x/2(x+1);
+start =10000;
+end = 15000;Length[TakeWhile[Length /@ Divisors /@ Table[f[x], {x, start, end}], # < 500&]] + start
+12375
+f[12375]
+76576500

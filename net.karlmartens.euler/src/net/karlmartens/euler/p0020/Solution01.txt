@@ -1,0 +1,2 @@
+Plus @@ IntegerDigits[100!]
+648

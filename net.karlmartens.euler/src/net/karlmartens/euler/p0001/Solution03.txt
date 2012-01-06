@@ -1,0 +1,5 @@
+t[{d_, x_}] = {d, Floor[x/d]};
+s[{d_, n_}] = n/2 * (2 d+ (n-1)d);
+max = 999;
+Total[Map[s, Map[t, {{3, max}, {5, max}}]]] - Total[Map[s, Map[t, {{15, max}}]]]
+233168

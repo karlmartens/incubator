@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       145,          7]
-NotebookDataLength[      3045,        105]
+NotebookDataLength[      3061,        106]
 NotebookOptionsPosition[      2687,         88]
-NotebookOutlinePosition[      3028,        103]
-CellTagsIndexPosition[      2985,        100]
+NotebookOutlinePosition[      3044,        104]
+CellTagsIndexPosition[      3001,        101]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -88,7 +88,8 @@ Cell[BoxData[""], "Input",
 },
 WindowSize->{640, 625},
 WindowMargins->{{174, Automatic}, {-11, Automatic}},
-FrontEndVersion->"7.0 for Mac OS X x86 (32-bit) (January 30, 2009)",
+FrontEndVersion->"8.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (October 5, \
+2011)",
 StyleDefinitions->"Default.nb"
 ]
 (* End of Notebook Content *)
@@ -112,4 +113,3 @@ Cell[2592, 85, 91, 1, 27, "Input"]
 *)
 
 (* End of internal cache information *)
-
