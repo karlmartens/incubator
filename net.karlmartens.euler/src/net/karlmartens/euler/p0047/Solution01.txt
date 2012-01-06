@@ -1,0 +1,3 @@
+In[136]:= f[x_] :=Length[First /@ FactorInteger[x]];
+Select[Range[200000], f[#] >= 4 && f[# + 1] >=4 && f[#+2] >= 4&& f[#+3]>=4&, 1]
+Out[137]= {134043}
