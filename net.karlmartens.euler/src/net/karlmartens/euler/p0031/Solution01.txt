@@ -1,0 +1,2 @@
+In[304]:= Length[NSolve[{1Subscript[x, 1]+ 2Subscript[x, 2]+5Subscript[x, 3]+10Subscript[x, 4]+20Subscript[x, 5]+ 50Subscript[x, 6]+ 100Subscript[x, 7]+200Subscript[x, 8]== 200, Subscript[x, 1]>= 0, Subscript[x, 2]>= 0, Subscript[x, 3]>= 0, Subscript[x, 4]>= 0, Subscript[x, 5]>= 0, Subscript[x, 6]>= 0, Subscript[x, 7]>= 0, Subscript[x, 8]>= 0}, {Subscript[x, 1],Subscript[x, 2], Subscript[x, 3], Subscript[x, 4], Subscript[x, 5], Subscript[x, 6], Subscript[x, 7], Subscript[x, 8]}, Integers]]
+Out[304]= 73682
