@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       157,          7]
-NotebookDataLength[      4727,        139]
-NotebookOptionsPosition[      4363,        121]
-NotebookOutlinePosition[      4718,        137]
-CellTagsIndexPosition[      4675,        134]
+NotebookDataLength[      4777,        140]
+NotebookOptionsPosition[      4413,        122]
+NotebookOutlinePosition[      4768,        138]
+CellTagsIndexPosition[      4725,        135]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -29,9 +29,9 @@ Cell[BoxData[
        "Consider", " ", "all", " ", "integer", " ", "combinations", " ", "of",
          " ", 
         SuperscriptBox["a", "b"], " ", "for", " ", "2"}], " ", "\[LessEqual]",
-        " ", "a", " ", "\[GreaterEqual]", " ", 
+        " ", "a", " ", "\[LessEqual]", " ", 
        RowBox[{"5", " ", "and", " ", "2"}], " ", "\[LessEqual]", " ", "b", 
-       " ", "\[GreaterEqual]", " ", "5"}], ":", "\[IndentingNewLine]", 
+       " ", "\[LessEqual]", " ", "5"}], ":", "\[IndentingNewLine]", 
       "\[IndentingNewLine]", " ", 
       SuperscriptBox["2", "2"]}], "=", "4"}], ",", 
     RowBox[{
@@ -86,12 +86,13 @@ Cell[BoxData[
        " ", "terms", " ", "are", " ", "in", " ", "the", " ", "sequence", " ", 
       "generated", " ", "by", " ", 
       SuperscriptBox["a", "b"], " ", "for", " ", "2"}], " ", "\[LessEqual]", 
-     " ", "a", " ", "\[LessEqual]", 
+     " ", "a", " ", "\[LessEqual]", " ", 
      RowBox[{"100", " ", "and", " ", "2"}], " ", "\[LessEqual]", " ", "b", 
      " ", "\[LessEqual]", " ", 
      RowBox[{"100", "?"}]}]}], "\[IndentingNewLine]", "*)"}]}]], "Input",
  CellChangeTimes->{{3.534903959634564*^9, 3.534904324846854*^9}, {
-  3.5349043632265863`*^9, 3.5349043653056183`*^9}}],
+  3.5349043632265863`*^9, 3.5349043653056183`*^9}, {3.534904578985643*^9, 
+  3.5349046066412077`*^9}}],
 
 Cell[CellGroupData[{
 
@@ -136,14 +137,13 @@ CellTagsIndex->{}
 *)
 (*NotebookFileOutline
 Notebook[{
-Cell[557, 20, 2963, 73, 289, "Input"],
+Cell[557, 20, 3013, 74, 289, "Input"],
 Cell[CellGroupData[{
-Cell[3545, 97, 630, 17, 43, "Input"],
-Cell[4178, 116, 169, 2, 27, "Output"]
+Cell[3595, 98, 630, 17, 43, "Input"],
+Cell[4228, 117, 169, 2, 27, "Output"]
 }, Open  ]]
 }
 ]
 *)
 
 (* End of internal cache information *)
-
