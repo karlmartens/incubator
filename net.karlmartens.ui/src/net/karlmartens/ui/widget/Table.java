@@ -23,6 +23,7 @@ import java.util.Comparator;
 
 import net.karlmartens.platform.util.ArraySupport;
 import net.karlmartens.platform.util.NumberStringComparator;
+import net.karlmartens.ui.Images;
 
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
@@ -38,6 +39,7 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
@@ -53,7 +55,6 @@ import de.kupzog.ktable.KTableModel;
 import de.kupzog.ktable.SWTX;
 import de.kupzog.ktable.renderers.CheckableCellRenderer;
 import de.kupzog.ktable.renderers.DefaultCellRenderer;
-import de.kupzog.ktable.renderers.FixedCellRenderer;
 import de.kupzog.ktable.renderers.TextCellRenderer;
 
 public final class Table extends Composite {
@@ -64,11 +65,14 @@ public final class Table extends Composite {
   public static final String GROUP_VISIBLE_COLUMNS = "TimeSeriesTable.Group.VisibleColumns";
 
   public static final int SORT_DECENDING = -1;
+  public static final int SORT_NONE = 0;
   public static final int SORT_ASCENDING = 1;
 
   private final TableColumnManager _columnManager;
   private final CellSelectionManager _cellSelectionManager;
 
+  private final Image _imageAscending;
+  private final Image _imageDecending;
   private final KTableImpl _table;
   private final TableListener _listener;
 
@@ -93,11 +97,14 @@ public final class Table extends Composite {
     _listener = new TableListener();
     updateFontData();
 
+    _imageAscending = Images.SORT_ASCENDING.createImage();
+    _imageDecending = Images.SORT_DECENDING.createImage();
+
     _table = new KTableImpl(this, style | SWTX.MARK_FOCUS_HEADERS);
     _table.setBackground(getBackground());
     _table.setForeground(getForeground());
     _table.setModel(_model);
-    
+
     _cellSelectionManager = new CellSelectionManager(this);
     _columnManager = new TableColumnManager(this, _table);
 
@@ -106,12 +113,12 @@ public final class Table extends Composite {
 
     hookControls();
   }
-  
+
   public IMenuManager getColumnMenuManager() {
     checkWidget();
     return _columnManager.getMenuManager();
   }
-  
+
   @Override
   public void setBackground(Color color) {
     super.setBackground(color);
@@ -490,7 +497,7 @@ public final class Table extends Composite {
   public void scroll(Point cell) {
     checkWidget();
     checkNull(cell);
-    
+
     _table.scroll(cell.x, computeKTableRow(cell.y));
   }
 
@@ -538,6 +545,9 @@ public final class Table extends Composite {
     for (int i = c; i < _columnCount; i++) {
       final TableColumn column = _columns[i];
       if (column != null && !column.isDisposed()) {
+        if (i == _lastSortColumnIndex)
+          setSortIndicator(-1, SORT_NONE);
+
         column.release();
       }
 
@@ -593,6 +603,7 @@ public final class Table extends Composite {
     checkRowIndex(index);
 
     _items[index].clear();
+    setSortIndicator(-1, SORT_NONE);
     _table.redraw();
   }
 
@@ -601,6 +612,7 @@ public final class Table extends Composite {
     for (int i = 0; i < _itemCount; i++) {
       _items[i].clear();
     }
+    setSortIndicator(-1, SORT_NONE);
     _table.redraw();
   }
 
@@ -622,6 +634,12 @@ public final class Table extends Composite {
       _items[i].swapColumns(fromIndex, toIndex);
     }
 
+    if (_lastSortColumnIndex == fromIndex) {
+      _lastSortColumnIndex = toIndex;
+    } else if (_lastSortColumnIndex == toIndex) {
+      _lastSortColumnIndex = fromIndex;
+    }
+
     _columns[fromIndex].notifyListeners(SWT.Move, new Event());
     _columns[toIndex].notifyListeners(SWT.Move, new Event());
 
@@ -635,17 +653,12 @@ public final class Table extends Composite {
     if (_itemCount <= 1)
       return;
 
-    final NumberStringComparator comparator = new NumberStringComparator();
-    for (int i = 1; i < _itemCount; i++) {
-      final TableItem first = _items[i - 1];
-      final TableItem second = _items[i];
-      if (comparator.compare(first.getText(index), second.getText(index)) > 0) {
-        sort(index, SORT_ASCENDING);
-        return;
-      }
+    if (index != _lastSortColumnIndex || _lastSortDirection == SORT_NONE) {
+      sort(index, SORT_ASCENDING);
+      return;
     }
 
-    sort(index, SORT_DECENDING);
+    sort(index, _lastSortDirection * -1);
   }
 
   public void sort(int index, int direction) {
@@ -662,6 +675,7 @@ public final class Table extends Composite {
     Arrays.sort(newItems, 0, _itemCount, comparator);
 
     _items = newItems;
+    setSortIndicator(index, direction);
     notifyListeners(SWT.Selection, new Event());
     redraw();
   }
@@ -701,6 +715,9 @@ public final class Table extends Composite {
 
     System.arraycopy(_columns, index, _columns, index + 1, _columnCount++ - index);
     _columns[index] = item;
+
+    if (index == _lastSortColumnIndex)
+      _lastSortColumnIndex++;
   }
 
   void createItem(TableItem item, int index) {
@@ -717,6 +734,7 @@ public final class Table extends Composite {
 
     System.arraycopy(_items, index, _items, index + 1, _itemCount++ - index);
     _items[index] = item;
+    setSortIndicator(-1, SORT_NONE);
   }
 
   Rectangle getBounds(TableItem item, int index) {
@@ -762,6 +780,14 @@ public final class Table extends Composite {
     final Rectangle r = getBounds(item, index);
     r.width = 0;
     r.height = 0;
+
+    final Image image = item.getImage(index);
+    if (image == null)
+      return r;
+
+    final Rectangle imageBounds = image.getBounds();
+    r.width = imageBounds.width;
+    r.height = imageBounds.height;
     return r;
   }
 
@@ -770,11 +796,40 @@ public final class Table extends Composite {
     return _table;
   }
 
+  private Image _previousSortImage = null;
+  private int _lastSortColumnIndex = -1;
+  private int _lastSortDirection = SORT_NONE;
+
+  void setSortIndicator(int index, int direction) {
+    if (_lastSortColumnIndex >= 0 && _lastSortColumnIndex < _columnCount) {
+      final TableColumn column = getColumn(_lastSortColumnIndex);
+      column.setImage(_previousSortImage);
+    }
+
+    _previousSortImage = null;
+    _lastSortColumnIndex = -1;
+    _lastSortDirection = SORT_NONE;
+    if (index < 0 || index >= _columnCount || (direction != SORT_ASCENDING && direction != SORT_DECENDING))
+      return;
+
+    final TableColumn column = getColumn(index);
+    _previousSortImage = column.getImage();
+    _lastSortColumnIndex = index;
+    _lastSortDirection = direction;
+
+    final Image indicator;
+    if (direction == SORT_ASCENDING) {
+      indicator = _imageAscending;
+    } else {
+      indicator = _imageDecending;
+    }
+    column.setImage(indicator);
+  }
+
   private void hookControls() {
     _table.addCellResizeListener(_listener);
     _table.addPaintListener(_listener);
 
-    
     addControlListener(_listener);
     addPaintListener(_listener);
     addDisposeListener(_listener);
@@ -840,7 +895,7 @@ public final class Table extends Composite {
 
     return row;
   }
-  
+
   private static int checkStyle(int style) {
     final int mask = SWT.BORDER | SWT.MULTI;
     return style & mask;
@@ -960,7 +1015,7 @@ public final class Table extends Composite {
       // Not used
     }
 
-    private final FixedCellRenderer _headerRenderer = new FixedCellRenderer(SWT.BOLD | DefaultCellRenderer.INDICATION_FOCUS_ROW);
+    private final ImageFixedCellRenderer _headerRenderer = new ImageFixedCellRenderer(SWT.BOLD | DefaultCellRenderer.INDICATION_FOCUS_ROW);
     private final TextCellRenderer _renderer = new TextCellRenderer(DefaultCellRenderer.INDICATION_FOCUS);
     private final CheckableCellRenderer _checkRenderer = new CheckableCellRenderer(DefaultCellRenderer.INDICATION_FOCUS);
 
@@ -970,6 +1025,13 @@ public final class Table extends Composite {
         _headerRenderer.setDefaultBackground(getBackground());
         _headerRenderer.setDefaultForeground(getForeground());
         _headerRenderer.setFont(getFont());
+        _headerRenderer.setImage(null);
+
+        if (col < 0 || col >= _columnCount)
+          return _headerRenderer;
+
+        final TableColumn column = getColumn(col);
+        _headerRenderer.setImage(column.getImage());
         return _headerRenderer;
       }
 
@@ -1022,7 +1084,7 @@ public final class Table extends Composite {
     public void controlMoved(ControlEvent e) {
       // Ignore
     }
-    
+
     @Override
     public void controlResized(ControlEvent e) {
       if (e.getSource() == Table.this) {
@@ -1031,7 +1093,7 @@ public final class Table extends Composite {
         _table.redraw();
       }
     }
-    
+
     @Override
     public void paintControl(PaintEvent e) {
       if (e.getSource() == Table.this && _requiresRedraw) {
@@ -1055,6 +1117,9 @@ public final class Table extends Composite {
     @Override
     public void widgetDisposed(DisposeEvent e) {
       releaseControls();
+
+      _imageAscending.dispose();
+      _imageDecending.dispose();
     }
   }
 

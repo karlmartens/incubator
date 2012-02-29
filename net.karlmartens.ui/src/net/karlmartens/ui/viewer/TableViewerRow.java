@@ -34,7 +34,7 @@ final class TableViewerRow extends ViewerRow {
   TableViewerRow(TableItem item) {
     _item = item;
   }
-  
+
   @Override
   public Rectangle getBounds(int columnIndex) {
     return _item.getBounds(columnIndex);
@@ -43,6 +43,11 @@ final class TableViewerRow extends ViewerRow {
   @Override
   public Rectangle getBounds() {
     return _item.getBounds();
+  }
+
+  @Override
+  public Rectangle getImageBounds(int index) {
+    return _item.getImageBounds(index);
   }
 
   @Override

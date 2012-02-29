@@ -17,6 +17,8 @@
  */
 package net.karlmartens.ui.widget;
 
+import static net.karlmartens.ui.widget.Table.SORT_NONE;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Rectangle;
 
@@ -25,13 +27,22 @@ public final class TableItem extends AbstractTableItem {
   private final Table _parent;
 
   public TableItem(Table parent) {
-    this(parent, parent.getItemCount());    
+    this(parent, parent.getItemCount());
   }
-  
+
   public TableItem(Table parent, int index) {
     super(parent, SWT.NONE);
     _parent = parent;
     _parent.createItem(this, index);
+  }
+
+  @Override
+  public boolean setText(int index, String text) {
+    if (!super.setText(index, text))
+      return false;
+
+    _parent.setSortIndicator(-1, SORT_NONE);
+    return true;
   }
 
   public Table getParent() {

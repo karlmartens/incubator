@@ -30,4 +30,9 @@ public final class Images {
   public static final ImageDescriptor ARROW_TOP = ResourceSupport.imageDescriptorFromPlugin(Activator.PLUGIN_ID, Activator.class, "/icons/navigate_top.png");
   public static final ImageDescriptor ARROW_UP = ResourceSupport.imageDescriptorFromPlugin(Activator.PLUGIN_ID, Activator.class, "/icons/navigate_up.png");
 
+  public static final ImageDescriptor SORT_ASCENDING = ResourceSupport.imageDescriptorFromPlugin(Activator.PLUGIN_ID, Activator.class,
+      "/icons/arrow_down.gif");
+  public static final ImageDescriptor SORT_DECENDING = ResourceSupport
+      .imageDescriptorFromPlugin(Activator.PLUGIN_ID, Activator.class, "/icons/arrow_up.gif");
+
 }

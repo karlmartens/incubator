@@ -37,6 +37,7 @@ public class TableTest {
     table.setHeaderVisible(true);
     table.setBackground(display.getSystemColor(SWT.COLOR_WHITE));
     table.setFont(new Font(display, "Arial", 10, SWT.NONE));
+    table.addColumnSortSupport();
 
     IMenuManager menuManager = table.getColumnMenuManager();
     menuManager.appendToGroup(Table.GROUP_COMMAND, new Action("Test") {
@@ -47,7 +48,7 @@ public class TableTest {
     });
 
     final TableColumn[] columns = { //
-        new TableColumn(table, SWT.NONE), //
+    new TableColumn(table, SWT.NONE), //
         new TableColumn(table, SWT.CHECK), //
     };
 

@@ -74,21 +74,21 @@ abstract class AbstractTableItem extends Item {
     }
   }
 
-  public void setText(int index, String text) {
+  public boolean setText(int index, String text) {
     checkWidget();
     if (text == null)
       SWT.error(SWT.ERROR_NULL_ARGUMENT);
 
     if (index == 0) {
       if (text.equals(getText()))
-        return;
+        return false;
 
       super.setText(text);
     }
 
     final int count = Math.max(1, doGetColumnCount());
     if (index < 0 || index >= count)
-      return;
+      return false;
 
     if (_strings == null && index != 0) {
       _strings = new String[count];
@@ -97,10 +97,11 @@ abstract class AbstractTableItem extends Item {
 
     if (_strings != null) {
       if (text.equals(_strings[index]))
-        return;
+        return false;
       _strings[index] = text;
     }
     _parent.redraw();
+    return true;
   }
 
   public Image getImage(int index) {
