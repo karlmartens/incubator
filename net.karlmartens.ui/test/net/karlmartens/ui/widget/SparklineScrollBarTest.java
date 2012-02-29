@@ -63,7 +63,7 @@ public final class SparklineScrollBarTest {
 
     final double[] data = new double[_control.getMaximum() + 1];
     for (int i = 0; i < data.length; i++) {
-      data[i] = Math.random();
+      data[i] = (i < 40 ? -1.0 : 1.0) * Math.random();
     }
     _control.setDataPoints(data);
     _control.setSelection(0);

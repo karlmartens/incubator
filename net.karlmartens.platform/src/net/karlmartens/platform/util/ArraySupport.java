@@ -24,11 +24,12 @@ import java.util.Random;
 public final class ArraySupport {
 
   public static long max(long[] arr) {
-    if (arr.length == 0)
-      throw new IllegalArgumentException();
+    return max(arr, 0, arr.length);
+  }
 
-    long max = arr[0];
-    for (int i = 1; i < arr.length; i++) {
+  public static long max(long[] arr, int fromIndex, int toIndex) {
+    long max = arr[fromIndex];
+    for (int i = fromIndex + 1; i < toIndex; i++) {
       max = Math.max(max, arr[i]);
     }
 
@@ -36,11 +37,12 @@ public final class ArraySupport {
   }
 
   public static int max(int[] arr) {
-    if (arr.length == 0)
-      throw new IllegalArgumentException();
+    return max(arr, 0, arr.length);
+  }
 
-    int max = arr[0];
-    for (int i = 1; i < arr.length; i++) {
+  public static int max(int[] arr, int fromIndex, int toIndex) {
+    int max = arr[fromIndex];
+    for (int i = fromIndex + 1; i < toIndex; i++) {
       max = Math.max(max, arr[i]);
     }
 
@@ -48,11 +50,12 @@ public final class ArraySupport {
   }
 
   public static double max(double[] arr) {
-    if (arr.length == 0)
-      throw new IllegalArgumentException();
+    return max(arr, 0, arr.length);
+  }
 
-    double max = arr[0];
-    for (int i = 1; i < arr.length; i++) {
+  public static double max(double[] arr, int fromIndex, int toIndex) {
+    double max = arr[fromIndex];
+    for (int i = fromIndex + 1; i < toIndex; i++) {
       max = Math.max(max, arr[i]);
     }
 
@@ -60,11 +63,12 @@ public final class ArraySupport {
   }
 
   public static float max(float[] arr) {
-    if (arr.length == 0)
-      throw new IllegalArgumentException();
+    return max(arr, 0, arr.length);
+  }
 
-    float max = arr[0];
-    for (int i = 1; i < arr.length; i++) {
+  public static float max(float[] arr, int fromIndex, int toIndex) {
+    float max = arr[fromIndex];
+    for (int i = fromIndex + 1; i < toIndex; i++) {
       max = Math.max(max, arr[i]);
     }
 
@@ -72,11 +76,12 @@ public final class ArraySupport {
   }
 
   public static long min(long[] arr) {
-    if (arr.length == 0)
-      throw new IllegalArgumentException();
+    return min(arr, 0, arr.length);
+  }
 
-    long min = arr[0];
-    for (int i = 0; i < arr.length; i++) {
+  public static long min(long[] arr, int fromIndex, int toIndex) {
+    long min = arr[fromIndex];
+    for (int i = fromIndex + 1; i < toIndex; i++) {
       min = Math.min(min, arr[i]);
     }
 
@@ -84,11 +89,12 @@ public final class ArraySupport {
   }
 
   public static int min(int[] arr) {
-    if (arr.length == 0)
-      throw new IllegalArgumentException();
+    return min(arr, 0, arr.length);
+  }
 
-    int min = arr[0];
-    for (int i = 0; i < arr.length; i++) {
+  public static int min(int[] arr, int fromIndex, int toIndex) {
+    int min = arr[fromIndex];
+    for (int i = fromIndex + 1; i < toIndex; i++) {
       min = Math.min(min, arr[i]);
     }
 
@@ -96,11 +102,12 @@ public final class ArraySupport {
   }
 
   public static double min(double[] arr) {
-    if (arr.length == 0)
-      throw new IllegalArgumentException();
+    return min(arr, 0, arr.length);
+  }
 
-    double min = arr[0];
-    for (int i = 0; i < arr.length; i++) {
+  public static double min(double[] arr, int fromIndex, int toIndex) {
+    double min = arr[fromIndex];
+    for (int i = fromIndex + 1; i < toIndex; i++) {
       min = Math.min(min, arr[i]);
     }
 
@@ -108,11 +115,12 @@ public final class ArraySupport {
   }
 
   public static float min(float[] arr) {
-    if (arr.length == 0)
-      throw new IllegalArgumentException();
+    return min(arr, 0, arr.length);
+  }
 
-    float min = arr[0];
-    for (int i = 0; i < arr.length; i++) {
+  public static float min(float[] arr, int fromIndex, int toIndex) {
+    float min = arr[fromIndex];
+    for (int i = fromIndex + 1; i < toIndex; i++) {
       min = Math.min(min, arr[i]);
     }
 
@@ -133,15 +141,15 @@ public final class ArraySupport {
   public static <T> void shuffle(T[] arr) {
     final Random random = new Random();
     final int len = arr.length;
-    for (int i=0; i<len; i++) {
+    for (int i = 0; i < len; i++) {
       swap(arr, i, random.nextInt(len));
     }
   }
- 
+
   public static <T extends Comparable<T>> void sort(T[] arr) {
     ParallelBucketSort.sort(arr);
   }
-  
+
   public static <T> void sort(T[] arr, Comparator<T> comparator) {
     ParallelBucketSort.sort(arr, comparator);
   }

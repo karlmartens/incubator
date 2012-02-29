@@ -25,6 +25,8 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 
+import net.karlmartens.platform.util.ArraySupport;
+
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.FigureCanvas;
 import org.eclipse.draw2d.IFigure;
@@ -508,22 +510,29 @@ public final class SparklineScrollBar extends Composite {
 
     final Rectangle available = _track.getClientArea();
     _sparkLineLayer.setSize(available.width, available.height);
-    final double max = computeMaxValue();
+
+    final double max = Math.max(ArraySupport.max(_data), 0.0);
+    final double min = Math.min(ArraySupport.min(_data), 0.0);
+    final double range = max - min;
+
+    final double scale = (double) available.height * 0.9 / range;
+    final int origin = (int) (available.height * (max / range + 0.05));
+
     final List<?> c = _sparkLineLayer.getChildren();
     final IFigure[] points = c.toArray(new IFigure[] {});
     int x = 0;
     for (int i = 0; i < points.length; i++) {
       final int x1 = computeX(i + 1);
       final int width = x1 - x;
-      final int height = (int) ((double) available.height * _data[i] / max * 0.9);
-      points[i].setVisible(height >= 0 && width >= 0);
+      final int height = (int) (scale * _data[i]);
+      points[i].setVisible(height != 0 && width >= 0);
 
       if (width <= 0)
         continue;
 
-      final int y = available.height - height - 1;
+      final int y = origin - Math.max(height, 0);
       final org.eclipse.draw2d.geometry.Rectangle bounds = points[i].getBounds();
-      final org.eclipse.draw2d.geometry.Rectangle newBounds = new org.eclipse.draw2d.geometry.Rectangle(x, y, width, height);
+      final org.eclipse.draw2d.geometry.Rectangle newBounds = new org.eclipse.draw2d.geometry.Rectangle(x, y, width, Math.abs(height));
       if (!bounds.equals(newBounds)) {
         points[i].setBounds(newBounds);
         points[i].invalidate();
@@ -564,16 +573,6 @@ public final class SparklineScrollBar extends Composite {
 
     _lastIdx = index;
     return _lastX;
-  }
-
-  private double computeMaxValue() {
-    double max = Double.MIN_VALUE;
-    for (int i = 0; i < computeDataPoints(); i++) {
-      final double candidate = _data[i];
-      if (candidate > max)
-        max = candidate;
-    }
-    return max;
   }
 
   private int computeDataPoints() {
