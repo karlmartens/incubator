@@ -101,7 +101,7 @@ public final class TimeSeriesTableViewer extends TableViewer {
       SWT.error(SWT.ERROR_NULL_ARGUMENT);
 
     _numberFormat = format;
-    refresh(false);
+    refresh(true);
   }
 
   public void setScrollDataMode(ScrollDataMode mode) {
