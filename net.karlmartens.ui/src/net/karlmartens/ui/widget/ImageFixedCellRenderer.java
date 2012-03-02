@@ -45,13 +45,13 @@ public class ImageFixedCellRenderer extends FixedCellRenderer {
     Image image = _image;
     if (image != null) {
       final Rectangle imageBounds = image.getBounds();
-      pt.x = rect.x + rect.width - 12;
-      rect.width -= imageBounds.width + 12;
+      pt.x = rect.x + rect.width - 8;
+      rect.width -= imageBounds.width + 8;
       pt.y = rect.y + rect.height / 2 - imageBounds.height / 2;
 
       // do not draw if there is not enough space for the image:
-      if (rect.width + 6 < imageBounds.width) {
-        rect.width += imageBounds.width + 12;
+      if (rect.width + 4 < imageBounds.width) {
+        rect.width += imageBounds.width + 8;
         image = null;
       }
     }
@@ -59,7 +59,7 @@ public class ImageFixedCellRenderer extends FixedCellRenderer {
     drawCellContent(gc, rect, content.toString(), null, fgColor, bgColor);
 
     if (image != null) {
-      gc.fillRectangle(rect.x + rect.width, rect.y, Math.min(image.getBounds().width + 12, originalWidth - rect.width - 1), rect.height);
+      gc.fillRectangle(rect.x + rect.width, rect.y, Math.min(image.getBounds().width + 8, originalWidth - rect.width - 1), rect.height);
       gc.drawImage(image, pt.x, pt.y);
     }
   }

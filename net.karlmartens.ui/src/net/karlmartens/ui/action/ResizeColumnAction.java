@@ -31,6 +31,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 
 import de.kupzog.ktable.renderers.CheckableCellRenderer;
@@ -67,6 +68,11 @@ public class ResizeColumnAction extends Action {
 
     final TableColumn column = _table.getColumn(_columnIndex);
     int width = gc.textExtent(column.getText()).x + TEXT_SPACER;
+
+    final Image columnImage = column.getImage();
+    if (columnImage != null) {
+      width += columnImage.getBounds().width + TEXT_SPACER;
+    }
 
     if ((column.getStyle() & SWT.CHECK) > 0) {
       width = Math.max(width, CheckableCellRenderer.IMAGE_CHECKED.getImageData().width + IMAGE_SPACER);
