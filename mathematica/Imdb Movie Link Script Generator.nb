@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       157,          7]
-NotebookDataLength[     13081,        327]
-NotebookOptionsPosition[     12782,        312]
-NotebookOutlinePosition[     13139,        328]
-CellTagsIndexPosition[     13096,        325]
+NotebookDataLength[     13659,        336]
+NotebookOptionsPosition[     13361,        321]
+NotebookOutlinePosition[     13717,        337]
+CellTagsIndexPosition[     13674,        334]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -77,7 +77,12 @@ Cell[BoxData[{
          RowBox[{"\"\< \>\"", ".."}], "\[Rule]", "\"\<\\\\ \>\""}], ",", " ", 
         
         RowBox[{
-         RowBox[{"\"\<'\>\"", ".."}], "\[Rule]", "\"\<\\\\'\>\""}]}], "}"}]}],
+         RowBox[{"\"\<'\>\"", ".."}], "\[Rule]", "\"\<\\\\'\>\""}], ",", 
+        RowBox[{
+         RowBox[{"\"\<(\>\"", ".."}], "\[Rule]", "\"\<\\\\(\>\""}], ",", " ", 
+        
+        RowBox[{
+         RowBox[{"\"\<)\>\"", ".."}], "\[Rule]", "\"\<\\\\)\>\""}]}], "}"}]}],
       "]"}]}], ";"}], "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{
@@ -242,7 +247,9 @@ Cell[BoxData[{
    3.541389662683366*^9, 3.5413896727936697`*^9}, {3.541390117278833*^9, 
    3.5413901535365562`*^9}, {3.5413902722562027`*^9, 3.54139035499527*^9}, {
    3.54139124736073*^9, 3.541391273781534*^9}, {3.5413917196703033`*^9, 
-   3.5413917297074423`*^9}}],
+   3.5413917297074423`*^9}, {3.541392913772246*^9, 3.5413929186756973`*^9}, {
+   3.541393030704282*^9, 3.541393032751522*^9}, {3.5413936449095173`*^9, 
+   3.541393699723981*^9}, {3.541393787615438*^9, 3.5413937938996572`*^9}}],
 
 Cell[BoxData[{
  RowBox[{
@@ -250,49 +257,47 @@ Cell[BoxData[{
    RowBox[{"{", "\[IndentingNewLine]", 
     RowBox[{
      RowBox[{"{", 
-      RowBox[{"\"\<Abduction.mkv\>\"", ",", "\"\<Abduction\>\""}], "}"}], ",",
-      "\n", 
-     RowBox[{"{", 
-      RowBox[{"\"\<Hanna.mkv\>\"", ",", "\"\<Hanna\>\""}], "}"}], ",", "\n", 
-     RowBox[{"{", 
-      RowBox[{"\"\<Immortals.mkv\>\"", ",", "\"\<Immortals\>\""}], "}"}], ",",
-      "\n", 
-     RowBox[{"{", 
-      RowBox[{"\"\<Double, The.mkv\>\"", ",", "\"\<The Double\>\""}], "}"}], 
-     ",", "\n", 
-     RowBox[{"{", 
-      RowBox[{"\"\<Puss in Boots.mkv\>\"", ",", "\"\<Puss in Boots\>\""}], 
-      "}"}], ",", "\n", 
-     RowBox[{"{", 
-      RowBox[{"\"\<Anonymous.mkv\>\"", ",", "\"\<Anonymous\>\""}], "}"}], ",",
-      "\n", 
-     RowBox[{"{", 
       RowBox[{
-      "\"\<Scorpion King 3, The.mkv\>\"", ",", 
-       "\"\<The Scorpion King 3\>\""}], "}"}], ",", "\n", 
-     RowBox[{"{", 
-      RowBox[{"\"\<J Edgar.mkv\>\"", ",", "\"\<J. Edgar\>\""}], "}"}], ",", 
-     "\n", 
-     RowBox[{"{", 
-      RowBox[{"\"\<Real Steel.mkv\>\"", ",", "\"\<Real Steel\>\""}], "}"}], 
-     ",", "\n", 
-     RowBox[{"{", 
-      RowBox[{
-      "\"\<Sunset Limited, The.mkv\>\"", ",", "\"\<The Sunset Limited\>\""}], 
-      "}"}], ",", "\n", 
-     RowBox[{"{", 
-      RowBox[{"\"\<Tower Heist.mkv\>\"", ",", "\"\<Tower Heist\>\""}], "}"}], 
-     ",", "\n", 
-     RowBox[{"{", 
-      RowBox[{"\"\<Way,The.mkv\>\"", ",", "\"\<The Way\>\""}], "}"}], ",", 
+      "\"\<Harry Potter and the Deathly Hallows Part 2.mkv\>\"", ",", 
+       "\"\<Harry Potter and the Deathly Hallows Part 2\>\""}], "}"}], ",", 
      "\n", 
      RowBox[{"{", 
       RowBox[{
-      "\"\<Don't be Afraid of the Dark.mkv\>\"", ",", 
-       "\"\<Don't be Afraid of the Dark\>\""}], "}"}], ",", "\n", 
+      "\"\<Water for Elephants.mkv\>\"", ",", "\"\<Water for Elephants\>\""}],
+       "}"}], ",", "\n", 
      RowBox[{"{", 
-      RowBox[{"\"\<Contagion.mkv\>\"", ",", "\"\<Contagion\>\""}], "}"}]}], 
-    "\[IndentingNewLine]", "}"}]}], ";"}], "\[IndentingNewLine]", 
+      RowBox[{
+      "\"\<X-Men First Class.mkv\>\"", ",", "\"\<X-Men First Class\>\""}], 
+      "}"}], ",", "\n", 
+     RowBox[{"{", 
+      RowBox[{
+      "\"\<Jurassic Park III.mkv\>\"", ",", "\"\<Jurassic Park III\>\""}], 
+      "}"}], ",", "\n", 
+     RowBox[{"{", 
+      RowBox[{
+      "\"\<Jurassic Park II - The Lost World.mkv\>\"", ",", 
+       "\"\<Jurassic Park II The Lost World\>\""}], "}"}], ",", "\n", 
+     RowBox[{"{", 
+      RowBox[{"\"\<Jurassic Park.mkv\>\"", ",", "\"\<Jurassic Park\>\""}], 
+      "}"}], ",", "\n", 
+     RowBox[{"{", 
+      RowBox[{"\"\<African Cats.mkv\>\"", ",", "\"\<African Cats\>\""}], 
+      "}"}], ",", "\n", 
+     RowBox[{"{", 
+      RowBox[{"\"\<Source Code.mkv\>\"", ",", "\"\<Source Code\>\""}], "}"}], 
+     ",", "\n", 
+     RowBox[{"{", 
+      RowBox[{"\"\<Bad Teacher.mkv\>\"", ",", "\"\<Bad Teacher\>\""}], "}"}], 
+     ",", "\n", 
+     RowBox[{"{", 
+      RowBox[{
+      "\"\<Bad Teacher (Unrated).mkv\>\"", ",", "\"\<Bad Teacher\>\""}], 
+      "}"}], ",", "\n", 
+     RowBox[{"{", 
+      RowBox[{"\"\<WALL-E.mkv\>\"", ",", "\"\<WALL-E\>\""}], "}"}], ",", "\n", 
+     RowBox[{"{", 
+      RowBox[{"\"\<Lion King, The.mkv\>\"", ",", "\"\<The Lion King\>\""}], 
+      "}"}]}], "\[IndentingNewLine]", "}"}]}], ";"}], "\[IndentingNewLine]", 
  RowBox[{"ExportString", "[", 
   RowBox[{
    RowBox[{"Flatten", "[", 
@@ -308,10 +313,14 @@ Cell[BoxData[{
    3.5413832792976522`*^9}, {3.541383345826229*^9, 3.5413833571649303`*^9}, {
    3.541386429800791*^9, 3.54138645551824*^9}, {3.541388374299428*^9, 
    3.5413883750577393`*^9}, 3.541388499951108*^9, {3.541391009213621*^9, 
-   3.541391207900728*^9}, {3.5413913997935753`*^9, 3.541391406616146*^9}}]
+   3.541391207900728*^9}, {3.5413913997935753`*^9, 3.541391406616146*^9}, {
+   3.5413924491632137`*^9, 3.541392460472116*^9}, {3.541392498338028*^9, 
+   3.541392551828318*^9}, {3.541392615933717*^9, 3.541392662870995*^9}, {
+   3.541392703818729*^9, 3.541392795962008*^9}, {3.541393716434269*^9, 
+   3.54139371685677*^9}}]
 },
 WindowSize->{979, 867},
-WindowMargins->{{160, Automatic}, {-32, Automatic}},
+WindowMargins->{{60, Automatic}, {Automatic, 124}},
 FrontEndVersion->"8.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (October 5, \
 2011)",
 StyleDefinitions->"Default.nb"
@@ -327,8 +336,8 @@ CellTagsIndex->{}
 *)
 (*NotebookFileOutline
 Notebook[{
-Cell[557, 20, 9450, 224, 463, "Input"],
-Cell[10010, 246, 2768, 64, 268, "Input"]
+Cell[557, 20, 9844, 231, 463, "Input"],
+Cell[10404, 253, 2953, 66, 238, "Input"]
 }
 ]
 *)
