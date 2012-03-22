@@ -1,0 +1,336 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 8.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       157,          7]
+NotebookDataLength[     13081,        327]
+NotebookOptionsPosition[     12782,        312]
+NotebookOutlinePosition[     13139,        328]
+CellTagsIndexPosition[     13096,        325]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{
+   RowBox[{
+    RowBox[{"parseAttributes", "[", 
+     RowBox[{"data_", ",", " ", "attr_"}], "]"}], " ", ":=", 
+    RowBox[{"StringTrim", " ", "/@", " ", 
+     RowBox[{"StringSplit", "[", 
+      RowBox[{
+       RowBox[{"First", "[", 
+        RowBox[{"Cases", "[", 
+         RowBox[{"data", ",", " ", 
+          RowBox[{
+           RowBox[{"XMLElement", "[", 
+            RowBox[{"\"\<movie\>\"", ",", " ", 
+             RowBox[{"{", 
+              RowBox[{"___", ",", " ", 
+               RowBox[{"attr", "\[Rule]", "x_"}], ",", " ", "___"}], "}"}], 
+             ",", " ", "_"}], "]"}], " ", "\[Rule]", " ", "x"}], " ", ",", 
+          " ", "Infinity"}], "]"}], "]"}], ",", " ", "\"\<,\>\"", ",", " ", 
+       "Infinity"}], "]"}]}]}], ";"}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{
+    RowBox[{"datePath", "[", "stringDate_", "]"}], " ", ":=", 
+    RowBox[{
+     RowBox[{
+      RowBox[{"DateString", "[", 
+       RowBox[{"#", ",", " ", 
+        RowBox[{"{", 
+         RowBox[{
+         "\"\<Year\>\"", ",", "\"\</\>\"", ",", "\"\<Month\>\"", ",", 
+          "\"\</\>\"", ",", "\"\<Day\>\""}], "}"}]}], "]"}], " ", "&"}], " ", 
+     "/@", 
+     RowBox[{"StringCases", "[", 
+      RowBox[{"stringDate", ",", 
+       RowBox[{
+        RowBox[{"y", ":", 
+         RowBox[{"DatePattern", "[", 
+          RowBox[{"{", 
+           RowBox[{
+           "\"\<Day\>\"", ",", " ", "\"\< \>\"", ",", " ", 
+            "\"\<MonthName\>\"", ",", " ", "\"\< \>\"", ",", " ", 
+            "\"\<Year\>\""}], "}"}], "]"}]}], "\[RuleDelayed]", " ", 
+        RowBox[{"DateList", "[", "y", "]"}]}]}], "]"}]}]}], ";"}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{
+    RowBox[{"fileEncode", "[", "x_", "]"}], " ", ":=", " ", 
+    RowBox[{"StringReplace", "[", 
+     RowBox[{"x", ",", " ", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"\"\< \>\"", ".."}], "\[Rule]", "\"\<\\\\ \>\""}], ",", " ", 
+        
+        RowBox[{
+         RowBox[{"\"\<'\>\"", ".."}], "\[Rule]", "\"\<\\\\'\>\""}]}], "}"}]}],
+      "]"}]}], ";"}], "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{
+    RowBox[{"httpGetEncode", "[", "str_", "]"}], " ", ":=", " ", 
+    RowBox[{"StringReplace", "[", 
+     RowBox[{"str", ",", " ", 
+      RowBox[{
+       RowBox[{"\"\< \>\"", ".."}], "\[Rule]", "\"\<%20\>\""}]}], "]"}]}], 
+   ";"}], "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{
+    RowBox[{"makePaths", "[", 
+     RowBox[{
+     "g_", ",", " ", "y_", ",", " ", "r_", ",", " ", "a_", ",", " ", "d_", 
+      ",", " ", "w_", ",", " ", "rl_"}], "]"}], " ", ":=", " ", 
+    RowBox[{"Flatten", "[", 
+     RowBox[{"{", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{
+        RowBox[{
+         RowBox[{"StringJoin", "[", 
+          RowBox[{"{", 
+           RowBox[{"\"\<./genre/\>\"", ",", 
+            RowBox[{"fileEncode", "[", "#", "]"}], ",", "\"\</\>\""}], "}"}], 
+          "]"}], " ", "&"}], " ", "/@", " ", "g"}], ",", " ", 
+       "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"StringJoin", "[", 
+          RowBox[{"\"\<./year/\>\"", ",", "#", ",", " ", "\"\</\>\""}], "]"}],
+          " ", "&"}], " ", "/@", " ", "y"}], " ", ",", "\[IndentingNewLine]", 
+       
+       RowBox[{
+        RowBox[{
+         RowBox[{"StringJoin", "[", 
+          RowBox[{"{", 
+           RowBox[{"\"\<./rated/\>\"", ",", 
+            RowBox[{"fileEncode", "[", 
+             RowBox[{"StringReplace", "[", 
+              RowBox[{"#", ",", " ", 
+               RowBox[{
+                RowBox[{"\"\<N/A\>\"", ".."}], "\[Rule]", "\"\<NA\>\""}]}], 
+              "]"}], "]"}], ",", "\"\</\>\""}], "}"}], "]"}], " ", "&"}], " ",
+         "/@", " ", "r"}], ",", " ", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"StringJoin", "[", 
+          RowBox[{"{", 
+           RowBox[{"\"\<./actor/\>\"", ",", 
+            RowBox[{"fileEncode", "[", "#", "]"}], ",", "\"\</\>\""}], "}"}], 
+          "]"}], " ", "&"}], " ", "/@", " ", "a"}], ",", " ", 
+       "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"StringJoin", "[", 
+          RowBox[{"{", 
+           RowBox[{"\"\<./director/\>\"", ",", 
+            RowBox[{"fileEncode", "[", "#", "]"}], ",", "\"\</\>\""}], "}"}], 
+          "]"}], " ", "&"}], " ", "/@", " ", "d"}], ",", " ", 
+       "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"StringJoin", "[", 
+          RowBox[{"{", 
+           RowBox[{"\"\<./writer/\>\"", ",", 
+            RowBox[{"fileEncode", "[", "#", "]"}], ",", "\"\</\>\""}], "}"}], 
+          "]"}], " ", "&"}], " ", "/@", " ", "w"}], ",", " ", 
+       "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"If", "[", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"Length", "[", 
+             RowBox[{"datePath", "[", "#", "]"}], "]"}], " ", ">", " ", "0"}],
+            ",", " ", 
+           RowBox[{"StringJoin", "[", 
+            RowBox[{"{", 
+             RowBox[{"\"\<./release/\>\"", ",", 
+              RowBox[{"datePath", "[", "#", "]"}], ",", "\"\</\>\""}], "}"}], 
+            "]"}], ",", " ", 
+           RowBox[{"{", "}"}]}], "]"}], " ", "&"}], " ", "/@", " ", "rl"}]}], 
+      "\[IndentingNewLine]", "}"}], "]"}]}], ";"}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{
+    RowBox[{"targetDirectories", "[", "data_", "]"}], " ", ":=", " ", 
+    RowBox[{"makePaths", " ", "@@", "  ", 
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"parseAttributes", "[", 
+         RowBox[{"data", ",", " ", "#"}], "]"}], " ", "&"}], " ", "/@", 
+       RowBox[{"{", 
+        RowBox[{
+        "\"\<genre\>\"", ",", " ", "\"\<year\>\"", ",", " ", "\"\<rated\>\"", 
+         ",", " ", "\"\<actors\>\"", ",", "\"\<director\>\"", ",", " ", 
+         "\"\<writer\>\"", ",", " ", "\"\<released\>\""}], "}"}]}], ")"}]}]}],
+    ";"}], "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{
+    RowBox[{"makeCommands", "[", 
+     RowBox[{"filename_", ",", " ", "dirs_"}], "]"}], " ", ":=", " ", 
+    RowBox[{"Flatten", "[", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{
+        RowBox[{
+         RowBox[{"StringJoin", "[", 
+          RowBox[{"\"\<mkdir -p \>\"", ",", " ", "#"}], "]"}], " ", "&"}], 
+        " ", "/@", " ", "dirs"}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"StringJoin", "[", 
+          RowBox[{"\"\<ln ./_all/\>\"", ",", " ", 
+           RowBox[{"fileEncode", "[", "filename", "]"}], ",", " ", 
+           "\"\< \>\"", ",", " ", "#"}], "]"}], " ", "&"}], "/@", " ", 
+        "dirs"}]}], "}"}], "]"}]}], ";"}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"run", "[", 
+    RowBox[{"filename_", ",", " ", "title_"}], "]"}], " ", ":=", " ", 
+   RowBox[{"makeCommands", "[", 
+    RowBox[{"filename", ",", " ", 
+     RowBox[{"targetDirectories", "[", 
+      RowBox[{"Import", "[", 
+       RowBox[{
+        RowBox[{"StringJoin", "[", 
+         RowBox[{"{", 
+          RowBox[{"\"\<http://www.imdbapi.com/?r=XML&t=\>\"", ",", 
+           RowBox[{"httpGetEncode", "[", "title", "]"}]}], "}"}], "]"}], ",", 
+        " ", "\"\<XML\>\""}], "]"}], "]"}]}], "]"}]}], ";"}]}], "Input",
+ CellChangeTimes->{{3.5413684310364103`*^9, 3.541368459359556*^9}, {
+   3.5413686977512913`*^9, 3.5413687160561237`*^9}, {3.5413688245726643`*^9, 
+   3.5413688477719097`*^9}, {3.541369102989209*^9, 3.5413691036673803`*^9}, {
+   3.541373323087884*^9, 3.541373332825531*^9}, {3.541373983614545*^9, 
+   3.541374042495413*^9}, {3.541374076991612*^9, 3.5413741360735207`*^9}, {
+   3.541374193133254*^9, 3.541374218891561*^9}, 3.541374314722994*^9, {
+   3.5413748525066767`*^9, 3.5413748613455687`*^9}, {3.541376163476919*^9, 
+   3.5413761670975227`*^9}, {3.541376197163818*^9, 3.5413761980278482`*^9}, 
+   3.5413762539551497`*^9, {3.541377088197424*^9, 3.541377117582282*^9}, {
+   3.5413771577749434`*^9, 3.54137722213332*^9}, {3.541377424157565*^9, 
+   3.541377425560275*^9}, {3.5413776916368847`*^9, 3.5413777093604*^9}, {
+   3.54137775201963*^9, 3.541377810548759*^9}, {3.541377897169544*^9, 
+   3.5413779647863207`*^9}, {3.5413781177197657`*^9, 3.541378191794366*^9}, {
+   3.5413782796353083`*^9, 3.5413783848177843`*^9}, 3.541378655337525*^9, {
+   3.541378789326868*^9, 3.5413788211580467`*^9}, {3.5413790198207197`*^9, 
+   3.54137904669477*^9}, {3.541379093160486*^9, 3.5413790945518427`*^9}, {
+   3.541379211948332*^9, 3.541379222355941*^9}, {3.541379305412599*^9, 
+   3.541379325100831*^9}, 3.5413793760600224`*^9, {3.541379429634735*^9, 
+   3.541379433450873*^9}, {3.5413797947257767`*^9, 3.5413799749200373`*^9}, {
+   3.541380090671134*^9, 3.54138010687077*^9}, {3.5413801740169067`*^9, 
+   3.541380182479775*^9}, {3.5413833014375896`*^9, 3.541383323645954*^9}, {
+   3.5413855420451307`*^9, 3.541385573694831*^9}, {3.5413865021377573`*^9, 
+   3.5413865045754223`*^9}, 3.541388305567834*^9, {3.541389430495982*^9, 
+   3.541389479883045*^9}, {3.541389520124881*^9, 3.541389521330377*^9}, {
+   3.541389662683366*^9, 3.5413896727936697`*^9}, {3.541390117278833*^9, 
+   3.5413901535365562`*^9}, {3.5413902722562027`*^9, 3.54139035499527*^9}, {
+   3.54139124736073*^9, 3.541391273781534*^9}, {3.5413917196703033`*^9, 
+   3.5413917297074423`*^9}}],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"d", " ", "=", " ", 
+   RowBox[{"{", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"\"\<Abduction.mkv\>\"", ",", "\"\<Abduction\>\""}], "}"}], ",",
+      "\n", 
+     RowBox[{"{", 
+      RowBox[{"\"\<Hanna.mkv\>\"", ",", "\"\<Hanna\>\""}], "}"}], ",", "\n", 
+     RowBox[{"{", 
+      RowBox[{"\"\<Immortals.mkv\>\"", ",", "\"\<Immortals\>\""}], "}"}], ",",
+      "\n", 
+     RowBox[{"{", 
+      RowBox[{"\"\<Double, The.mkv\>\"", ",", "\"\<The Double\>\""}], "}"}], 
+     ",", "\n", 
+     RowBox[{"{", 
+      RowBox[{"\"\<Puss in Boots.mkv\>\"", ",", "\"\<Puss in Boots\>\""}], 
+      "}"}], ",", "\n", 
+     RowBox[{"{", 
+      RowBox[{"\"\<Anonymous.mkv\>\"", ",", "\"\<Anonymous\>\""}], "}"}], ",",
+      "\n", 
+     RowBox[{"{", 
+      RowBox[{
+      "\"\<Scorpion King 3, The.mkv\>\"", ",", 
+       "\"\<The Scorpion King 3\>\""}], "}"}], ",", "\n", 
+     RowBox[{"{", 
+      RowBox[{"\"\<J Edgar.mkv\>\"", ",", "\"\<J. Edgar\>\""}], "}"}], ",", 
+     "\n", 
+     RowBox[{"{", 
+      RowBox[{"\"\<Real Steel.mkv\>\"", ",", "\"\<Real Steel\>\""}], "}"}], 
+     ",", "\n", 
+     RowBox[{"{", 
+      RowBox[{
+      "\"\<Sunset Limited, The.mkv\>\"", ",", "\"\<The Sunset Limited\>\""}], 
+      "}"}], ",", "\n", 
+     RowBox[{"{", 
+      RowBox[{"\"\<Tower Heist.mkv\>\"", ",", "\"\<Tower Heist\>\""}], "}"}], 
+     ",", "\n", 
+     RowBox[{"{", 
+      RowBox[{"\"\<Way,The.mkv\>\"", ",", "\"\<The Way\>\""}], "}"}], ",", 
+     "\n", 
+     RowBox[{"{", 
+      RowBox[{
+      "\"\<Don't be Afraid of the Dark.mkv\>\"", ",", 
+       "\"\<Don't be Afraid of the Dark\>\""}], "}"}], ",", "\n", 
+     RowBox[{"{", 
+      RowBox[{"\"\<Contagion.mkv\>\"", ",", "\"\<Contagion\>\""}], "}"}]}], 
+    "\[IndentingNewLine]", "}"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{"ExportString", "[", 
+  RowBox[{
+   RowBox[{"Flatten", "[", 
+    RowBox[{"run", " ", "@@@", " ", "d"}], "]"}], ",", " ", "\"\<Text\>\""}], 
+  "]"}]}], "Input",
+ CellChangeTimes->{{3.5413791693359623`*^9, 3.541379196582757*^9}, {
+   3.541379278132131*^9, 3.541379282938229*^9}, {3.541379487370221*^9, 
+   3.541379516976948*^9}, {3.5413799840248203`*^9, 3.541379995447543*^9}, {
+   3.54138004528137*^9, 3.5413800556174*^9}, {3.541380194878439*^9, 
+   3.541380210357985*^9}, {3.5413802760173197`*^9, 3.541380566905511*^9}, {
+   3.541380619421197*^9, 3.541380688777523*^9}, {3.541380726591055*^9, 
+   3.5413808520079107`*^9}, {3.5413832710854807`*^9, 
+   3.5413832792976522`*^9}, {3.541383345826229*^9, 3.5413833571649303`*^9}, {
+   3.541386429800791*^9, 3.54138645551824*^9}, {3.541388374299428*^9, 
+   3.5413883750577393`*^9}, 3.541388499951108*^9, {3.541391009213621*^9, 
+   3.541391207900728*^9}, {3.5413913997935753`*^9, 3.541391406616146*^9}}]
+},
+WindowSize->{979, 867},
+WindowMargins->{{160, Automatic}, {-32, Automatic}},
+FrontEndVersion->"8.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (October 5, \
+2011)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[557, 20, 9450, 224, 463, "Input"],
+Cell[10010, 246, 2768, 64, 268, "Input"]
+}
+]
+*)
+
+(* End of internal cache information *)
