@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       157,          7]
-NotebookDataLength[     13659,        336]
-NotebookOptionsPosition[     13361,        321]
-NotebookOutlinePosition[     13717,        337]
-CellTagsIndexPosition[     13674,        334]
+NotebookDataLength[     14613,        339]
+NotebookOptionsPosition[     14261,        322]
+NotebookOutlinePosition[     14671,        340]
+CellTagsIndexPosition[     14628,        337]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -71,28 +71,32 @@ Cell[BoxData[{
     RowBox[{"fileEncode", "[", "x_", "]"}], " ", ":=", " ", 
     RowBox[{"StringReplace", "[", 
      RowBox[{"x", ",", " ", 
-      RowBox[{"{", 
+      RowBox[{"{", "\[IndentingNewLine]", 
        RowBox[{
-        RowBox[{
-         RowBox[{"\"\< \>\"", ".."}], "\[Rule]", "\"\<\\\\ \>\""}], ",", " ", 
-        
-        RowBox[{
-         RowBox[{"\"\<'\>\"", ".."}], "\[Rule]", "\"\<\\\\'\>\""}], ",", 
-        RowBox[{
-         RowBox[{"\"\<(\>\"", ".."}], "\[Rule]", "\"\<\\\\(\>\""}], ",", " ", 
-        
-        RowBox[{
-         RowBox[{"\"\<)\>\"", ".."}], "\[Rule]", "\"\<\\\\)\>\""}]}], "}"}]}],
-      "]"}]}], ";"}], "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+        RowBox[{"\"\< \>\"", "\[Rule]", "\"\<\\\\ \>\""}], ",", " ", 
+        "\[IndentingNewLine]", 
+        RowBox[{"\"\<'\>\"", "\[Rule]", "\"\<\\\\'\>\""}], ",", 
+        "\[IndentingNewLine]", 
+        RowBox[{"\"\<(\>\"", "\[Rule]", "\"\<\\\\(\>\""}], ",", " ", 
+        "\[IndentingNewLine]", 
+        RowBox[{"\"\<)\>\"", "\[Rule]", "\"\<\\\\)\>\""}], ",", 
+        "\[IndentingNewLine]", 
+        RowBox[{"\"\<&\>\"", "\[Rule]", "\"\<\\\\&\>\""}]}], 
+       "\[IndentingNewLine]", "}"}]}], "]"}]}], ";"}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{
    RowBox[{
     RowBox[{"httpGetEncode", "[", "str_", "]"}], " ", ":=", " ", 
     RowBox[{"StringReplace", "[", 
      RowBox[{"str", ",", " ", 
-      RowBox[{
-       RowBox[{"\"\< \>\"", ".."}], "\[Rule]", "\"\<%20\>\""}]}], "]"}]}], 
-   ";"}], "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+      RowBox[{"{", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"\"\< \>\"", "\[Rule]", "\"\<%20\>\""}], ",", 
+        "\[IndentingNewLine]", 
+        RowBox[{"\"\<&\>\"", "\[Rule]", "\"\<%26\>\""}]}], 
+       "\[IndentingNewLine]", "}"}]}], "]"}]}], ";"}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{
    RowBox[{
@@ -208,6 +212,18 @@ Cell[BoxData[{
   "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
  RowBox[{
   RowBox[{
+   RowBox[{
+    RowBox[{"uniqueLines", "[", "list_", "]"}], " ", ":=", " ", 
+    RowBox[{
+     RowBox[{"Reap", "[", 
+      RowBox[{
+       RowBox[{"Sow", "[", 
+        RowBox[{"1", ",", "list"}], "]"}], ",", "_", ",", 
+       RowBox[{"#", "&"}]}], "]"}], "[", 
+     RowBox[{"[", "2", "]"}], "]"}]}], ";"}], 
+  "\[IndentingNewLine]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
    RowBox[{"run", "[", 
     RowBox[{"filename_", ",", " ", "title_"}], "]"}], " ", ":=", " ", 
    RowBox[{"makeCommands", "[", 
@@ -249,60 +265,27 @@ Cell[BoxData[{
    3.54139124736073*^9, 3.541391273781534*^9}, {3.5413917196703033`*^9, 
    3.5413917297074423`*^9}, {3.541392913772246*^9, 3.5413929186756973`*^9}, {
    3.541393030704282*^9, 3.541393032751522*^9}, {3.5413936449095173`*^9, 
-   3.541393699723981*^9}, {3.541393787615438*^9, 3.5413937938996572`*^9}}],
+   3.541393699723981*^9}, {3.541393787615438*^9, 3.5413937938996572`*^9}, {
+   3.541481248121212*^9, 3.5414813046014767`*^9}, {3.541481943797256*^9, 
+   3.54148195843742*^9}, {3.54148401310376*^9, 3.5414840263345013`*^9}, {
+   3.541484091241781*^9, 3.541484102034708*^9}, {3.541484890291635*^9, 
+   3.541484969420237*^9}}],
 
 Cell[BoxData[{
  RowBox[{
   RowBox[{"d", " ", "=", " ", 
    RowBox[{"{", "\[IndentingNewLine]", 
-    RowBox[{
-     RowBox[{"{", 
-      RowBox[{
-      "\"\<Harry Potter and the Deathly Hallows Part 2.mkv\>\"", ",", 
-       "\"\<Harry Potter and the Deathly Hallows Part 2\>\""}], "}"}], ",", 
-     "\n", 
-     RowBox[{"{", 
-      RowBox[{
-      "\"\<Water for Elephants.mkv\>\"", ",", "\"\<Water for Elephants\>\""}],
-       "}"}], ",", "\n", 
-     RowBox[{"{", 
-      RowBox[{
-      "\"\<X-Men First Class.mkv\>\"", ",", "\"\<X-Men First Class\>\""}], 
-      "}"}], ",", "\n", 
-     RowBox[{"{", 
-      RowBox[{
-      "\"\<Jurassic Park III.mkv\>\"", ",", "\"\<Jurassic Park III\>\""}], 
-      "}"}], ",", "\n", 
-     RowBox[{"{", 
-      RowBox[{
-      "\"\<Jurassic Park II - The Lost World.mkv\>\"", ",", 
-       "\"\<Jurassic Park II The Lost World\>\""}], "}"}], ",", "\n", 
-     RowBox[{"{", 
-      RowBox[{"\"\<Jurassic Park.mkv\>\"", ",", "\"\<Jurassic Park\>\""}], 
-      "}"}], ",", "\n", 
-     RowBox[{"{", 
-      RowBox[{"\"\<African Cats.mkv\>\"", ",", "\"\<African Cats\>\""}], 
-      "}"}], ",", "\n", 
-     RowBox[{"{", 
-      RowBox[{"\"\<Source Code.mkv\>\"", ",", "\"\<Source Code\>\""}], "}"}], 
-     ",", "\n", 
-     RowBox[{"{", 
-      RowBox[{"\"\<Bad Teacher.mkv\>\"", ",", "\"\<Bad Teacher\>\""}], "}"}], 
-     ",", "\n", 
-     RowBox[{"{", 
-      RowBox[{
-      "\"\<Bad Teacher (Unrated).mkv\>\"", ",", "\"\<Bad Teacher\>\""}], 
-      "}"}], ",", "\n", 
-     RowBox[{"{", 
-      RowBox[{"\"\<WALL-E.mkv\>\"", ",", "\"\<WALL-E\>\""}], "}"}], ",", "\n", 
-     RowBox[{"{", 
-      RowBox[{"\"\<Lion King, The.mkv\>\"", ",", "\"\<The Lion King\>\""}], 
-      "}"}]}], "\[IndentingNewLine]", "}"}]}], ";"}], "\[IndentingNewLine]", 
+    RowBox[{"{", 
+     RowBox[{
+     "\"\<filename\>\"", ",", "\"\<title\>\"", ",", 
+      "\"\<Animatrix The Second Renaissance Part II\>\""}], "}"}], 
+    "\[IndentingNewLine]", "}"}]}], ";"}], "\[IndentingNewLine]", 
  RowBox[{"ExportString", "[", 
   RowBox[{
-   RowBox[{"Flatten", "[", 
-    RowBox[{"run", " ", "@@@", " ", "d"}], "]"}], ",", " ", "\"\<Text\>\""}], 
-  "]"}]}], "Input",
+   RowBox[{"uniqueLines", "[", 
+    RowBox[{"Flatten", "[", 
+     RowBox[{"run", " ", "@@@", " ", "d"}], "]"}], "]"}], ",", " ", 
+   "\"\<Text\>\""}], "]"}]}], "Input",
  CellChangeTimes->{{3.5413791693359623`*^9, 3.541379196582757*^9}, {
    3.541379278132131*^9, 3.541379282938229*^9}, {3.541379487370221*^9, 
    3.541379516976948*^9}, {3.5413799840248203`*^9, 3.541379995447543*^9}, {
@@ -317,10 +300,30 @@ Cell[BoxData[{
    3.5413924491632137`*^9, 3.541392460472116*^9}, {3.541392498338028*^9, 
    3.541392551828318*^9}, {3.541392615933717*^9, 3.541392662870995*^9}, {
    3.541392703818729*^9, 3.541392795962008*^9}, {3.541393716434269*^9, 
-   3.54139371685677*^9}}]
+   3.54139371685677*^9}, {3.541449367116213*^9, 3.541449397407819*^9}, {
+   3.54144943351087*^9, 3.5414495625039577`*^9}, 3.5414499833803787`*^9, {
+   3.541450370391811*^9, 3.541450390447221*^9}, 3.541450784708868*^9, {
+   3.5414515225080214`*^9, 3.54145152800706*^9}, 3.541451565442885*^9, 
+   3.541451931703452*^9, 3.5414524809540863`*^9, 3.5414529478089027`*^9, 
+   3.541462809772852*^9, 3.541463176140975*^9, 3.541463578950796*^9, 
+   3.5414636497717323`*^9, {3.541464321306285*^9, 3.5414643288490477`*^9}, 
+   3.541465327330564*^9, 3.541466096949933*^9, 3.5414665408729973`*^9, {
+   3.54148081094619*^9, 3.5414808250885477`*^9}, 3.541481234094461*^9, {
+   3.5414813458194513`*^9, 3.541481346705826*^9}, {3.541481379924604*^9, 
+   3.541481380418944*^9}, {3.541482424453846*^9, 3.5414824334667883`*^9}, {
+   3.541482562793921*^9, 3.541482567640265*^9}, {3.5414831527881317`*^9, 
+   3.541483159683519*^9}, {3.541483192444971*^9, 3.5414832211308413`*^9}, 
+   3.5414836135282583`*^9, {3.541483914360421*^9, 3.5414839318315287`*^9}, {
+   3.54148398467093*^9, 3.5414839888048697`*^9}, 3.54148411028113*^9, {
+   3.5414841889449263`*^9, 3.541484207242938*^9}, {3.541484983436225*^9, 
+   3.541485004732204*^9}, 3.541485177467778*^9, 3.541485419997768*^9, {
+   3.541485753951593*^9, 3.541485760563601*^9}, {3.5414860067977457`*^9, 
+   3.541486024585403*^9}, {3.541486385222788*^9, 3.541486403531188*^9}}]
 },
 WindowSize->{979, 867},
-WindowMargins->{{60, Automatic}, {Automatic, 124}},
+WindowMargins->{{354, Automatic}, {Automatic, 77}},
+PrintingCopies->1,
+PrintingPageRange->{1, Automatic},
 FrontEndVersion->"8.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (October 5, \
 2011)",
 StyleDefinitions->"Default.nb"
@@ -336,8 +339,8 @@ CellTagsIndex->{}
 *)
 (*NotebookFileOutline
 Notebook[{
-Cell[557, 20, 9844, 231, 463, "Input"],
-Cell[10404, 253, 2953, 66, 238, "Input"]
+Cell[557, 20, 10765, 251, 628, "Input"],
+Cell[11325, 273, 2932, 47, 73, "Input"]
 }
 ]
 *)
