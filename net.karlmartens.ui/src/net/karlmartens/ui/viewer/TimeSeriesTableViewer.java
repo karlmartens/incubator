@@ -190,7 +190,7 @@ public final class TimeSeriesTableViewer extends TableViewer {
       }
 
       if (_updateThumb) {
-        _scroll.setMaximum(Math.max(dates.length - 1, 1));
+        _scroll.setMaximum(Math.max(dates.length - 1, 0));
       }
 
       final int scrollSelection = _scroll.getSelection();
@@ -387,7 +387,11 @@ public final class TimeSeriesTableViewer extends TableViewer {
       final TableItem item = _table.getItem(index);
       for (int j = 0; j < data.length; j++) {
         try {
-          data[j] += _numberFormat.parse(item.getText(fixedColumnCount + j)).doubleValue();
+          final String value = item.getText(fixedColumnCount + j);
+          if (value == null)
+            continue;
+          
+          data[j] += _numberFormat.parse(value).doubleValue();
         } catch (ParseException e) {
           // ignore
         }
