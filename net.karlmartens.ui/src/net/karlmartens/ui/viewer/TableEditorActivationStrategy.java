@@ -58,7 +58,7 @@ final class TableEditorActivationStrategy extends ColumnViewerEditorActivationSt
       final Event e = new Event();
       e.stateMask = event.stateMask;
       e.keyCode = event.keyCode;
-      if (isNonPrintable(e) || _clipboardStrategy.isClipboardEvent(e) || _navigationStrategy.isNavigationEvent(e) || _navigationStrategy.isExpandEvent(e)) {
+      if (isNonPrintable(e) || _clipboardStrategy.isClipboardEvent(e) || _navigationStrategy.isNavigationEvent(e) || _navigationStrategy.isExpandEvent(e) || _navigationStrategy.isSelectAllEvent(e)) {
         return false;
       }
     }
