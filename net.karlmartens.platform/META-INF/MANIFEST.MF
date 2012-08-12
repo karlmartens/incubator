@@ -7,5 +7,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: net.karlmartens.platform.text,
  net.karlmartens.platform.util
 Bundle-ClassPath: .
-Import-Package: org.joda.time,
+Import-Package: com.google.gson,
+ org.joda.time,
+ org.joda.time.base,
  org.joda.time.format

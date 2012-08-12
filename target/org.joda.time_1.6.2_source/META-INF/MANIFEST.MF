@@ -1,8 +1,0 @@
-Manifest-Version: 1.0
-Eclipse-SourceBundle: org.joda.time;version="1.6.2";roots:="."
-Bundle-Vendor: karlmartens.net
-Bundle-Localization: plugin
-Bundle-Name: Joda Time Source Plug-in
-Bundle-SymbolicName: org.joda.time.source
-Bundle-Version: 1.6.2
-Bundle-ManifestVersion: 2

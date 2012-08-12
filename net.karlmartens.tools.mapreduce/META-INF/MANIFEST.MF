@@ -3,6 +3,5 @@ Bundle-ManifestVersion: 2
 Bundle-Name: MapReduce
 Bundle-SymbolicName: net.karlmartens.tools.mapreduce
 Bundle-Version: 1.0.0.vqualifier
-Require-Bundle: org.eclipse.core.runtime,
- net.karlmartens.platform
+Require-Bundle: net.karlmartens.platform
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6

@@ -1,0 +1,44 @@
+/**
+ *   Copyright 2012 Karl Martens
+ *
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *       
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ *
+ *   net.karlmartens.platform, is a library of shared basic utility classes
+ */
+
+package net.karlmartens.platform.util;
+
+import java.util.Comparator;
+
+/**
+ * @author karl
+ * 
+ */
+public final class ArrayIndexComparator<T> implements Comparator<Integer> {
+
+  private final T[] _arr;
+  private final Comparator<T> _comparator;
+
+  public ArrayIndexComparator(T[] arr, Comparator<T> comparator) {
+    _arr = arr;
+    _comparator = comparator;
+  }
+
+  @Override
+  public int compare(Integer arg0, Integer arg1) {
+    final T t0 = _arr[arg0];
+    final T t1 = _arr[arg1];
+    return _comparator.compare(t0, t1);
+  }
+
+}

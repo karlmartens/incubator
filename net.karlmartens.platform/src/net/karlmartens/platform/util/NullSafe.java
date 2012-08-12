@@ -18,6 +18,8 @@
 
 package net.karlmartens.platform.util;
 
+import java.util.Comparator;
+
 public final class NullSafe {
 
   private NullSafe() {
@@ -41,4 +43,27 @@ public final class NullSafe {
     return o1.equals(o2);
   }
 
+  public static <T> T min(T a, T b, Comparator<T> comparator) {
+    if (comparator.compare(a, b) <= 0)
+      return a;
+
+    return b;
+  }
+
+  public static <T extends Comparable<T>> T min(T a, T b) {
+    final Comparator<T> comparator = ComparableComparator.getInstance();
+    return min(a, b, comparator);
+  }
+
+  public static <T> T max(T a, T b, Comparator<T> comparator) {
+    if (comparator.compare(a, b) <= 0)
+      return b;
+
+    return a;
+  }
+
+  public static <T extends Comparable<T>> T max(T a, T b) {
+    final Comparator<T> comparator = ComparableComparator.getInstance();
+    return max(a, b, comparator);
+  }
 }

@@ -3,3 +3,6 @@
 */classes/**
 */classes-test/**
 */bin/**
+com.google.gson/**
+org.joda.convert/**
+org.joda.time/**
