@@ -969,6 +969,351 @@ public class DataTableTest {
     assertEquals(1.0, ((Double) table.getValue(6, 1)).doubleValue(), TOLERANCE);
   }
 
+  @Test
+  public void test_insertColumn_type() throws Exception {
+    final DataTable table = new DataTable();
+    table.insertColumn(0, STRING);
+    table.insertColumn(1, NUMBER);
+    table.insertColumn(1, DATE);
+
+    assertEquals(TestSummarizer.lines(//
+        "{", //
+        "  \"cols\": [", //
+        "    {", //
+        "      \"type\": \"string\"", //
+        "    },", //
+        "    {", //
+        "      \"type\": \"date\"", //
+        "    },", //
+        "    {", //
+        "      \"type\": \"number\"", //
+        "    }", //
+        "  ],", //
+        "  \"rows\": []", //
+        "}"), createGson().toJson(table.toJson()));
+  }
+
+  @Test
+  public void test_insertColumn_type_label() throws Exception {
+    final DataTable table = new DataTable();
+    table.insertColumn(0, STRING, "A");
+    table.insertColumn(1, NUMBER, "B");
+    table.insertColumn(1, DATE, "C");
+
+    assertEquals(TestSummarizer.lines(//
+        "{", //
+        "  \"cols\": [", //
+        "    {", //
+        "      \"label\": \"A\",", //
+        "      \"type\": \"string\"", //
+        "    },", //
+        "    {", //
+        "      \"label\": \"C\",", //
+        "      \"type\": \"date\"", //
+        "    },", //
+        "    {", //
+        "      \"label\": \"B\",", //
+        "      \"type\": \"number\"", //
+        "    }", //
+        "  ],", //
+        "  \"rows\": []", //
+        "}"), createGson().toJson(table.toJson()));
+  }
+
+  @Test
+  public void test_insertColumn_type_label_id() throws Exception {
+    final DataTable table = new DataTable();
+    table.insertColumn(0, STRING, "A", "_A");
+    table.insertColumn(1, NUMBER, "B", "_B");
+    table.insertColumn(1, DATE, "C", "_C");
+
+    assertEquals(TestSummarizer.lines(//
+        "{", //
+        "  \"cols\": [", //
+        "    {", //
+        "      \"id\": \"_A\",", //
+        "      \"label\": \"A\",", //
+        "      \"type\": \"string\"", //
+        "    },", //
+        "    {", //
+        "      \"id\": \"_C\",", //
+        "      \"label\": \"C\",", //
+        "      \"type\": \"date\"", //
+        "    },", //
+        "    {", //
+        "      \"id\": \"_B\",", //
+        "      \"label\": \"B\",", //
+        "      \"type\": \"number\"", //
+        "    }", //
+        "  ],", //
+        "  \"rows\": []", //
+        "}"), createGson().toJson(table.toJson()));
+  }
+
+  @Test
+  public void test_insertColumn_DataTableColumn() throws Exception {
+    final DataTable table = new DataTable();
+    table.insertColumn(0,
+        new DataTableColumn(STRING).id("_A").label("A").role(DOMAIN));
+    table.insertColumn(1, new DataTableColumn(NUMBER).id("_B").label("B")
+        .pattern("0.00").role(DATA));
+    table.insertColumn(1, new DataTableColumn(DATE).id("_C").label("C")
+        .pattern("yyyy-mm-dd").role(DATA));
+
+    assertEquals(TestSummarizer.lines(//
+        "{", //
+        "  \"cols\": [", //
+        "    {", //
+        "      \"id\": \"_A\",", //
+        "      \"label\": \"A\",", //
+        "      \"role\": \"domain\",", //
+        "      \"type\": \"string\"", //
+        "    },", //
+        "    {", //
+        "      \"id\": \"_C\",", //
+        "      \"label\": \"C\",", //
+        "      \"pattern\": \"yyyy-mm-dd\",", //
+        "      \"role\": \"data\",", //
+        "      \"type\": \"date\"", //
+        "    },", //
+        "    {", //
+        "      \"id\": \"_B\",", //
+        "      \"label\": \"B\",", //
+        "      \"pattern\": \"0.00\",", //
+        "      \"role\": \"data\",", //
+        "      \"type\": \"number\"", //
+        "    }", //
+        "  ],", //
+        "  \"rows\": []", //
+        "}"), createGson().toJson(table.toJson()));
+  }
+
+  @Test
+  public void test_insertRow_empty() throws Exception {
+    final DataTable table = new DataTable();
+    table.insertRows(0, 2);
+
+    assertEquals(TestSummarizer.lines(//
+        "{", //
+        "  \"cols\": [],", //
+        "  \"rows\": [", //
+        "    {", //
+        "      \"c\": []", //
+        "    },", //
+        "    {", //
+        "      \"c\": []", //
+        "    }", //
+        "  ]", //
+        "}"), createGson().toJson(table.toJson()));
+  }
+
+  @Test
+  public void test_insertRow_head() throws Exception {
+    final DataTable table = new DataTable();
+    table.addColumn(STRING);
+
+    table.addRow("A");
+    table.insertRows(0, 2);
+
+    assertEquals(TestSummarizer.lines(//
+        "{", //
+        "  \"cols\": [", //
+        "    {", //
+        "      \"type\": \"string\"", //
+        "    }", //
+        "  ],", //
+        "  \"rows\": [", //
+        "    {", //
+        "      \"c\": [", //
+        "        {}", //
+        "      ]", //
+        "    },", //
+        "    {", //
+        "      \"c\": [", //
+        "        {}", //
+        "      ]", //
+        "    },", //
+        "    {", //
+        "      \"c\": [", //
+        "        {", //
+        "          \"v\": \"A\"", //
+        "        }", //
+        "      ]", //
+        "    }", //
+        "  ]", //
+        "}"), createGson().toJson(table.toJson()));
+  }
+
+  @Test
+  public void test_insertRow_tail() throws Exception {
+    final DataTable table = new DataTable();
+    table.addColumn(STRING);
+
+    table.addRow("A");
+    table.insertRows(1, 2);
+
+    assertEquals(TestSummarizer.lines(//
+        "{", //
+        "  \"cols\": [", //
+        "    {", //
+        "      \"type\": \"string\"", //
+        "    }", //
+        "  ],", //
+        "  \"rows\": [", //
+        "    {", //
+        "      \"c\": [", //
+        "        {", //
+        "          \"v\": \"A\"", //
+        "        }", //
+        "      ]", //
+        "    },", //
+        "    {", //
+        "      \"c\": [", //
+        "        {}", //
+        "      ]", //
+        "    },", //
+        "    {", //
+        "      \"c\": [", //
+        "        {}", //
+        "      ]", //
+        "    }", //
+        "  ]", //
+        "}"), createGson().toJson(table.toJson()));
+  }
+
+  @Test
+  public void test_insertRow_DataTableRow_empty() throws Exception {
+    final DataTable table = new DataTable();
+    table.addColumn(STRING);
+
+    final DataTableRow r0 = new DataTableRow(1);
+    r0.cell(0).value("B");
+
+    final DataTableRow r1 = new DataTableRow(1);
+    r1.cell(0).value("C");
+
+    table.insertRows(0, r0, r1);
+
+    assertEquals(TestSummarizer.lines(//
+        "{", //
+        "  \"cols\": [", //
+        "    {", //
+        "      \"type\": \"string\"", //
+        "    }", //
+        "  ],", //
+        "  \"rows\": [", //
+        "    {", //
+        "      \"c\": [", //
+        "        {", //
+        "          \"v\": \"B\"", //
+        "        }", //
+        "      ]", //
+        "    },", //
+        "    {", //
+        "      \"c\": [", //
+        "        {", //
+        "          \"v\": \"C\"", //
+        "        }", //
+        "      ]", //
+        "    }", //
+        "  ]", //
+        "}"), createGson().toJson(table.toJson()));
+  }
+
+  @Test
+  public void test_insertRow_DataTableRow_head() throws Exception {
+    final DataTable table = new DataTable();
+    table.addColumn(STRING);
+    table.addRow("A");
+
+    final DataTableRow r0 = new DataTableRow(1);
+    r0.cell(0).value("B");
+
+    final DataTableRow r1 = new DataTableRow(1);
+    r1.cell(0).value("C");
+
+    table.insertRows(0, r0, r1);
+
+    assertEquals(TestSummarizer.lines(//
+        "{", //
+        "  \"cols\": [", //
+        "    {", //
+        "      \"type\": \"string\"", //
+        "    }", //
+        "  ],", //
+        "  \"rows\": [", //
+        "    {", //
+        "      \"c\": [", //
+        "        {", //
+        "          \"v\": \"B\"", //
+        "        }", //
+        "      ]", //
+        "    },", //
+        "    {", //
+        "      \"c\": [", //
+        "        {", //
+        "          \"v\": \"C\"", //
+        "        }", //
+        "      ]", //
+        "    },", //
+        "    {", //
+        "      \"c\": [", //
+        "        {", //
+        "          \"v\": \"A\"", //
+        "        }", //
+        "      ]", //
+        "    }", //
+        "  ]", //
+        "}"), createGson().toJson(table.toJson()));
+  }
+
+  @Test
+  public void test_insertRow_DataTableRow_tail() throws Exception {
+    final DataTable table = new DataTable();
+    table.addColumn(STRING);
+    table.addRow("A");
+
+    final DataTableRow r0 = new DataTableRow(1);
+    r0.cell(0).value("B");
+
+    final DataTableRow r1 = new DataTableRow(1);
+    r1.cell(0).value("C");
+
+    table.insertRows(1, r0, r1);
+
+    assertEquals(TestSummarizer.lines(//
+        "{", //
+        "  \"cols\": [", //
+        "    {", //
+        "      \"type\": \"string\"", //
+        "    }", //
+        "  ],", //
+        "  \"rows\": [", //
+        "    {", //
+        "      \"c\": [", //
+        "        {", //
+        "          \"v\": \"A\"", //
+        "        }", //
+        "      ]", //
+        "    },", //
+        "    {", //
+        "      \"c\": [", //
+        "        {", //
+        "          \"v\": \"B\"", //
+        "        }", //
+        "      ]", //
+        "    },", //
+        "    {", //
+        "      \"c\": [", //
+        "        {", //
+        "          \"v\": \"C\"", //
+        "        }", //
+        "      ]", //
+        "    }", //
+        "  ]", //
+        "}"), createGson().toJson(table.toJson()));
+  }
+
   private Gson createGson() {
     return new GsonBuilder()//
         .setPrettyPrinting()//
