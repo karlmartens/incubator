@@ -43,6 +43,8 @@ import com.google.gson.GsonBuilder;
 
 public class DataTableTest {
 
+  private static final double TOLERANCE = 0.00001;
+
   @Test
   public void test_addColumn_type() throws Exception {
     final DataTable table = new DataTable();
@@ -427,8 +429,8 @@ public class DataTableTest {
     table.addRow(97);
 
     final Range range = table.getColumnRange(0);
-    assertEquals(4.0, ((Number) range.minimum()).doubleValue(), 0.00001);
-    assertEquals(97.0, ((Number) range.maximum()).doubleValue(), 0.00001);
+    assertEquals(4.0, ((Number) range.minimum()).doubleValue(), TOLERANCE);
+    assertEquals(97.0, ((Number) range.maximum()).doubleValue(), TOLERANCE);
   }
 
   @Test
@@ -711,6 +713,260 @@ public class DataTableTest {
         new LocalDateTime(2012, 1, 15, 1, 30, 27, 999)).formattedValue(
         "20120115013027999"));
     assertEquals("20120115013027999", table.getFormattedValue(0, 0));
+  }
+
+  @Test
+  public void test_getNumberOfColumns() throws Exception {
+    final DataTable table = new DataTable();
+    table.addColumn(STRING);
+    table.addColumn(NUMBER);
+    table.addColumn(BOOLEAN);
+    table.addColumn(DATE);
+    table.addColumn(TIME_OF_DAY);
+    table.addColumn(DATE_TIME);
+
+    assertEquals(6, table.getNumberOfColumns());
+  }
+
+  @Test
+  public void test_getNumberOfRows() throws Exception {
+    final DataTable table = new DataTable();
+    table.addColumn(STRING);
+
+    table.addRow("A");
+    table.addRow("B");
+
+    assertEquals(2, table.getNumberOfRows());
+  }
+
+  @Test
+  public void test_getSortedRows_singleRow() throws Exception {
+    final DataTable table = new DataTable();
+    table.addColumn(STRING);
+    table.addColumn(NUMBER);
+
+    table.addRow("Cherry", 2.1);
+    table.addRow("Apple", 3.2);
+    table.addRow("Orange", 2.2);
+    table.addRow("Banana", 5);
+    table.addRow("Watermelon", 6);
+    table.addRow("Grape", 0.01);
+    table.addRow("Apple", 1.0);
+
+    assertArrayEquals(new int[] { 1, 6, 3, 0, 5, 2, 4 }, table.getSortedRows(0));
+    assertEquals(TestSummarizer.lines(//
+        "{", //
+        "  \"cols\": [", //
+        "    {", //
+        "      \"type\": \"string\"", //
+        "    },", //
+        "    {", //
+        "      \"type\": \"number\"", //
+        "    }", //
+        "  ],", //
+        "  \"rows\": [", //
+        "    {", //
+        "      \"c\": [", //
+        "        {", //
+        "          \"v\": \"Cherry\"", //
+        "        },", //
+        "        {", //
+        "          \"v\": 2.1", //
+        "        }", //
+        "      ]", //
+        "    },", //
+        "    {", //
+        "      \"c\": [", //
+        "        {", //
+        "          \"v\": \"Apple\"", //
+        "        },", //
+        "        {", //
+        "          \"v\": 3.2", //
+        "        }", //
+        "      ]", //
+        "    },", //
+        "    {", //
+        "      \"c\": [", //
+        "        {", //
+        "          \"v\": \"Orange\"", //
+        "        },", //
+        "        {", //
+        "          \"v\": 2.2", //
+        "        }", //
+        "      ]", //
+        "    },", //
+        "    {", //
+        "      \"c\": [", //
+        "        {", //
+        "          \"v\": \"Banana\"", //
+        "        },", //
+        "        {", //
+        "          \"v\": 5", //
+        "        }", //
+        "      ]", //
+        "    },", //
+        "    {", //
+        "      \"c\": [", //
+        "        {", //
+        "          \"v\": \"Watermelon\"", //
+        "        },", //
+        "        {", //
+        "          \"v\": 6", //
+        "        }", //
+        "      ]", //
+        "    },", //
+        "    {", //
+        "      \"c\": [", //
+        "        {", //
+        "          \"v\": \"Grape\"", //
+        "        },", //
+        "        {", //
+        "          \"v\": 0.01", //
+        "        }", //
+        "      ]", //
+        "    },", //
+        "    {", //
+        "      \"c\": [", //
+        "        {", //
+        "          \"v\": \"Apple\"", //
+        "        },", //
+        "        {", //
+        "          \"v\": 1.0", //
+        "        }", //
+        "      ]", //
+        "    }", //
+        "  ]", //
+        "}"), createGson().toJson(table.toJson()));
+  }
+
+  @Test
+  public void test_getSortedRows_multipleRow() throws Exception {
+    final DataTable table = new DataTable();
+    table.addColumn(STRING);
+    table.addColumn(NUMBER);
+
+    table.addRow("Cherry", 2.1);
+    table.addRow("Apple", 3.2);
+    table.addRow("Orange", 2.2);
+    table.addRow("Banana", 5);
+    table.addRow("Watermelon", 6);
+    table.addRow("Grape", 0.01);
+    table.addRow("Apple", 1.0);
+
+    assertArrayEquals(new int[] { 6, 1, 3, 0, 5, 2, 4 },
+        table.getSortedRows(0, 1));
+  }
+
+  @Test
+  public void test_getSortedRows_boolean() throws Exception {
+    final DataTable table = new DataTable();
+    table.addColumn(BOOLEAN);
+
+    table.addRow(TRUE);
+    table.addRow(FALSE);
+    table.addRow(FALSE);
+    table.addRow(TRUE);
+    table.addRow(TRUE);
+
+    assertArrayEquals(new int[] { 1, 2, 0, 3, 4 }, table.getSortedRows(0));
+  }
+
+  @Test
+  public void test_getSortedRows_date() throws Exception {
+    final DataTable table = new DataTable();
+    table.addColumn(DATE);
+
+    table.addRow(new LocalDate(2012, 6, 1));
+    table.addRow(new LocalDate(2012, 5, 15));
+    table.addRow(new LocalDate(2012, 5, 14));
+    table.addRow(new LocalDate(2012, 7, 31));
+    table.addRow(new LocalDate(2010, 12, 31));
+
+    assertArrayEquals(new int[] { 4, 2, 1, 0, 3 }, table.getSortedRows(0));
+  }
+
+  @Test
+  public void test_getSortedRows_timeOfDay() throws Exception {
+    final DataTable table = new DataTable();
+    table.addColumn(TIME_OF_DAY);
+
+    table.addRow(new LocalTime(12, 31, 1, 997));
+    table.addRow(new LocalTime(12, 31, 1, 996));
+    table.addRow(new LocalTime(12, 31, 0, 999));
+    table.addRow(new LocalTime(12, 32, 0, 999));
+    table.addRow(new LocalTime(13, 31, 0, 999));
+
+    assertArrayEquals(new int[] { 2, 1, 0, 3, 4 }, table.getSortedRows(0));
+  }
+
+  @Test
+  public void test_getSortedRows_dateTime() throws Exception {
+    final DataTable table = new DataTable();
+    table.addColumn(DATE_TIME);
+
+    table.addRow(new LocalDateTime(2012, 1, 1, 12, 31, 1, 997));
+    table.addRow(new LocalDateTime(2012, 1, 1, 12, 31, 1, 996));
+    table.addRow(new LocalDateTime(2012, 1, 1, 12, 31, 0, 999));
+    table.addRow(new LocalDateTime(2012, 1, 1, 12, 32, 0, 999));
+    table.addRow(new LocalDateTime(2012, 1, 1, 13, 31, 0, 999));
+
+    assertArrayEquals(new int[] { 2, 1, 0, 3, 4 }, table.getSortedRows(0));
+  }
+
+  @Test
+  public void test_getSortedRows_dateTime_decending() throws Exception {
+    final DataTable table = new DataTable();
+    table.addColumn(DATE_TIME);
+
+    table.addRow(new LocalDateTime(2012, 1, 1, 12, 31, 1, 997));
+    table.addRow(new LocalDateTime(2012, 1, 1, 12, 31, 1, 996));
+    table.addRow(new LocalDateTime(2012, 1, 1, 12, 31, 0, 999));
+    table.addRow(new LocalDateTime(2012, 1, 1, 12, 32, 0, 999));
+    table.addRow(new LocalDateTime(2012, 1, 1, 13, 31, 0, 999));
+
+    assertArrayEquals(new int[] { 4, 3, 0, 1, 2 },
+        table.getSortedRows(new DataTableSort(0, true)));
+  }
+
+  @Test
+  public void test_getSortedRows_multipleRow_decending() throws Exception {
+    final DataTable table = new DataTable();
+    table.addColumn(STRING);
+    table.addColumn(NUMBER);
+
+    table.addRow("Cherry", 2.1);
+    table.addRow("Apple", 3.2);
+    table.addRow("Orange", 2.2);
+    table.addRow("Banana", 5);
+    table.addRow("Watermelon", 6);
+    table.addRow("Grape", 0.01);
+    table.addRow("Apple", 1.0);
+
+    assertArrayEquals(new int[] { 4, 2, 5, 0, 3, 6, 1 }, table.getSortedRows(
+        new DataTableSort(0, true), new DataTableSort(1, false)));
+  }
+
+  @Test
+  public void test_getValue() throws Exception {
+    final DataTable table = new DataTable();
+    table.addColumn(STRING);
+    table.addColumn(NUMBER);
+
+    table.addRow("Cherry", 2.1);
+    table.addRow("Apple", 3.2);
+    table.addRow("Orange", 2.2);
+    table.addRow("Banana", 5);
+    table.addRow("Watermelon", 6);
+    table.addRow("Grape", 0.01);
+    table.addRow("Apple", 1.0);
+
+    assertEquals("Cherry", table.getValue(0, 0));
+    assertEquals("Banana", table.getValue(3, 0));
+    assertEquals("Apple", table.getValue(6, 0));
+
+    assertEquals(2.1, ((Double) table.getValue(0, 1)).doubleValue(), TOLERANCE);
+    assertEquals(5, table.getValue(3, 1));
+    assertEquals(1.0, ((Double) table.getValue(6, 1)).doubleValue(), TOLERANCE);
   }
 
   private Gson createGson() {
