@@ -23,18 +23,19 @@ import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_PASTE;
 import net.karlmartens.platform.util.NumberStringComparator;
 import net.karlmartens.ui.widget.Table;
 
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
 public final class TableViewerTest {
 
   public static void main(String[] args) throws Exception {
-    final Object[][] input = new Object[500][];
+    final Object[][] input = new Object[5][];
     for (int i = 0; i < input.length; i++) {
       input[i] = new Object[302];
       input[i][0] = "Item " + Integer.toString(i);
@@ -46,8 +47,8 @@ public final class TableViewerTest {
     }
 
     final Shell shell = new Shell();
-    shell.setLayout(new FillLayout());
-
+    shell.setLayout(new GridLayout(1, false));
+    
     final Display display = shell.getDisplay();
     
     final TableViewer viewer = new TableViewer(shell);
@@ -55,12 +56,6 @@ public final class TableViewerTest {
     viewer.setComparator(new ViewerComparator(new NumberStringComparator()));
     viewer.addDeleteCellSelectionSupport();
     viewer.addClipboardSupport(OPERATION_COPY | OPERATION_CUT | OPERATION_PASTE);
-    
-    final Table table = viewer.getControl();
-    table.setHeaderVisible(true);
-    table.setBackground(display.getSystemColor(SWT.COLOR_WHITE));
-    table.setFont(new Font(display, "Arial", 8, SWT.NORMAL));
-    table.addColumnSortSupport();
   
     final TableViewerColumn c1 = new TableViewerColumn(viewer, SWT.NONE);
     c1.setLabelProvider(new TestColumnLabelProvider(0));
@@ -81,6 +76,14 @@ public final class TableViewerTest {
       c.getColumn().setText("Test " + Integer.toString(i+1));
       c.getColumn().setWidth(40);
     }
+    
+    final Table table = viewer.getControl();
+    table.setLayoutData(GridDataFactory.fillDefaults().create());
+    table.setHeaderVisible(true);
+    table.setBackground(display.getSystemColor(SWT.COLOR_WHITE));
+    table.setFont(new Font(display, "Arial", 8, SWT.NORMAL));
+    table.addColumnSortSupport();
+    table.setFixedColumnCount(2);
 
     viewer.setInput(input);
 

@@ -42,6 +42,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.TypedListener;
@@ -93,7 +94,8 @@ public final class Table extends Composite {
 
   public Table(Composite parent, int style) {
     super(parent, checkStyle(style));
-
+    setLayout(new FillLayout());
+    
     _listener = new TableListener();
     updateFontData();
 
@@ -105,6 +107,8 @@ public final class Table extends Composite {
     _table.setForeground(getForeground());
     _table.setModel(_model);
 
+    updatePreferredSize();
+    
     _cellSelectionManager = new CellSelectionManager(this);
     _columnManager = new TableColumnManager(this, _table);
 
@@ -112,6 +116,13 @@ public final class Table extends Composite {
     passthroughListener.addSource(_table);
 
     hookControls();
+  }
+  
+  @Override
+  public Point computeSize(int wHint, int hHint, boolean changed) {
+    final Point desired = super.computeSize(wHint, hHint, changed);
+    final Rectangle available = getParent().getClientArea();
+    return new Point(Math.min(desired.x, available.width), Math.min(desired.y, available.height));
   }
 
   public IMenuManager getColumnMenuManager() {
@@ -174,6 +185,8 @@ public final class Table extends Composite {
       SWT.error(SWT.ERROR_INVALID_RANGE);
 
     _fixedColumnCount = count;
+    
+    updatePreferredSize();
     redraw();
   }
 
@@ -526,6 +539,7 @@ public final class Table extends Composite {
     System.arraycopy(_items, 0, newItems, 0, c);
     _items = newItems;
     _itemCount = c;
+    updatePreferredSize();
     _table.redraw();
   }
 
@@ -559,6 +573,8 @@ public final class Table extends Composite {
     System.arraycopy(_columns, 0, newColumns, 0, c);
     _columns = newColumns;
     _columnCount = c;
+    
+    updatePreferredSize();
     _table.redraw();
   }
 
@@ -595,6 +611,7 @@ public final class Table extends Composite {
       _items[i] = null;
     }
     _itemCount = 0;
+    updatePreferredSize();
     _table.redraw();
   }
 
@@ -718,6 +735,8 @@ public final class Table extends Composite {
 
     if (index == _lastSortColumnIndex)
       _lastSortColumnIndex++;
+    
+    updatePreferredSize();
   }
 
   void createItem(TableItem item, int index) {
@@ -735,6 +754,7 @@ public final class Table extends Composite {
     System.arraycopy(_items, index, _items, index + 1, _itemCount++ - index);
     _items[index] = item;
     setSortIndicator(-1, SORT_NONE);
+    updatePreferredSize();
   }
 
   Rectangle getBounds(TableItem item, int index) {
@@ -873,6 +893,7 @@ public final class Table extends Composite {
 
     System.arraycopy(_items, index + 1, _items, index, --_itemCount - index);
     _items[_itemCount] = null;
+    updatePreferredSize();
   }
 
   private void updateFontData() {
@@ -880,6 +901,12 @@ public final class Table extends Composite {
     gc.setFont(getFont());
     _rowHeight = gc.getFontMetrics().getHeight() + 6;
     gc.dispose();
+  }
+  
+  private void updatePreferredSize() {
+    final int columns = Math.max(0, _columnCount - _fixedColumnCount);
+    _table.setNumColsVisibleInPreferredSize(columns);
+    _table.setNumRowsVisibleInPreferredSize(_itemCount);
   }
 
   private int computeRow(int ktableRow) {
