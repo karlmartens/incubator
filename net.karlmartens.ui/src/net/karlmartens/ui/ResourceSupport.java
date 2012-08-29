@@ -23,11 +23,15 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 public final class ResourceSupport {
 
   public static ImageDescriptor imageDescriptorFromPlugin(String pluginId, Class<?> clazz, String imageFilePath) {
-    ImageDescriptor d = AbstractUIPlugin.imageDescriptorFromPlugin(pluginId, imageFilePath);
-    if (d != null)
-      return d;
-
-    d = ImageDescriptor.createFromFile(clazz, imageFilePath);
+    try {
+      final ImageDescriptor d = AbstractUIPlugin.imageDescriptorFromPlugin(pluginId, imageFilePath);
+      if (d != null)
+        return d;
+    } catch (Throwable t) {
+      // Ignore errors and attempt with another method;
+    }
+    
+    final ImageDescriptor d = ImageDescriptor.createFromFile(clazz, imageFilePath);
     if (d != null)
       return d;
 
