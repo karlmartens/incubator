@@ -179,7 +179,7 @@ public final class SparklineScrollBar extends Composite {
 
   public void setMinimum(int value) {
     checkWidget();
-    if (value < 0 || value >= _maximum)
+    if (value < 0 || value > _maximum)
       SWT.error(SWT.ERROR_INVALID_RANGE);
 
     _minimum = value;
@@ -193,7 +193,7 @@ public final class SparklineScrollBar extends Composite {
 
   public void setMaximum(int value) {
     checkWidget();
-    if (value <= _minimum)
+    if (value < _minimum)
       SWT.error(SWT.ERROR_INVALID_RANGE);
 
     _maximum = value;

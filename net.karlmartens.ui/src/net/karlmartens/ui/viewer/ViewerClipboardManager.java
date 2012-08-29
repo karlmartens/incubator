@@ -99,12 +99,15 @@ final class ViewerClipboardManager extends CellSelectionModifier {
           System.arraycopy(values, i * length, row, 0, row.length);
           writer.writeNext(row);
         }
-
+        
         try {
           writer.close();
         } catch (IOException e) {
           throw new RuntimeException(e);
         }
+
+        final StringBuffer buffer = sw.getBuffer();
+        buffer.setLength(buffer.length() - CSVWriter.DEFAULT_LINE_END.length());
 
         final Clipboard cb = new Clipboard(_viewer.getControl().getDisplay());
         cb.setContents(new String[] { sw.toString() }, new Transfer[] { TextTransfer.getInstance() });

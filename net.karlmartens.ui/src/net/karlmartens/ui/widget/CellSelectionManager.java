@@ -33,8 +33,10 @@ public final class CellSelectionManager {
   private final CellNavigationStrategy _navigationStrategy;
   private final TableListener _listener;
   private final ItemListener _itemListener;
+  
   private Point _focusCell;
   private Point _expansionCell;
+  
   private Point[] _selections = new Point[0];
   private boolean _dragExpand = false;
 
@@ -145,6 +147,16 @@ public final class CellSelectionManager {
       _table.showColumn(vCell.x);
     }
     _table.showItem(_table.getItem(vCell.y));
+  }
+
+  private void selectAll() {
+    final int cols = _table.getColumnCount();
+    final int rows = _table.getItemCount();
+    if (cols <= 0 || rows <= 0)
+      return;
+
+    setFocusCell(new Point(0,0), false);
+    expandSelection(new Point(cols - 1, rows - 1), false);
   }
 
   private TableItem getItemAtIndex(Point pt) {
@@ -280,6 +292,10 @@ public final class CellSelectionManager {
     if (_navigationStrategy.isExpandEvent(e)) {
       final Point cell = _navigationStrategy.findSelectedCell(_table, _expansionCell, e);
       expandSelection(cell, false);
+    }
+    
+    if (_navigationStrategy.isSelectAllEvent(e)) {
+      selectAll();
     }
   }
 
