@@ -45,6 +45,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.TypedListener;
 
 import de.kupzog.ktable.KTable;
@@ -120,9 +121,32 @@ public final class Table extends Composite {
   
   @Override
   public Point computeSize(int wHint, int hHint, boolean changed) {
-    final Point desired = super.computeSize(wHint, hHint, changed);
+    checkWidget();
+    
     final Rectangle available = getParent().getClientArea();
-    return new Point(Math.min(desired.x, available.width), Math.min(desired.y, available.height));
+    final Point preferred = _table.computeSize(wHint, hHint, changed);
+
+    int width = 0;
+    if (wHint != SWT.DEFAULT) {
+      width = wHint;
+    } else {
+      width = preferred.x;
+      
+      if ((_table.getStyle() & SWT.H_SCROLL) > 0)
+        width = Math.min(preferred.x, available.width);
+    }
+    
+    int height = 0;
+    if (hHint != SWT.DEFAULT) {
+      height = hHint;
+    } else {
+      height = preferred.y;
+
+      if ((_table.getStyle() & SWT.V_SCROLL) > 0)
+        height = Math.min(preferred.y, available.height);
+    }
+    
+    return new Point(width, height);
   }
 
   public IMenuManager getColumnMenuManager() {
@@ -146,6 +170,16 @@ public final class Table extends Composite {
   public void setForeground(Color color) {
     super.setForeground(color);
     _table.setForeground(color);
+  }
+  
+  @Override
+  public ScrollBar getHorizontalBar() {
+    return _table.getHorizontalBar();
+  }
+  
+  @Override
+  public ScrollBar getVerticalBar() {
+    return _table.getVerticalBar();
   }
 
   @Override
@@ -904,7 +938,7 @@ public final class Table extends Composite {
   }
   
   private void updatePreferredSize() {
-    final int columns = Math.max(0, _columnCount - _fixedColumnCount);
+    final int columns = Math.max(0, _columnCount);
     _table.setNumColsVisibleInPreferredSize(columns);
     _table.setNumRowsVisibleInPreferredSize(_itemCount);
   }
@@ -1131,9 +1165,7 @@ public final class Table extends Composite {
 
     @Override
     public void columnResized(int col, int newWidth) {
-      if (col < _columnCount) {
-        _columns[col].notifyListeners(SWT.Resize, new Event());
-      }
+      // Ignore
     }
 
     @Override
@@ -1196,6 +1228,63 @@ public final class Table extends Composite {
     @Override
     protected void onKeyDown(KeyEvent e) {
       // Disable default even handling
+    }
+    
+    @Override
+    public Point computeSize(int wHint, int hHint, boolean changed) {
+      // This was duplicated from the KTable class because their implementation 
+      // had a defect that would always ask for the fixedHeaderColumnsWidth 
+      // when computing the desired table width.
+      
+      // start with margins
+      int height = 1;
+      int width = 1;
+
+      if (m_Model != null) {
+          // Determine height of header rows
+          for (int i = 0; i < m_Model.getFixedHeaderRowCount(); i++) {
+              height += m_Model.getRowHeight(i);
+          }
+
+          // Add height of data rows to display
+          int rowsVisible = 0;
+          for (int i = m_Model.getFixedHeaderRowCount(); i < m_Model.getFixedHeaderRowCount()
+                  + m_numRowsVisibleInPreferredSize
+                  && i < m_Model.getRowCount(); i++) {
+              height += m_Model.getRowHeight(i);
+              rowsVisible++;
+          }
+          
+          // Make sure that there is room for m_numRowsVisibleInPreferredSize rows, even if there are not that
+          // many data rows currently available
+          for (int i = rowsVisible; i < m_numRowsVisibleInPreferredSize; i++) {
+              height += m_preferredSizeDefaultRowHeight;
+          }
+
+          // Determine width of header columns
+          for (int i = 0; i < m_Model.getFixedHeaderColumnCount(); i++) {
+              width += m_Model.getColumnWidth(i);
+          }
+
+          // Add width of data columns to display
+          for (int i = m_Model.getFixedHeaderColumnCount(); i < m_Model.getFixedHeaderColumnCount()
+                  + m_numColsVisibleInPreferredSize
+                  && i < m_Model.getColumnCount(); i++) {
+              width += m_Model.getColumnWidth(i);
+          }
+      }
+
+      // Take scrollbars into account
+      if (getHorizontalBar() != null) {
+          height += getHorizontalBar().getSize().y;
+      }
+      if (getVerticalBar() != null) {
+          width += getVerticalBar().getSize().x;
+      }
+      
+      width += 2;
+
+      return new Point(width, height);
     }
   }
 }
