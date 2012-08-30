@@ -177,9 +177,6 @@ public final class TableEditor extends ControlEditor {
     cell.x = image.x + image.width + 1;
     cell.width -= image.width + 2;
 
-    cell.y += 3;
-    cell.height -= 6;
-
     // Convert from global widget coordinates to table relative coordinates
     final Composite parent = getEditor().getParent();
     final Rectangle table = parent.getBounds();
