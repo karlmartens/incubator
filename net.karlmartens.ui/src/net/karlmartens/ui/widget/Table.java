@@ -31,6 +31,8 @@ import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.PaintEvent;
@@ -44,6 +46,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.TypedListener;
@@ -55,9 +58,7 @@ import de.kupzog.ktable.KTableCellResizeListener;
 import de.kupzog.ktable.KTableDefaultModel;
 import de.kupzog.ktable.KTableModel;
 import de.kupzog.ktable.SWTX;
-import de.kupzog.ktable.renderers.CheckableCellRenderer;
 import de.kupzog.ktable.renderers.DefaultCellRenderer;
-import de.kupzog.ktable.renderers.TextCellRenderer;
 
 public final class Table extends Composite {
 
@@ -883,6 +884,7 @@ public final class Table extends Composite {
   private void hookControls() {
     _table.addCellResizeListener(_listener);
     _table.addPaintListener(_listener);
+    _table.addFocusListener(_listener);
 
     addControlListener(_listener);
     addPaintListener(_listener);
@@ -892,7 +894,9 @@ public final class Table extends Composite {
   private void releaseControls() {
     _table.removeCellResizeListener(_listener);
     _table.removePaintListener(_listener);
+    _table.removeFocusListener(_listener);
 
+    removeControlListener(_listener);
     removePaintListener(_listener);
     removeDisposeListener(_listener);
   }
@@ -955,6 +959,18 @@ public final class Table extends Composite {
       return row + _table.getModel().getFixedHeaderRowCount();
 
     return row;
+  }
+  
+  private boolean doHasFocus() {
+    Control control = getDisplay().getFocusControl();
+    while (control != null) {
+      if (control == this)
+        return true;
+      
+      control = control.getParent();
+    }
+    
+    return false;
   }
 
   private static int checkStyle(int style) {
@@ -1087,6 +1103,7 @@ public final class Table extends Composite {
         _headerRenderer.setDefaultForeground(getForeground());
         _headerRenderer.setFont(getFont());
         _headerRenderer.setImage(null);
+        _headerRenderer.setActive(doHasFocus());
 
         if (col < 0 || col >= _columnCount)
           return _headerRenderer;
@@ -1103,9 +1120,11 @@ public final class Table extends Composite {
       final DefaultCellRenderer renderer;
       if ((SWT.CHECK & column.getStyle()) > 0) {
         renderer = _checkRenderer;
+        _checkRenderer.setActive(doHasFocus());
         renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_CENTER | SWTX.ALIGN_VERTICAL_CENTER);
       } else {
         renderer = _renderer;
+        _renderer.setActive(doHasFocus());
         renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_LEFT | SWTX.ALIGN_VERTICAL_CENTER);
       }
 
@@ -1139,11 +1158,21 @@ public final class Table extends Composite {
 
   };
 
-  private final class TableListener implements ControlListener, KTableCellResizeListener, PaintListener, DisposeListener {
+  private final class TableListener implements ControlListener, KTableCellResizeListener, PaintListener, DisposeListener, FocusListener {
 
     @Override
     public void controlMoved(ControlEvent e) {
       // Ignore
+    }
+    
+    @Override
+    public void focusLost(FocusEvent e) {
+      _table.redraw();
+    }
+    
+    @Override
+    public void focusGained(FocusEvent e) {
+      _table.redraw();
     }
 
     @Override

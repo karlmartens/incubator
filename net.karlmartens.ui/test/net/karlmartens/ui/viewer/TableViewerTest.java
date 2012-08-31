@@ -31,6 +31,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 
 public final class TableViewerTest {
 
@@ -50,6 +51,9 @@ public final class TableViewerTest {
     shell.setLayout(new GridLayout(1, false));
     
     final Display display = shell.getDisplay();
+
+    final Text text = new Text(shell, SWT.BORDER);
+    text.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
     
     final TableViewer viewer = new TableViewer(shell);
     viewer.setContentProvider(new ArrayContentProvider());
@@ -75,6 +79,7 @@ public final class TableViewerTest {
       c.setEditingSupport(new TestTextEditingSupport(viewer, i, SWT.RIGHT));
       c.getColumn().setText("Test " + Integer.toString(i+1));
       c.getColumn().setWidth(40);
+      c.getColumn().setHideable(false);
     }
     
     final Table table = viewer.getControl();
@@ -86,7 +91,7 @@ public final class TableViewerTest {
     table.setFixedColumnCount(2);
 
     viewer.setInput(input);
-
+    
     shell.open();
     while (!shell.isDisposed()) {
       if (!display.readAndDispatch()) {
