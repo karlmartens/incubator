@@ -27,11 +27,11 @@ import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Control;
 
-final class DeleteCellSelectionSupport extends CellSelectionModifier {
+public final class DeleteCellSelectionSupport extends CellSelectionModifier {
 
   private final TableViewer _viewer;
 
-  DeleteCellSelectionSupport(TableViewer viewer) {
+  public DeleteCellSelectionSupport(TableViewer viewer) {
     super(viewer);
     _viewer = viewer;
     new Listener();
