@@ -80,6 +80,8 @@ public final class Table extends Composite {
   private final TableListener _listener;
 
   private boolean _requiresRedraw = true;
+  private boolean _requiresUpdateActive = true;
+  private boolean _isActive = true;
   private boolean _showHeader = false;
   private int _rowHeight;
 
@@ -97,7 +99,7 @@ public final class Table extends Composite {
   public Table(Composite parent, int style) {
     super(parent, checkStyle(style));
     setLayout(new FillLayout());
-    
+
     _listener = new TableListener();
     updateFontData();
 
@@ -110,7 +112,7 @@ public final class Table extends Composite {
     _table.setModel(_model);
 
     updatePreferredSize();
-    
+
     _cellSelectionManager = new CellSelectionManager(this);
     _columnManager = new TableColumnManager(this, _table);
 
@@ -119,11 +121,11 @@ public final class Table extends Composite {
 
     hookControls();
   }
-  
+
   @Override
   public Point computeSize(int wHint, int hHint, boolean changed) {
     checkWidget();
-    
+
     final Rectangle available = getParent().getClientArea();
     final Point preferred = _table.computeSize(wHint, hHint, changed);
 
@@ -132,11 +134,11 @@ public final class Table extends Composite {
       width = wHint;
     } else {
       width = preferred.x;
-      
+
       if ((_table.getStyle() & SWT.H_SCROLL) > 0)
         width = Math.min(preferred.x, available.width);
     }
-    
+
     int height = 0;
     if (hHint != SWT.DEFAULT) {
       height = hHint;
@@ -146,7 +148,7 @@ public final class Table extends Composite {
       if ((_table.getStyle() & SWT.V_SCROLL) > 0)
         height = Math.min(preferred.y, available.height);
     }
-    
+
     return new Point(width, height);
   }
 
@@ -172,12 +174,12 @@ public final class Table extends Composite {
     super.setForeground(color);
     _table.setForeground(color);
   }
-  
+
   @Override
   public ScrollBar getHorizontalBar() {
     return _table.getHorizontalBar();
   }
-  
+
   @Override
   public ScrollBar getVerticalBar() {
     return _table.getVerticalBar();
@@ -220,7 +222,7 @@ public final class Table extends Composite {
       SWT.error(SWT.ERROR_INVALID_RANGE);
 
     _fixedColumnCount = count;
-    
+
     updatePreferredSize();
     redraw();
   }
@@ -608,7 +610,7 @@ public final class Table extends Composite {
     System.arraycopy(_columns, 0, newColumns, 0, c);
     _columns = newColumns;
     _columnCount = c;
-    
+
     updatePreferredSize();
     _table.redraw();
   }
@@ -770,7 +772,7 @@ public final class Table extends Composite {
 
     if (index == _lastSortColumnIndex)
       _lastSortColumnIndex++;
-    
+
     updatePreferredSize();
   }
 
@@ -854,7 +856,6 @@ public final class Table extends Composite {
   private Image _previousSortImage = null;
   private int _lastSortColumnIndex = -1;
   private int _lastSortDirection = SORT_NONE;
-  private boolean _isActive = true;
 
   void setSortIndicator(int index, int direction) {
     if (_lastSortColumnIndex >= 0 && _lastSortColumnIndex < _columnCount) {
@@ -941,7 +942,7 @@ public final class Table extends Composite {
     _rowHeight = gc.getFontMetrics().getHeight() + 6;
     gc.dispose();
   }
-  
+
   private void updatePreferredSize() {
     final int columns = Math.max(0, _columnCount);
     _table.setNumColsVisibleInPreferredSize(columns);
@@ -961,19 +962,23 @@ public final class Table extends Composite {
 
     return row;
   }
-  
+
   private void updateActive() {
-    Control control = getDisplay().getFocusControl();
-    while (control != null) {
-      if (control == this) {
-        _isActive  = true;
-        return;
+    try {
+      Control control = getDisplay().getFocusControl();
+      while (control != null) {
+        if (control == this) {
+          _isActive = true;
+          return;
+        }
+
+        control = control.getParent();
       }
-      
-      control = control.getParent();
+
+      _isActive = false;
+    } finally {
+      _requiresUpdateActive = false;
     }
-    
-    _isActive = false;
   }
 
   private static int checkStyle(int style) {
@@ -1167,16 +1172,16 @@ public final class Table extends Composite {
     public void controlMoved(ControlEvent e) {
       // Ignore
     }
-    
+
     @Override
     public void focusLost(FocusEvent e) {
-      updateActive();
+      _requiresUpdateActive = true;
       _table.redraw();
     }
-    
+
     @Override
     public void focusGained(FocusEvent e) {
-      updateActive();
+      _requiresUpdateActive = true;
       _table.redraw();
     }
 
@@ -1191,6 +1196,9 @@ public final class Table extends Composite {
 
     @Override
     public void paintControl(PaintEvent e) {
+      if (_requiresUpdateActive)
+        updateActive();
+
       if (e.getSource() == Table.this && _requiresRedraw) {
         _requiresRedraw = false;
         _table.redraw();
@@ -1263,59 +1271,57 @@ public final class Table extends Composite {
     protected void onKeyDown(KeyEvent e) {
       // Disable default even handling
     }
-    
+
     @Override
     public Point computeSize(int wHint, int hHint, boolean changed) {
-      // This was duplicated from the KTable class because their implementation 
-      // had a defect that would always ask for the fixedHeaderColumnsWidth 
+      // This was duplicated from the KTable class because their implementation
+      // had a defect that would always ask for the fixedHeaderColumnsWidth
       // when computing the desired table width.
-      
+
       // start with margins
       int height = 1;
       int width = 1;
 
       if (m_Model != null) {
-          // Determine height of header rows
-          for (int i = 0; i < m_Model.getFixedHeaderRowCount(); i++) {
-              height += m_Model.getRowHeight(i);
-          }
+        // Determine height of header rows
+        for (int i = 0; i < m_Model.getFixedHeaderRowCount(); i++) {
+          height += m_Model.getRowHeight(i);
+        }
 
-          // Add height of data rows to display
-          int rowsVisible = 0;
-          for (int i = m_Model.getFixedHeaderRowCount(); i < m_Model.getFixedHeaderRowCount()
-                  + m_numRowsVisibleInPreferredSize
-                  && i < m_Model.getRowCount(); i++) {
-              height += m_Model.getRowHeight(i);
-              rowsVisible++;
-          }
-          
-          // Make sure that there is room for m_numRowsVisibleInPreferredSize rows, even if there are not that
-          // many data rows currently available
-          for (int i = rowsVisible; i < m_numRowsVisibleInPreferredSize; i++) {
-              height += m_preferredSizeDefaultRowHeight;
-          }
+        // Add height of data rows to display
+        int rowsVisible = 0;
+        for (int i = m_Model.getFixedHeaderRowCount(); i < m_Model.getFixedHeaderRowCount() + m_numRowsVisibleInPreferredSize && i < m_Model.getRowCount(); i++) {
+          height += m_Model.getRowHeight(i);
+          rowsVisible++;
+        }
 
-          // Determine width of header columns
-          for (int i = 0; i < m_Model.getFixedHeaderColumnCount(); i++) {
-              width += m_Model.getColumnWidth(i);
-          }
+        // Make sure that there is room for m_numRowsVisibleInPreferredSize
+        // rows, even if there are not that
+        // many data rows currently available
+        for (int i = rowsVisible; i < m_numRowsVisibleInPreferredSize; i++) {
+          height += m_preferredSizeDefaultRowHeight;
+        }
 
-          // Add width of data columns to display
-          for (int i = m_Model.getFixedHeaderColumnCount(); i < m_Model.getFixedHeaderColumnCount()
-                  + m_numColsVisibleInPreferredSize
-                  && i < m_Model.getColumnCount(); i++) {
-              width += m_Model.getColumnWidth(i);
-          }
+        // Determine width of header columns
+        for (int i = 0; i < m_Model.getFixedHeaderColumnCount(); i++) {
+          width += m_Model.getColumnWidth(i);
+        }
+
+        // Add width of data columns to display
+        for (int i = m_Model.getFixedHeaderColumnCount(); i < m_Model.getFixedHeaderColumnCount() + m_numColsVisibleInPreferredSize
+            && i < m_Model.getColumnCount(); i++) {
+          width += m_Model.getColumnWidth(i);
+        }
       }
 
       // Take scrollbars into account
       if (getHorizontalBar() != null) {
-          height += getHorizontalBar().getSize().y;
+        height += getHorizontalBar().getSize().y;
       }
       if (getVerticalBar() != null) {
-          width += getVerticalBar().getSize().x;
+        width += getVerticalBar().getSize().x;
       }
-      
+
       width += 2;
 
       return new Point(width, height);
