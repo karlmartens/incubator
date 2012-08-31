@@ -80,7 +80,6 @@ public final class Table extends Composite {
   private final TableListener _listener;
 
   private boolean _requiresRedraw = true;
-  private boolean _requiresUpdateActive = true;
   private boolean _isActive = true;
   private boolean _showHeader = false;
   private int _rowHeight;
@@ -964,21 +963,17 @@ public final class Table extends Composite {
   }
 
   private void updateActive() {
-    try {
-      Control control = getDisplay().getFocusControl();
-      while (control != null) {
-        if (control == this) {
-          _isActive = true;
-          return;
-        }
-
-        control = control.getParent();
+    Control control = getDisplay().getFocusControl();
+    while (control != null) {
+      if (control == this) {
+        _isActive = true;
+        return;
       }
 
-      _isActive = false;
-    } finally {
-      _requiresUpdateActive = false;
+      control = control.getParent();
     }
+
+    _isActive = false;
   }
 
   private static int checkStyle(int style) {
@@ -1175,13 +1170,11 @@ public final class Table extends Composite {
 
     @Override
     public void focusLost(FocusEvent e) {
-      _requiresUpdateActive = true;
       _table.redraw();
     }
 
     @Override
     public void focusGained(FocusEvent e) {
-      _requiresUpdateActive = true;
       _table.redraw();
     }
 
@@ -1196,9 +1189,6 @@ public final class Table extends Composite {
 
     @Override
     public void paintControl(PaintEvent e) {
-      if (_requiresUpdateActive)
-        updateActive();
-
       if (e.getSource() == Table.this && _requiresRedraw) {
         _requiresRedraw = false;
         _table.redraw();
@@ -1270,6 +1260,12 @@ public final class Table extends Composite {
     @Override
     protected void onKeyDown(KeyEvent e) {
       // Disable default even handling
+    }
+    
+    @Override
+    protected void doCalculations() {
+      super.doCalculations();
+      updateActive();
     }
 
     @Override
