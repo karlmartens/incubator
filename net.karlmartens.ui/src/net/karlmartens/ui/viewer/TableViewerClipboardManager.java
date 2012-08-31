@@ -33,10 +33,12 @@ import java.util.ResourceBundle;
 import net.karlmartens.ui.Activator;
 import net.karlmartens.ui.UiUtil;
 import net.karlmartens.ui.widget.ClipboardStrategy;
+import net.karlmartens.ui.widget.Table;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.IHandler2;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -71,8 +73,8 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
     super(viewer);
     _viewer = viewer;
     _operations = operations;
-    
-    final IHandlerService service = (IHandlerService)site.getService(IHandlerService.class);
+
+    final IHandlerService service = (IHandlerService) site.getService(IHandlerService.class);
     activateHandlers(service);
   }
 
@@ -89,58 +91,87 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
 
   private void activateHandlers(final IHandlerService service) {
     final List<IHandlerActivation> activations = new ArrayList<IHandlerActivation>();
-    
+
     if (isOperationEnabled(OPERATION_COPY)) {
-      activations.add(service.activateHandler(IWorkbenchCommandConstants.EDIT_COPY, new AbstractHandler() {      
+      activations.add(service.activateHandler(IWorkbenchCommandConstants.EDIT_COPY, new AbstractHandler() {
         @Override
         public Object execute(ExecutionEvent event) throws ExecutionException {
-          if (!UiUtil.hasFocus(_viewer.getControl(), true))
-            return null;
-          
           copy();
           return null;
         }
-      }));
-    }
-    
-    if (isOperationEnabled(OPERATION_CUT)) {
-      activations.add(service.activateHandler(IWorkbenchCommandConstants.EDIT_CUT, new AbstractHandler() {      
+
         @Override
-        public Object execute(ExecutionEvent event) throws ExecutionException {
-          if (!UiUtil.hasFocus(_viewer.getControl(), true))
-            return null;
-          
-          cut();
-          return null;
+        public void setEnabled(Object evaluationContext) {
+          setBaseEnabled(UiUtil.hasFocus(_viewer.getControl(), true));
         }
       }));
     }
-    
-    if (isOperationEnabled(OPERATION_PASTE)) {
-      activations.add(service.activateHandler(IWorkbenchCommandConstants.EDIT_PASTE, new AbstractHandler() {      
+
+    if (isOperationEnabled(OPERATION_CUT)) {
+      activations.add(service.activateHandler(IWorkbenchCommandConstants.EDIT_CUT, new AbstractHandler() {
         @Override
         public Object execute(ExecutionEvent event) throws ExecutionException {
-          if (!UiUtil.hasFocus(_viewer.getControl(), true))
-            return null;
-          
+          copy();
+          return null;
+        }
+
+        @Override
+        public void setEnabled(Object evaluationContext) {
+          setBaseEnabled(UiUtil.hasFocus(_viewer.getControl(), true));
+        }
+      }));
+    }
+
+    if (isOperationEnabled(OPERATION_PASTE)) {
+      activations.add(service.activateHandler(IWorkbenchCommandConstants.EDIT_PASTE, new AbstractHandler() {
+        @Override
+        public Object execute(ExecutionEvent event) throws ExecutionException {
           paste();
           return null;
         }
+
+        @Override
+        public void setEnabled(Object evaluationContext) {
+          setBaseEnabled(UiUtil.hasFocus(_viewer.getControl(), true));
+        }
       }));
     }
-    
-    _viewer.getControl().addDisposeListener(new DisposeListener() {    
+
+    final Table t = _viewer.getControl();
+
+    new Listener() {
+      
+      {
+        t.addListener(SWT.Dispose, this);
+        t.addListener(SWT.FocusIn, this);
+        t.addListener(SWT.FocusOut, this);
+      }
+      
       @Override
-      public void widgetDisposed(DisposeEvent e) {
-        for (IHandlerActivation activation : activations) {
-          try {
-            service.deactivateHandler(activation);
-          } catch (Throwable t) {
-            // Ignore
+      public void handleEvent(Event event) {
+        if (event.type == SWT.Dispose) {
+          t.removeListener(SWT.Dispose, this);
+          t.removeListener(SWT.FocusIn, this);
+          t.removeListener(SWT.FocusOut, this);
+          
+          for (IHandlerActivation activation : activations) {
+            try {
+              service.deactivateHandler(activation);
+            } catch (Throwable t) {
+              // Ignore
+            }
           }
+          return;
+        }
+        
+        if (event.type == SWT.FocusIn || event.type == SWT.FocusOut) {
+          for (IHandlerActivation activation : activations) {
+            ((IHandler2)activation.getHandler()).setEnabled(null);
+          }
+          return;
         }
       }
-    });
+    };
   }
 
   private void hookControl(Control control) {
@@ -168,7 +199,7 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
             break;
 
           case OPERATION_CUT:
-            if (isOperationEnabled(OPERATION_CUT)) {              
+            if (isOperationEnabled(OPERATION_CUT)) {
               cut();
               UiUtil.consume(event);
             }
@@ -176,16 +207,16 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
         }
       }
     };
-    
+
     final Display display = control.getDisplay();
     display.addFilter(SWT.KeyDown, listener);
 
-    control.addDisposeListener(new DisposeListener() {      
+    control.addDisposeListener(new DisposeListener() {
       @Override
       public void widgetDisposed(DisposeEvent e) {
         if (display.isDisposed())
           return;
-        
+
         display.removeFilter(SWT.KeyDown, listener);
       }
     });

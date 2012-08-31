@@ -7,6 +7,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Activator: net.karlmartens.ui.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
+ org.eclipse.core.expressions,
  org.eclipse.draw2d,
  de.kupzog.ktable,
  net.karlmartens.platform
