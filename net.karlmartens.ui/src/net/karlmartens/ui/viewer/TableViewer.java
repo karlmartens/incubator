@@ -53,7 +53,7 @@ public class TableViewer extends AbstractTableViewer {
   }
 
   public final void addDeleteCellSelectionSupport() {
-    new DeleteCellSelectionSupport(this);
+    new TableViewerDeleteCellSelectionManager(this);
   }
  
   @Override
