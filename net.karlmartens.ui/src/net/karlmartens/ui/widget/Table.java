@@ -854,6 +854,7 @@ public final class Table extends Composite {
   private Image _previousSortImage = null;
   private int _lastSortColumnIndex = -1;
   private int _lastSortDirection = SORT_NONE;
+  private boolean _isActive = true;
 
   void setSortIndicator(int index, int direction) {
     if (_lastSortColumnIndex >= 0 && _lastSortColumnIndex < _columnCount) {
@@ -961,16 +962,18 @@ public final class Table extends Composite {
     return row;
   }
   
-  private boolean doHasFocus() {
+  private void updateActive() {
     Control control = getDisplay().getFocusControl();
     while (control != null) {
-      if (control == this)
-        return true;
+      if (control == this) {
+        _isActive  = true;
+        return;
+      }
       
       control = control.getParent();
     }
     
-    return false;
+    _isActive = false;
   }
 
   private static int checkStyle(int style) {
@@ -1103,7 +1106,7 @@ public final class Table extends Composite {
         _headerRenderer.setDefaultForeground(getForeground());
         _headerRenderer.setFont(getFont());
         _headerRenderer.setImage(null);
-        _headerRenderer.setActive(doHasFocus());
+        _headerRenderer.setActive(_isActive);
 
         if (col < 0 || col >= _columnCount)
           return _headerRenderer;
@@ -1120,11 +1123,11 @@ public final class Table extends Composite {
       final DefaultCellRenderer renderer;
       if ((SWT.CHECK & column.getStyle()) > 0) {
         renderer = _checkRenderer;
-        _checkRenderer.setActive(doHasFocus());
+        _checkRenderer.setActive(_isActive);
         renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_CENTER | SWTX.ALIGN_VERTICAL_CENTER);
       } else {
         renderer = _renderer;
-        _renderer.setActive(doHasFocus());
+        _renderer.setActive(_isActive);
         renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_LEFT | SWTX.ALIGN_VERTICAL_CENTER);
       }
 
@@ -1167,11 +1170,13 @@ public final class Table extends Composite {
     
     @Override
     public void focusLost(FocusEvent e) {
+      updateActive();
       _table.redraw();
     }
     
     @Override
     public void focusGained(FocusEvent e) {
+      updateActive();
       _table.redraw();
     }
 
