@@ -49,11 +49,11 @@ public class TableViewer extends AbstractTableViewer {
   }
 
   public final void addClipboardSupport(int operations) {
-    new ViewerClipboardManager(this, operations);
+    new TableViewerClipboardManager(this, operations);
   }
 
   public final void addDeleteCellSelectionSupport() {
-    new DeleteCellSelectionSupport(this);
+    new TableViewerDeleteCellSelectionManager(this);
   }
  
   @Override

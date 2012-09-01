@@ -24,57 +24,202 @@ import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_PASTE;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.ResourceBundle;
 
 import net.karlmartens.ui.Activator;
+import net.karlmartens.ui.UiUtil;
 import net.karlmartens.ui.widget.ClipboardStrategy;
+import net.karlmartens.ui.widget.Table;
 
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.IHandler2;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.KeyAdapter;
-import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IWorkbenchCommandConstants;
+import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.handlers.IHandlerActivation;
+import org.eclipse.ui.handlers.IHandlerService;
 
 import au.com.bytecode.opencsv.CSVReader;
 import au.com.bytecode.opencsv.CSVWriter;
 
-final class ViewerClipboardManager extends CellSelectionModifier {
+public final class TableViewerClipboardManager extends CellSelectionModifier {
 
   private final TableViewer _viewer;
   private final int _operations;
-  private final ClipboardStrategy _clipboardStrategy;
 
-  ViewerClipboardManager(TableViewer viewer, int operations) {
+  public TableViewerClipboardManager(IWorkbenchPartSite site, TableViewer viewer, int operations) {
     super(viewer);
     _viewer = viewer;
     _operations = operations;
-    _clipboardStrategy = new ClipboardStrategy();
+
+    final IHandlerService service = (IHandlerService) site.getService(IHandlerService.class);
+    activateHandlers(service);
+  }
+
+  private boolean isOperationEnabled(int operation) {
+    return (_operations & operation) != 0;
+  }
+
+  public TableViewerClipboardManager(TableViewer viewer, int operations) {
+    super(viewer);
+    _viewer = viewer;
+    _operations = operations;
     hookControl(viewer.getControl());
   }
 
-  private void hookControl(Control control) {
-    control.addKeyListener(_listener);
-    control.addDisposeListener(_listener);
+  private void activateHandlers(final IHandlerService service) {
+    final List<IHandlerActivation> activations = new ArrayList<IHandlerActivation>();
+
+    if (isOperationEnabled(OPERATION_COPY)) {
+      activations.add(service.activateHandler(IWorkbenchCommandConstants.EDIT_COPY, new AbstractHandler() {
+        @Override
+        public Object execute(ExecutionEvent event) throws ExecutionException {
+          copy();
+          return null;
+        }
+
+        @Override
+        public void setEnabled(Object evaluationContext) {
+          setBaseEnabled(UiUtil.hasFocus(_viewer.getControl(), true));
+        }
+      }));
+    }
+
+    if (isOperationEnabled(OPERATION_CUT)) {
+      activations.add(service.activateHandler(IWorkbenchCommandConstants.EDIT_CUT, new AbstractHandler() {
+        @Override
+        public Object execute(ExecutionEvent event) throws ExecutionException {
+          copy();
+          return null;
+        }
+
+        @Override
+        public void setEnabled(Object evaluationContext) {
+          setBaseEnabled(UiUtil.hasFocus(_viewer.getControl(), true));
+        }
+      }));
+    }
+
+    if (isOperationEnabled(OPERATION_PASTE)) {
+      activations.add(service.activateHandler(IWorkbenchCommandConstants.EDIT_PASTE, new AbstractHandler() {
+        @Override
+        public Object execute(ExecutionEvent event) throws ExecutionException {
+          paste();
+          return null;
+        }
+
+        @Override
+        public void setEnabled(Object evaluationContext) {
+          setBaseEnabled(UiUtil.hasFocus(_viewer.getControl(), true));
+        }
+      }));
+    }
+
+    final Table t = _viewer.getControl();
+
+    new Listener() {
+      
+      {
+        t.addListener(SWT.Dispose, this);
+        t.addListener(SWT.FocusIn, this);
+        t.addListener(SWT.FocusOut, this);
+      }
+      
+      @Override
+      public void handleEvent(Event event) {
+        if (event.type == SWT.Dispose) {
+          t.removeListener(SWT.Dispose, this);
+          t.removeListener(SWT.FocusIn, this);
+          t.removeListener(SWT.FocusOut, this);
+          
+          for (IHandlerActivation activation : activations) {
+            try {
+              service.deactivateHandler(activation);
+            } catch (Throwable t) {
+              // Ignore
+            }
+          }
+          return;
+        }
+        
+        if (event.type == SWT.FocusIn || event.type == SWT.FocusOut) {
+          for (IHandlerActivation activation : activations) {
+            ((IHandler2)activation.getHandler()).setEnabled(null);
+          }
+          return;
+        }
+      }
+    };
   }
 
-  private void handleDispose() {
-    final Control control = _viewer.getControl();
-    control.removeDisposeListener(_listener);
-    control.removeKeyListener(_listener);
+  private void hookControl(Control control) {
+    final ClipboardStrategy clipboardStrategy = new ClipboardStrategy();
+
+    final Listener listener = new Listener() {
+      @Override
+      public void handleEvent(Event event) {
+        if (!clipboardStrategy.isClipboardEvent(event))
+          return;
+
+        switch (clipboardStrategy.getOperation(event)) {
+          case OPERATION_COPY:
+            if (isOperationEnabled(OPERATION_COPY)) {
+              copy();
+              UiUtil.consume(event);
+            }
+            break;
+
+          case OPERATION_PASTE:
+            if (isOperationEnabled(OPERATION_PASTE)) {
+              paste();
+              UiUtil.consume(event);
+            }
+            break;
+
+          case OPERATION_CUT:
+            if (isOperationEnabled(OPERATION_CUT)) {
+              cut();
+              UiUtil.consume(event);
+            }
+            break;
+        }
+      }
+    };
+
+    final Display display = control.getDisplay();
+    display.addFilter(SWT.KeyDown, listener);
+
+    control.addDisposeListener(new DisposeListener() {
+      @Override
+      public void widgetDisposed(DisposeEvent e) {
+        if (display.isDisposed())
+          return;
+
+        display.removeFilter(SWT.KeyDown, listener);
+      }
+    });
   }
 
   private boolean copy() {
@@ -99,7 +244,7 @@ final class ViewerClipboardManager extends CellSelectionModifier {
           System.arraycopy(values, i * length, row, 0, row.length);
           writer.writeNext(row);
         }
-        
+
         try {
           writer.close();
         } catch (IOException e) {
@@ -328,40 +473,4 @@ final class ViewerClipboardManager extends CellSelectionModifier {
       return o1.x - o2.x;
     }
   };
-
-  private final Listener _listener = new Listener();
-
-  private class Listener extends KeyAdapter implements DisposeListener {
-
-    @Override
-    public void widgetDisposed(DisposeEvent e) {
-      handleDispose();
-    }
-
-    @Override
-    public void keyPressed(KeyEvent e) {
-      final Event event = new Event();
-      event.stateMask = e.stateMask;
-      event.keyCode = e.keyCode;
-      if (!_clipboardStrategy.isClipboardEvent(event))
-        return;
-
-      switch (_clipboardStrategy.getOperation(event)) {
-        case OPERATION_COPY:
-          if ((_operations & OPERATION_COPY) > 0)
-            copy();
-          break;
-
-        case OPERATION_PASTE:
-          if ((_operations & OPERATION_PASTE) > 0)
-            paste();
-          break;
-
-        case OPERATION_CUT:
-          if ((_operations & OPERATION_CUT) > 0)
-            cut();
-          break;
-      }
-    }
-  }
 }

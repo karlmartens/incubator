@@ -18,7 +18,6 @@
 package net.karlmartens.ui.viewer;
 
 import net.karlmartens.ui.widget.CellNavigationStrategy;
-import net.karlmartens.ui.widget.ClipboardStrategy;
 import net.karlmartens.ui.widget.TableColumn;
 import net.karlmartens.ui.widget.TableItem;
 
@@ -36,7 +35,6 @@ import de.kupzog.ktable.renderers.CheckableCellRenderer;
 final class TableEditorActivationStrategy extends ColumnViewerEditorActivationStrategy {
 
   private final CellNavigationStrategy _navigationStrategy = new CellNavigationStrategy();
-  private final ClipboardStrategy _clipboardStrategy = new ClipboardStrategy();
   private final TableViewer _viewer;
 
   public TableEditorActivationStrategy(TableViewer viewer) {
@@ -58,7 +56,7 @@ final class TableEditorActivationStrategy extends ColumnViewerEditorActivationSt
       final Event e = new Event();
       e.stateMask = event.stateMask;
       e.keyCode = event.keyCode;
-      if (isNonPrintable(e) || _clipboardStrategy.isClipboardEvent(e) || _navigationStrategy.isNavigationEvent(e) || _navigationStrategy.isExpandEvent(e) || _navigationStrategy.isSelectAllEvent(e)) {
+      if (isNonPrintable(e) || _navigationStrategy.isNavigationEvent(e) || _navigationStrategy.isExpandEvent(e) || _navigationStrategy.isSelectAllEvent(e)) {
         return false;
       }
     }

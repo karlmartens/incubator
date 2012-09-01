@@ -28,7 +28,7 @@ public class ClipboardStrategy {
   public static final int OPERATION_PASTE = 4;
 
   public boolean isClipboardEvent(Event e) {
-    if ((e.stateMask & SWT.MOD1) == 0)
+    if ((e.stateMask & (SWT.MODIFIER_MASK ^ SWT.MOD1)) != 0 || ((e.stateMask & SWT.MOD1) == 0))
       return false;
 
     return 'c' == e.keyCode //
@@ -37,7 +37,7 @@ public class ClipboardStrategy {
   }
 
   public int getOperation(Event e) {
-    if ((e.stateMask & SWT.MOD1) == 0)
+    if (!isClipboardEvent(e))
       return OPERATION_NONE;
 
     switch (e.keyCode) {

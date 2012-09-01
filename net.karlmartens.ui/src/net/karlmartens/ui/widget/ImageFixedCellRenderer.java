@@ -24,7 +24,6 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
 import de.kupzog.ktable.KTableModel;
-import de.kupzog.ktable.renderers.FixedCellRenderer;
 
 public class ImageFixedCellRenderer extends FixedCellRenderer {
 

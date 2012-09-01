@@ -20,6 +20,7 @@ package net.karlmartens.ui.widget;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.TypedListener;
 
@@ -73,6 +74,8 @@ public final class TableColumn extends Item {
   public void setWidth(int width) {
     _width = width;
     _parent.redraw();
+    
+    notifyListeners(SWT.Resize, new Event());
   }
 
   public int getWidth() {
