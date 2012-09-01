@@ -69,12 +69,14 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
   private final TableViewer _viewer;
   private final int _operations;
 
-  public TableViewerClipboardManager(IWorkbenchPartSite site, TableViewer viewer, int operations) {
+  public TableViewerClipboardManager(IWorkbenchPartSite site,
+      TableViewer viewer, int operations) {
     super(viewer);
     _viewer = viewer;
     _operations = operations;
 
-    final IHandlerService service = (IHandlerService) site.getService(IHandlerService.class);
+    final IHandlerService service = (IHandlerService) site
+        .getService(IHandlerService.class);
     activateHandlers(service);
   }
 
@@ -93,67 +95,73 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
     final List<IHandlerActivation> activations = new ArrayList<IHandlerActivation>();
 
     if (isOperationEnabled(OPERATION_COPY)) {
-      activations.add(service.activateHandler(IWorkbenchCommandConstants.EDIT_COPY, new AbstractHandler() {
-        @Override
-        public Object execute(ExecutionEvent event) throws ExecutionException {
-          copy();
-          return null;
-        }
+      activations.add(service.activateHandler(
+          IWorkbenchCommandConstants.EDIT_COPY, new AbstractHandler() {
+            @Override
+            public Object execute(ExecutionEvent event)
+                throws ExecutionException {
+              copy();
+              return null;
+            }
 
-        @Override
-        public void setEnabled(Object evaluationContext) {
-          setBaseEnabled(UiUtil.hasFocus(_viewer.getControl(), true));
-        }
-      }));
+            @Override
+            public void setEnabled(Object evaluationContext) {
+              setBaseEnabled(UiUtil.hasFocus(_viewer.getControl(), true));
+            }
+          }));
     }
 
     if (isOperationEnabled(OPERATION_CUT)) {
-      activations.add(service.activateHandler(IWorkbenchCommandConstants.EDIT_CUT, new AbstractHandler() {
-        @Override
-        public Object execute(ExecutionEvent event) throws ExecutionException {
-          copy();
-          return null;
-        }
+      activations.add(service.activateHandler(
+          IWorkbenchCommandConstants.EDIT_CUT, new AbstractHandler() {
+            @Override
+            public Object execute(ExecutionEvent event)
+                throws ExecutionException {
+              copy();
+              return null;
+            }
 
-        @Override
-        public void setEnabled(Object evaluationContext) {
-          setBaseEnabled(UiUtil.hasFocus(_viewer.getControl(), true));
-        }
-      }));
+            @Override
+            public void setEnabled(Object evaluationContext) {
+              setBaseEnabled(UiUtil.hasFocus(_viewer.getControl(), true));
+            }
+          }));
     }
 
     if (isOperationEnabled(OPERATION_PASTE)) {
-      activations.add(service.activateHandler(IWorkbenchCommandConstants.EDIT_PASTE, new AbstractHandler() {
-        @Override
-        public Object execute(ExecutionEvent event) throws ExecutionException {
-          paste();
-          return null;
-        }
+      activations.add(service.activateHandler(
+          IWorkbenchCommandConstants.EDIT_PASTE, new AbstractHandler() {
+            @Override
+            public Object execute(ExecutionEvent event)
+                throws ExecutionException {
+              paste();
+              return null;
+            }
 
-        @Override
-        public void setEnabled(Object evaluationContext) {
-          setBaseEnabled(UiUtil.hasFocus(_viewer.getControl(), true));
-        }
-      }));
+            @Override
+            public void setEnabled(Object evaluationContext) {
+              setBaseEnabled(UiUtil.hasFocus(_viewer.getControl(), true));
+            }
+          }));
     }
 
     final Table t = _viewer.getControl();
 
     new Listener() {
-      
+
       {
         t.addListener(SWT.Dispose, this);
         t.addListener(SWT.FocusIn, this);
         t.addListener(SWT.FocusOut, this);
       }
-      
+
       @Override
       public void handleEvent(Event event) {
         if (event.type == SWT.Dispose) {
           t.removeListener(SWT.Dispose, this);
           t.removeListener(SWT.FocusIn, this);
           t.removeListener(SWT.FocusOut, this);
-          
+
           for (IHandlerActivation activation : activations) {
             try {
               service.deactivateHandler(activation);
@@ -163,10 +171,10 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
           }
           return;
         }
-        
+
         if (event.type == SWT.FocusIn || event.type == SWT.FocusOut) {
           for (IHandlerActivation activation : activations) {
-            ((IHandler2)activation.getHandler()).setEnabled(null);
+            ((IHandler2) activation.getHandler()).setEnabled(null);
           }
           return;
         }
@@ -255,7 +263,8 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
         buffer.setLength(buffer.length() - CSVWriter.DEFAULT_LINE_END.length());
 
         final Clipboard cb = new Clipboard(_viewer.getControl().getDisplay());
-        cb.setContents(new String[] { sw.toString() }, new Transfer[] { TextTransfer.getInstance() });
+        cb.setContents(new String[] { sw.toString() },
+            new Transfer[] { TextTransfer.getInstance() });
         cb.dispose();
         result[0] = true;
       }
@@ -295,13 +304,17 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
         final Rectangle targetRect;
         if (cells.length == 1) {
           // Paste top-left anchor
-          final int width = Math.min(dataRect.width, _viewer.doGetColumnCount() - anchor.x);
-          final int height = Math.min(dataRect.height, _viewer.doGetItemCount() - anchor.y);
+          final int width = Math.min(dataRect.width, _viewer.doGetColumnCount()
+              - anchor.x);
+          final int height = Math.min(dataRect.height, _viewer.doGetItemCount()
+              - anchor.y);
           targetRect = new Rectangle(anchor.x, anchor.y, width, height);
         } else if (dataRect.width == 1 || dataRect.height == 1) {
           // Fill
-          final int width = Math.min(length, _viewer.doGetColumnCount() - anchor.x);
-          final int height = Math.min(cells.length / length, _viewer.doGetItemCount() - anchor.y);
+          final int width = Math.min(length, _viewer.doGetColumnCount()
+              - anchor.x);
+          final int height = Math.min(cells.length / length,
+              _viewer.doGetItemCount() - anchor.y);
           targetRect = new Rectangle(anchor.x, anchor.y, width, height);
 
           final String[][] newData = new String[height][width];
@@ -326,8 +339,10 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
           data = newData;
         } else {
           // Paste into region
-          final int width = Math.min(length, _viewer.doGetColumnCount() - anchor.x);
-          final int height = Math.min(cells.length / length, _viewer.doGetItemCount() - anchor.y);
+          final int width = Math.min(length, _viewer.doGetColumnCount()
+              - anchor.x);
+          final int height = Math.min(cells.length / length,
+              _viewer.doGetItemCount() - anchor.y);
           targetRect = new Rectangle(anchor.x, anchor.y, width, height);
         }
 
@@ -379,7 +394,8 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
 
   private String[][] readFromClipboard() {
     final Clipboard clipboard = new Clipboard(_viewer.getControl().getDisplay());
-    final String text = (String) clipboard.getContents(TextTransfer.getInstance());
+    final String text = (String) clipboard.getContents(TextTransfer
+        .getInstance());
     if (text == null || text.isEmpty())
       return new String[0][0];
 
@@ -447,10 +463,14 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
   }
 
   private static void showUnsupportedDialog(Shell shell) {
-    final ResourceBundle bundle = ResourceBundle.getBundle("net.karlmartens.ui.locale.messages");
-    final String title = bundle.getString("ViewerClipboardManager.Error.Unsupported.Title");
-    final String message = bundle.getString("ViewerClipboardManager.Error.MultiSelection.Message");
-    final IStatus status = new Status(IStatus.INFO, Activator.PLUGIN_ID, message);
+    final ResourceBundle bundle = ResourceBundle
+        .getBundle("net.karlmartens.ui.locale.messages");
+    final String title = bundle
+        .getString("ViewerClipboardManager.Error.Unsupported.Title");
+    final String message = bundle
+        .getString("ViewerClipboardManager.Error.MultiSelection.Message");
+    final IStatus status = new Status(IStatus.INFO, Activator.PLUGIN_ID,
+        message);
     ErrorDialog.openError(shell, title, null, status);
   }
 

@@ -36,62 +36,73 @@ import org.eclipse.swt.widgets.Text;
 public final class TableViewerTest {
 
   public static void main(String[] args) throws Exception {
+    final int fixedColumns = 3;
     final Object[][] input = new Object[5][];
     for (int i = 0; i < input.length; i++) {
       input[i] = new Object[302];
       input[i][0] = "Item " + Integer.toString(i);
       input[i][1] = Boolean.valueOf(i % 3 == 0);
-      
-      for (int j=2; j<input[i].length; j++) {
-        input[i][j] = Integer.toString(Double.valueOf(Math.random() * 10000).intValue());
+      input[i][2] = TestComboEditingSupport.ITEMS[0 + (i % TestComboEditingSupport.ITEMS.length)];
+
+      for (int j = fixedColumns; j < input[i].length; j++) {
+        input[i][j] = Integer.toString(Double.valueOf(Math.random() * 10000)
+            .intValue());
       }
     }
 
     final Shell shell = new Shell();
     shell.setLayout(new GridLayout(1, false));
-    
+
     final Display display = shell.getDisplay();
 
     final Text text = new Text(shell, SWT.BORDER);
-    text.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
-    
+    text.setLayoutData(GridDataFactory.fillDefaults().grab(true, false)
+        .create());
+
     final TableViewer viewer = new TableViewer(shell);
     viewer.setContentProvider(new ArrayContentProvider());
     viewer.setComparator(new ViewerComparator(new NumberStringComparator()));
     viewer.addDeleteCellSelectionSupport();
-    viewer.addClipboardSupport(OPERATION_COPY | OPERATION_CUT | OPERATION_PASTE);
-  
+    viewer
+        .addClipboardSupport(OPERATION_COPY | OPERATION_CUT | OPERATION_PASTE);
+
     final TableViewerColumn c1 = new TableViewerColumn(viewer, SWT.NONE);
     c1.setLabelProvider(new TestColumnLabelProvider(0));
     c1.setEditingSupport(new TestTextEditingSupport(viewer, 0, SWT.LEFT));
-    c1.getColumn().setText("Test");
+    c1.getColumn().setText("Name");
     c1.getColumn().setWidth(75);
 
     final TableViewerColumn c2 = new TableViewerColumn(viewer, SWT.CHECK);
     c2.setLabelProvider(new TestColumnLabelProvider(1));
     c2.setEditingSupport(new TestBooleanEditingSupport(viewer, 1));
-    c2.getColumn().setText("Test 2");
+    c2.getColumn().setText("Active");
     c2.getColumn().setWidth(60);
-    
-    for (int i=2; i<302; i++ ) {
+
+    final TableViewerColumn c3 = new TableViewerColumn(viewer, SWT.LEFT);
+    c3.setLabelProvider(new TestColumnLabelProvider(2));
+    c3.setEditingSupport(new TestComboEditingSupport(viewer, 2));
+    c3.getColumn().setText("Color");
+    c3.getColumn().setWidth(60);
+
+    for (int i = fixedColumns; i < 302; i++) {
       final TableViewerColumn c = new TableViewerColumn(viewer, SWT.RIGHT);
       c.setLabelProvider(new TestColumnLabelProvider(i));
       c.setEditingSupport(new TestTextEditingSupport(viewer, i, SWT.RIGHT));
-      c.getColumn().setText("Test " + Integer.toString(i+1));
+      c.getColumn().setText("Test " + Integer.toString(i + 1));
       c.getColumn().setWidth(40);
       c.getColumn().setHideable(false);
     }
-    
+
     final Table table = viewer.getControl();
     table.setLayoutData(GridDataFactory.fillDefaults().create());
     table.setHeaderVisible(true);
     table.setBackground(display.getSystemColor(SWT.COLOR_WHITE));
     table.setFont(new Font(display, "Arial", 8, SWT.NORMAL));
     table.addColumnSortSupport();
-    table.setFixedColumnCount(2);
+    table.setFixedColumnCount(fixedColumns);
 
     viewer.setInput(input);
-    
+
     shell.open();
     while (!shell.isDisposed()) {
       if (!display.readAndDispatch()) {
@@ -99,5 +110,5 @@ public final class TableViewerTest {
       }
     }
   }
-  
+
 }

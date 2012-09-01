@@ -22,6 +22,7 @@ import net.karlmartens.ui.widget.TableItem;
 
 import org.eclipse.jface.util.Policy;
 import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Point;
 
@@ -49,33 +50,87 @@ public abstract class CellSelectionModifier {
   }
 
   protected final String[] getValues(Point[] cells) {
-    final String[] strings = new String[cells.length];
-    for (int i = 0; i < strings.length; i++) {
-      final Point cell = cells[i];
-      final TableItem item = _viewer.doGetItem(cell.y);
-      strings[i] = item.getText(cell.x);
+    final String[] values = new String[cells.length];
+    for (int i = 0; i < values.length; i++) {
+      final String value = getValue(cells[i]);
+      values[i] = value;
     }
-    return strings;
+    return values;
   }
 
   protected final void setValues(Point[] cells, String[] values) {
     for (int i = 0; i < cells.length; i++) {
-      final Point cell = cells[i];
-      final TableItem item = _viewer.doGetItem(cell.y);
-      final TableViewerRow row = _viewer.getViewerRowFromItem(item);
-      final ViewerCell vCell = row.getCell(cell.x);
-      
-      _editSupport._base = getViewerColumn(cell.x).doGetEditingSupport();
-      
-      final CellEditor editor = _editSupport.getCellEditor(item.getData());
-      editor.setValue(values[i]);
-      
-      _editSupport.saveCellEditorValue(editor, vCell);
+      setValue(cells[i], values[i]);
     }
   }
 
   private TableViewerColumn getViewerColumn(int index) {
     final TableColumn column = (TableColumn) _viewer.doGetColumn(index);
     return (TableViewerColumn) column.getData(Policy.JFACE + ".columnViewer");
+  }
+
+  private ViewerCell getViewerCell(Point pt) {
+    final TableItem item = _viewer.doGetItem(pt.y);
+    final TableViewerRow row = _viewer.getViewerRowFromItem(item);
+    return row.getCell(pt.x);
+  }
+
+  private EditingSupport getEditingSupport(Point pt) {
+    final EditingSupport editing = getViewerColumn(pt.x).doGetEditingSupport();
+    if (editing != null)
+      return editing;
+
+    return new ReadonlyEditSupport(pt);
+  }
+
+  private String getValue(Point pt) {
+    final ViewerCell cell = getViewerCell(pt);
+    if (cell == null)
+      return null;
+
+    _editSupport._base = getEditingSupport(pt);
+    final Object o = _editSupport.getValue(cell.getElement());
+    return o.toString();
+  }
+
+  private void setValue(Point pt, String value) {
+    final ViewerCell cell = getViewerCell(pt);
+    if (cell == null)
+      return;
+
+    _editSupport._base = getEditingSupport(pt);
+    _editSupport.setValue(cell.getElement(), value);
+  }
+
+  private class ReadonlyEditSupport extends EditingSupport {
+
+    private final Point _pt;
+
+    public ReadonlyEditSupport(Point pt) {
+      super(_viewer);
+      _pt = pt;
+    }
+
+    @Override
+    protected CellEditor getCellEditor(Object element) {
+      return null;
+    }
+
+    @Override
+    protected boolean canEdit(Object element) {
+      return false;
+    }
+
+    @Override
+    protected Object getValue(Object element) {
+      final ViewerCell vCell = getViewerCell(_pt);
+      return vCell.getText();
+    }
+
+    @Override
+    protected void setValue(Object element, Object value) {
+      // Do nothing
+    }
+
   }
 }

@@ -22,13 +22,16 @@ import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.swt.widgets.Composite;
 
-final class TestBooleanEditingSupport extends EditingSupport {
+final class TestComboEditingSupport extends EditingSupport {
+
+  static final String[] ITEMS = { "Red", "Green", "Blue", "Orange", "Yellow",
+      "Purple" };
 
   private final ColumnViewer _viewer;
   private final int _index;
-  private CheckboxCellEditor _cellEditor;
+  private ComboBoxCellEditor _cellEditor;
 
-  public TestBooleanEditingSupport(ColumnViewer viewer, int index) {
+  public TestComboEditingSupport(ColumnViewer viewer, int index) {
     super(viewer);
     _viewer = viewer;
     _index = index;
@@ -37,7 +40,13 @@ final class TestBooleanEditingSupport extends EditingSupport {
   @Override
   protected CellEditor getCellEditor(Object element) {
     if (_cellEditor == null) {
-      _cellEditor = new CheckboxCellEditor((Composite) _viewer.getControl());
+      _cellEditor = new ComboBoxCellEditor((Composite) _viewer.getControl(),
+          ITEMS);
+      _cellEditor
+          .setActivationStyle(ComboBoxCellEditor.DROP_DOWN_ON_KEY_ACTIVATION
+              | ComboBoxCellEditor.DROP_DOWN_ON_MOUSE_ACTIVATION
+              | ComboBoxCellEditor.DROP_DOWN_ON_PROGRAMMATIC_ACTIVATION
+              | ComboBoxCellEditor.DROP_DOWN_ON_TRAVERSE_ACTIVATION);
     }
     return _cellEditor;
   }
@@ -50,12 +59,23 @@ final class TestBooleanEditingSupport extends EditingSupport {
   @Override
   protected Object getValue(Object element) {
     final Object[] data = (Object[]) element;
-    return ((Boolean) data[_index]).toString();
+    return data[_index];
   }
 
   @Override
   protected void setValue(Object element, Object value) {
     final Object[] data = (Object[]) element;
-    data[_index] = Boolean.valueOf((String) value);
+    final int index = indexOf(value);
+    data[_index] = index == -1 ? null : ITEMS[index];
+  }
+
+  private int indexOf(Object value) {
+    for (int i = 0; i < ITEMS.length; i++) {
+      if (ITEMS[i].equals(value)) {
+        return i;
+      }
+    }
+
+    return -1;
   }
 }
