@@ -1,8 +1,0 @@
-Manifest-Version: 1.0
-Eclipse-SourceBundle: au.com.bytecode.opencsv;version="2.2.0";roots:="."
-Bundle-Vendor: karlmartens.net
-Bundle-Localization: plugin
-Bundle-Name: opencsv Source Plug-in
-Bundle-SymbolicName: au.com.bytecode.opencsv
-Bundle-Version: 2.2.0
-Bundle-ManifestVersion: 2

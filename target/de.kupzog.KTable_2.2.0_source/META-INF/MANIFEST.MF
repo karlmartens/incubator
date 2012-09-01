@@ -1,8 +1,0 @@
-Manifest-Version: 1.0
-Eclipse-SourceBundle: de.kupzog.ktable;version="2.2.0";roots:="."
-Bundle-Vendor: ktable.sourceforge.net
-Bundle-Localization: plugin
-Bundle-Name: KTable Source Plug-in
-Bundle-SymbolicName: de.kupzog.ktable.source
-Bundle-Version: 2.2.0
-Bundle-ManifestVersion: 2
