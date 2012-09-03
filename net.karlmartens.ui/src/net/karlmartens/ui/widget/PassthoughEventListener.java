@@ -23,17 +23,10 @@ import java.util.Collection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.KeyListener;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseListener;
-import org.eclipse.swt.events.MouseMoveListener;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.events.TypedEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 
 final class PassthoughEventListener {
 
@@ -57,22 +50,26 @@ final class PassthoughEventListener {
   }
 
   private void hookControl(Control control) {
-    control.addPaintListener(_listener);
-    control.addMouseListener(_listener);
-    control.addMouseMoveListener(_listener);
-    control.addKeyListener(_listener);
     control.addDisposeListener(_listener);
+
+    final int[] events = new int[] { SWT.KeyDown, SWT.KeyUp, SWT.Paint,
+        SWT.MouseDoubleClick, SWT.MouseDown, SWT.MouseUp, SWT.MouseMove,
+        SWT.MouseHorizontalWheel, SWT.MouseWheel, SWT.MouseVerticalWheel };
+    for (int event : events)
+      control.addListener(event, _listener);
   }
 
   private void releaseControl(Control control) {
-    control.removePaintListener(_listener);
-    control.removeMouseListener(_listener);
-    control.removeMouseMoveListener(_listener);
-    control.removeKeyListener(_listener);
     control.removeDisposeListener(_listener);
+
+    final int[] events = new int[] { SWT.KeyDown, SWT.KeyUp, SWT.Paint,
+        SWT.MouseDoubleClick, SWT.MouseDown, SWT.MouseUp, SWT.MouseMove,
+        SWT.MouseHorizontalWheel, SWT.MouseWheel, SWT.MouseVerticalWheel };
+    for (int event : events)
+      control.removeListener(event, _listener);
   }
 
-  private class ListenerImpl implements PaintListener, MouseListener, MouseMoveListener, KeyListener, DisposeListener {
+  private class ListenerImpl implements Listener, DisposeListener {
 
     @Override
     public void widgetDisposed(DisposeEvent e) {
@@ -87,80 +84,41 @@ final class PassthoughEventListener {
     }
 
     @Override
-    public void paintControl(PaintEvent e) {
-      _target.notifyListeners(SWT.Paint, convertEvent(e));
-    }
+    public void handleEvent(Event event) {
+      final Event e = new Event();
+      e.button = event.button;
+      e.character = event.character;
+      e.count = event.count;
+      e.data = event.data;
+      e.detail = event.detail;
+      e.display = event.display;
+      e.doit = event.doit;
+      e.end = event.end;
+      e.gc = event.gc;
+      e.height = event.height;
+      e.index = event.index;
+      e.item = event.item;
+      e.keyCode = event.keyCode;
+      e.keyLocation = event.keyLocation;
+      e.magnification = event.magnification;
+      e.rotation = event.rotation;
+      e.segments = event.segments;
+      e.segmentsChars = event.segmentsChars;
+      e.start = event.start;
+      e.stateMask = event.stateMask;
+      e.text = event.text;
+      e.touches = event.touches;
+      e.type = event.type;
+      e.widget = _target;
+      e.width = event.width;
+      e.x = event.x;
+      e.xDirection = event.xDirection;
+      e.y = event.y;
+      e.yDirection = event.yDirection;
 
-    @Override
-    public void keyPressed(KeyEvent e) {
-      _target.notifyListeners(SWT.KeyDown, convertEvent(e));
-    }
+      updateCords(e.widget, e);
 
-    @Override
-    public void keyReleased(KeyEvent e) {
-      _target.notifyListeners(SWT.KeyUp, convertEvent(e));
-    }
-
-    @Override
-    public void mouseDoubleClick(MouseEvent e) {
-      _target.notifyListeners(SWT.MouseDoubleClick, convertEvent(e));
-    }
-
-    @Override
-    public void mouseDown(MouseEvent e) {
-      _target.notifyListeners(SWT.MouseDown, convertEvent(e));
-    }
-
-    @Override
-    public void mouseUp(MouseEvent e) {
-      _target.notifyListeners(SWT.MouseUp, convertEvent(e));
-    }
-
-    @Override
-    public void mouseMove(MouseEvent e) {
-      _target.notifyListeners(SWT.MouseMove, convertEvent(e));
-    }
-
-    private Event convertEvent(MouseEvent e) {
-      final Event event = convertEvent((TypedEvent) e);
-      event.x = e.x;
-      event.y = e.y;
-      event.button = e.button;
-      event.count = e.count;
-      event.stateMask = e.stateMask;
-
-      updateCords(e.getSource(), event);
-      
-      return event;
-    }
-
-    private Event convertEvent(KeyEvent e) {
-      final Event event = convertEvent((TypedEvent) e);
-      event.character = e.character;
-      event.keyCode = e.keyCode;
-      event.stateMask = e.stateMask;
-      return event;
-    }
-
-    private Event convertEvent(PaintEvent e) {
-      final Event event = convertEvent((TypedEvent) e);
-      event.x = e.x;
-      event.y = e.y;
-      event.gc = e.gc;
-      event.width = e.width;
-      event.height = e.height;
-      event.count = e.count;
-      
-      updateCords(e.getSource(), event);
-      
-      return event;
-    }
-
-    private Event convertEvent(TypedEvent e) {
-      final Event event = new Event();
-      event.data = e.data;
-      event.time = e.time;
-      return event;
+      _target.notifyListeners(e.type, e);
     }
 
     private void updateCords(Object source, Event event) {
