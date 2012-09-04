@@ -308,6 +308,8 @@ public final class Calendar extends Composite {
 
     gc.setFont(_title.getFont());
     height += gc.getFontMetrics().getHeight();
+    width = Math
+        .max(gc.getFontMetrics().getAverageCharWidth() * 14 + 10, width);
 
     gc.dispose();
 
