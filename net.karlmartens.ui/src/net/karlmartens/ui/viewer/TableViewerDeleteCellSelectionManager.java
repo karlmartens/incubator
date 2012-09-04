@@ -68,7 +68,7 @@ public final class TableViewerDeleteCellSelectionManager extends
     final String[] values = new String[selection.length];
     Arrays.fill(values, "");
     setValues(selection, values);
-    _viewer.refresh();
+    _viewer.refresh(true);
     return true;
   }
 
