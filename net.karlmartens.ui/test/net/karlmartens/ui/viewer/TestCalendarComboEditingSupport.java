@@ -17,7 +17,7 @@
  */
 package net.karlmartens.ui.viewer;
 
-import net.karlmartens.ui.widget.DateCombo;
+import net.karlmartens.ui.widget.CalendarCombo;
 
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnViewer;
@@ -28,7 +28,7 @@ import org.joda.time.format.DateTimeFormatter;
 
 final class TestCalendarComboEditingSupport extends EditingSupport {
 
-  private final DateTimeFormatter _formatter = DateCombo.createDateFormat();
+  private final DateTimeFormatter _formatter = CalendarCombo.createDateFormat();
   private final ColumnViewer _viewer;
   private final int _index;
 

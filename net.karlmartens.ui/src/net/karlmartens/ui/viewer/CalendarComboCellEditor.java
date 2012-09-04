@@ -19,7 +19,7 @@ package net.karlmartens.ui.viewer;
 
 import java.text.MessageFormat;
 
-import net.karlmartens.ui.widget.DateCombo;
+import net.karlmartens.ui.widget.CalendarCombo;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.viewers.CellEditor;
@@ -50,7 +50,7 @@ public class CalendarComboCellEditor extends CellEditor {
   private boolean _selectAll = true;
   private String _selection;
 
-  private DateCombo _control;
+  private CalendarCombo _control;
 
   public CalendarComboCellEditor() {
     setStyle(DEFAULT_STYLE);
@@ -106,7 +106,7 @@ public class CalendarComboCellEditor extends CellEditor {
   }
 
   protected Control createControl(Composite parent) {
-    _control = new DateCombo(parent, getStyle());
+    _control = new CalendarCombo(parent, getStyle());
     _control.setFont(parent.getFont());
 
     _control.addKeyListener(new KeyAdapter() {
@@ -151,7 +151,7 @@ public class CalendarComboCellEditor extends CellEditor {
     _control.setFocus();
 
     if (!_selectAll) {
-      final DateCombo combo = getControl();
+      final CalendarCombo combo = getControl();
       combo.setTextSelection(combo.getText().length());
     }
   }
@@ -222,8 +222,8 @@ public class CalendarComboCellEditor extends CellEditor {
   }
 
   @Override
-  public DateCombo getControl() {
-    return (DateCombo) super.getControl();
+  public CalendarCombo getControl() {
+    return (CalendarCombo) super.getControl();
   }
 
   @Override

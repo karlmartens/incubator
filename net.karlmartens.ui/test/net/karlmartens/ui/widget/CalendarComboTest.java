@@ -23,22 +23,22 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
-public final class DateComboTest {
+public final class CalendarComboTest {
 
   public static void main(String[] args) throws Exception {
-    new DateComboTest().run();
+    new CalendarComboTest().run();
   }
 
   private final Display _display;
   private final Shell _shell;
-  private final DateCombo _control;
+  private final CalendarCombo _control;
 
-  public DateComboTest() {
+  public CalendarComboTest() {
     _display = Display.getDefault();
     _shell = new Shell(_display);
     _shell.setLayout(new GridLayout(1, false));
 
-    _control = new DateCombo(_shell, SWT.NONE);
+    _control = new CalendarCombo(_shell, SWT.NONE);
     _control.setLayoutData(GridDataFactory.swtDefaults().create());
   }
 

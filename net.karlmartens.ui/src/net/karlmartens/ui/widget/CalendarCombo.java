@@ -67,7 +67,7 @@ import org.joda.time.format.DateTimePrinter;
  * @author karl
  * 
  */
-public final class DateCombo extends Composite {
+public final class CalendarCombo extends Composite {
 
   private final DateTimeFormatter _dateFormat;
 
@@ -116,7 +116,7 @@ public final class DateCombo extends Composite {
    * @see SWT#FLAT
    * @see Widget#getStyle()
    */
-  public DateCombo(Composite parent, int style) {
+  public CalendarCombo(Composite parent, int style) {
     super(parent, style = checkStyle(style));
     final int textStyle = checkTextStyle(style);
     final int arrowStyle = checkArrowStyle(style);
@@ -1390,7 +1390,7 @@ public final class DateCombo extends Composite {
         return;
       }
 
-      if (DateCombo.this == event.widget) {
+      if (CalendarCombo.this == event.widget) {
         handleComboEvent(event);
         return;
       }
@@ -1418,7 +1418,7 @@ public final class DateCombo extends Composite {
         return;
       }
       Shell shell = ((Control) event.widget).getShell();
-      if (shell == DateCombo.this.getShell()) {
+      if (shell == CalendarCombo.this.getShell()) {
         handleFocus(SWT.FocusOut);
       }
     }
