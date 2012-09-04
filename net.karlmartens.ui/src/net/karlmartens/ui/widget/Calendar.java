@@ -55,6 +55,9 @@ import org.joda.time.format.DateTimeFormatterBuilder;
 public final class Calendar extends Composite {
 
   private static final int ROW_COUNT = 7;
+  private static final YearMonthDay _NONE = new YearMonthDay(-1, -1, -1);
+
+  public static final int[] NO_SELECTION = _NONE.toArray();
 
   private final DateTimeFormatter _titlePrinter;
   private final java.util.Calendar _cal;
@@ -269,6 +272,8 @@ public final class Calendar extends Composite {
 
   public void addDays(int days) {
     checkWidget();
+    if (_NONE.equals(_date))
+      return;
 
     _date.apply(_cal);
     _cal.add(DAY_OF_MONTH, days);
@@ -327,7 +332,7 @@ public final class Calendar extends Composite {
   }
 
   private void internalScrollTo(YearMonth value) {
-    if (_month.equals(value))
+    if (_month.equals(value) || _NONE.toYearMonth().equals(value))
       return;
 
     _month = value;
@@ -372,6 +377,9 @@ public final class Calendar extends Composite {
   }
 
   private YearMonthDay computeNeighbor(int x, int y) {
+    if (_NONE.equals(_date))
+      return _NONE;
+
     _date.apply(_cal);
     _cal.add(DAY_OF_MONTH, x);
     _cal.add(DAY_OF_MONTH, y * _weekdayCount);
@@ -379,6 +387,9 @@ public final class Calendar extends Composite {
   }
 
   private YearMonthDay computePage(int x, int y) {
+    if (_NONE.equals(_date))
+      return _NONE;
+
     _date.apply(_cal);
     _cal.add(MONTH, y);
     _cal.add(YEAR, x);
@@ -386,6 +397,9 @@ public final class Calendar extends Composite {
   }
 
   private YearMonthDay computeHome() {
+    if (_NONE.equals(_date))
+      return _NONE;
+
     _date.apply(_cal);
     final int sow = _cal.getFirstDayOfWeek();
     final int dow = _cal.get(DAY_OF_WEEK);
@@ -394,6 +408,9 @@ public final class Calendar extends Composite {
   }
 
   private YearMonthDay computeEnd() {
+    if (_NONE.equals(_date))
+      return _NONE;
+
     _date.apply(_cal);
     final int sow = _cal.getFirstDayOfWeek();
     final int dow = _cal.get(DAY_OF_WEEK);
@@ -405,14 +422,16 @@ public final class Calendar extends Composite {
     if (candidate == null)
       return;
 
-    if (candidate.compareTo(_minimum) < 0) {
-      _minimum.apply(_cal);
-      _cal.set(DAY_OF_MONTH, _cal.getActualMinimum(DAY_OF_MONTH));
-      candidate = new YearMonthDay(_cal);
-    } else if (candidate.compareTo(_maximum) > 0) {
-      _maximum.apply(_cal);
-      _cal.set(DAY_OF_MONTH, _cal.getActualMaximum(DAY_OF_MONTH));
-      candidate = new YearMonthDay(_cal);
+    if (!_NONE.equals(candidate)) {
+      if (candidate.compareTo(_minimum) < 0) {
+        _minimum.apply(_cal);
+        _cal.set(DAY_OF_MONTH, _cal.getActualMinimum(DAY_OF_MONTH));
+        candidate = new YearMonthDay(_cal);
+      } else if (candidate.compareTo(_maximum) > 0) {
+        _maximum.apply(_cal);
+        _cal.set(DAY_OF_MONTH, _cal.getActualMaximum(DAY_OF_MONTH));
+        candidate = new YearMonthDay(_cal);
+      }
     }
 
     internalSetSelection(candidate);
@@ -531,6 +550,9 @@ public final class Calendar extends Composite {
   }
 
   private void checkYearMonth(YearMonth candidate) {
+    if (_NONE.toYearMonth().equals(candidate))
+      return;
+
     _cal.clear();
     final int year = candidate.year();
     if (_cal.getActualMinimum(YEAR) > year
@@ -546,6 +568,9 @@ public final class Calendar extends Composite {
   }
 
   private void checkYearMonthDay(YearMonthDay value) {
+    if (_NONE.equals(value))
+      return;
+
     checkYearMonth(value.toYearMonth());
 
     _cal.set(MONTH, value.month() - 1);
@@ -558,6 +583,10 @@ public final class Calendar extends Composite {
 
   private static void checkRange(java.util.Calendar calendar,
       YearMonth minimum, YearMonth maximum) {
+    if (_NONE.toYearMonth().equals(minimum)
+        || _NONE.toYearMonth().equals(maximum))
+      return;
+
     final java.util.Calendar min = (java.util.Calendar) calendar.clone();
     minimum.apply(min);
 

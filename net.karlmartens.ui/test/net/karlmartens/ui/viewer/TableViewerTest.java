@@ -32,17 +32,20 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.joda.time.LocalDate;
 
 public final class TableViewerTest {
 
   public static void main(String[] args) throws Exception {
-    final int fixedColumns = 3;
+    final int fixedColumns = 4;
     final Object[][] input = new Object[5][];
     for (int i = 0; i < input.length; i++) {
       input[i] = new Object[302];
       input[i][0] = "Item " + Integer.toString(i);
       input[i][1] = Boolean.valueOf(i % 3 == 0);
       input[i][2] = TestComboEditingSupport.ITEMS[0 + (i % TestComboEditingSupport.ITEMS.length)];
+      input[i][3] = new LocalDate((int) (Math.random() * 50) + 2000,
+          (int) (Math.random() * 11) + 1, (int) (Math.random() * 27) + 1);
 
       for (int j = fixedColumns; j < input[i].length; j++) {
         input[i][j] = Integer.toString(Double.valueOf(Math.random() * 10000)
@@ -83,6 +86,12 @@ public final class TableViewerTest {
     c3.setEditingSupport(new TestComboEditingSupport(viewer, 2));
     c3.getColumn().setText("Color");
     c3.getColumn().setWidth(60);
+
+    final TableViewerColumn c4 = new TableViewerColumn(viewer, SWT.LEFT);
+    c4.setLabelProvider(new TestColumnLabelProvider(3));
+    c4.setEditingSupport(new TestCalendarComboEditingSupport(viewer, 3));
+    c4.getColumn().setText("Date");
+    c4.getColumn().setWidth(90);
 
     for (int i = fixedColumns; i < 302; i++) {
       final TableViewerColumn c = new TableViewerColumn(viewer, SWT.RIGHT);

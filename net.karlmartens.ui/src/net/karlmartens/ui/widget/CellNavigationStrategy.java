@@ -33,6 +33,7 @@ public final class CellNavigationStrategy {
       case SWT.END:
       case SWT.PAGE_DOWN:
       case SWT.PAGE_UP:
+      case SWT.CR:
         return (event.stateMask & SWT.SHIFT) == 0;
 
       case SWT.TAB:
@@ -57,7 +58,7 @@ public final class CellNavigationStrategy {
 
     return false;
   }
-  
+
   public boolean isSelectAllEvent(Event event) {
     switch (event.keyCode) {
       case 'a':
@@ -68,7 +69,8 @@ public final class CellNavigationStrategy {
     return false;
   }
 
-  public Point findSelectedCell(Table table, Point currentSelectedCell, Event event) {
+  public Point findSelectedCell(Table table, Point currentSelectedCell,
+      Event event) {
     if (currentSelectedCell == null)
       return null;
 
@@ -158,8 +160,9 @@ public final class CellNavigationStrategy {
   private Point doPageUp(Table table, Point currentSelectedCell, Event event) {
     if (table.getItemCount() <= 0)
       return null;
-    
-    final int y = Math.max(0, currentSelectedCell.y - (table.getVisibleRowCount() - 1));
+
+    final int y = Math.max(0,
+        currentSelectedCell.y - (table.getVisibleRowCount() - 1));
     return new Point(currentSelectedCell.x, y);
   }
 
@@ -167,38 +170,45 @@ public final class CellNavigationStrategy {
     if (table.getItemCount() <= 0)
       return null;
 
-    final int y = Math.min(table.getItemCount() - 1, currentSelectedCell.y + (table.getVisibleRowCount() - 1));
+    final int y = Math.min(table.getItemCount() - 1, currentSelectedCell.y
+        + (table.getVisibleRowCount() - 1));
     return new Point(currentSelectedCell.x, y);
   }
 
   private Point doPageLeft(Table table, Point currentSelectedCell, Event event) {
     final int numFixedColumns = table.getFixedColumnCount();
-    if (numFixedColumns >=  table.getColumnCount())
+    if (numFixedColumns >= table.getColumnCount())
       return null;
 
-    final int x = Math.max(numFixedColumns, currentSelectedCell.x - (table.getVisibleColumnCount() - 1));
+    final int x = Math.max(numFixedColumns,
+        currentSelectedCell.x - (table.getVisibleColumnCount() - 1));
     return new Point(x, currentSelectedCell.y);
   }
 
   private Point doPageRight(Table table, Point currentSelectedCell, Event event) {
     final int numFixedColumns = table.getFixedColumnCount();
-    if (numFixedColumns >=  table.getColumnCount())
+    if (numFixedColumns >= table.getColumnCount())
       return null;
 
-    final int x = Math.min(table.getColumnCount() - 1, currentSelectedCell.x + (table.getVisibleColumnCount() - 1));
+    final int x = Math.min(table.getColumnCount() - 1, currentSelectedCell.x
+        + (table.getVisibleColumnCount() - 1));
     return new Point(x, currentSelectedCell.y);
   }
 
   private Point doHome(Table table, Point currentSelectedCell, Event event) {
     final TableItem item = table.getItem(currentSelectedCell.y);
     final int fixedColumnCount = table.getFixedColumnCount();
-    final int start = currentSelectedCell.x < fixedColumnCount ? 0 : fixedColumnCount;
+    final int start = currentSelectedCell.x < fixedColumnCount ? 0
+        : fixedColumnCount;
     final boolean skipValueTest = currentSelectedCell.x < fixedColumnCount
-        || (currentSelectedCell.x != fixedColumnCount && item.getText(currentSelectedCell.x - 1).length() == 0);
-    final int end = skipValueTest ? currentSelectedCell.x : table.getColumnCount();
+        || (currentSelectedCell.x != fixedColumnCount && item.getText(
+            currentSelectedCell.x - 1).length() == 0);
+    final int end = skipValueTest ? currentSelectedCell.x : table
+        .getColumnCount();
 
     for (int i = start; i < end; i++) {
-      if (table.getColumn(i).isVisible() && (item.getText(i).length() != 0 || skipValueTest)) {
+      if (table.getColumn(i).isVisible()
+          && (item.getText(i).length() != 0 || skipValueTest)) {
         return new Point(i, currentSelectedCell.y);
       }
     }
@@ -209,13 +219,18 @@ public final class CellNavigationStrategy {
   private Point doEnd(Table table, Point currentSelectedCell, Event event) {
     final TableItem item = table.getItem(currentSelectedCell.y);
     final int fixedColumnCount = table.getFixedColumnCount();
-    final int start = fixedColumnCount - 1 + (currentSelectedCell.x < fixedColumnCount ? 0 : table.getColumnCount() - fixedColumnCount);
+    final int start = fixedColumnCount
+        - 1
+        + (currentSelectedCell.x < fixedColumnCount ? 0 : table
+            .getColumnCount() - fixedColumnCount);
     final boolean skipValueTest = currentSelectedCell.x < fixedColumnCount
-        || (currentSelectedCell.x != start && item.getText(currentSelectedCell.x + 1).length() == 0);
+        || (currentSelectedCell.x != start && item.getText(
+            currentSelectedCell.x + 1).length() == 0);
     final int end = skipValueTest ? currentSelectedCell.x : fixedColumnCount;
 
     for (int i = start; i >= end; i--) {
-      if (table.getColumn(i).isVisible() && (item.getText(i).length() != 0 || skipValueTest)) {
+      if (table.getColumn(i).isVisible()
+          && (item.getText(i).length() != 0 || skipValueTest)) {
         return new Point(i, currentSelectedCell.y);
       }
     }

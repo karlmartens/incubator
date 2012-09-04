@@ -41,9 +41,12 @@ public abstract class CellSelectionModifier {
       _editSupport._base = getViewerColumn(cell.x).doGetEditingSupport();
 
       final TableItem item = _viewer.doGetItem(cell.y);
-      if (!_editSupport.canEdit(item.getData())) {
+      if (!_editSupport.canEdit(item.getData()))
         return false;
-      }
+
+      final ViewerCell vCell = getViewerCell(cell);
+      if (_editSupport.getCellEditor(vCell.getElement()).isActivated())
+        return false;
     }
 
     return true;
@@ -100,6 +103,7 @@ public abstract class CellSelectionModifier {
 
     _editSupport._base = getEditingSupport(pt);
     _editSupport.setValue(cell.getElement(), value);
+
   }
 
   private class ReadonlyEditSupport extends EditingSupport {

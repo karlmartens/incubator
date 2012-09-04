@@ -18,9 +18,13 @@
 package net.karlmartens.ui.viewer;
 
 import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.joda.time.LocalDate;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 class TestColumnLabelProvider extends ColumnLabelProvider {
 
+  private final DateTimeFormatter _formatter = DateTimeFormat.fullDate();
   private final int _index;
 
   TestColumnLabelProvider(int index) {
@@ -32,6 +36,9 @@ class TestColumnLabelProvider extends ColumnLabelProvider {
     final Object o = ((Object[]) element)[_index];
     if (o == null)
       return "";
+
+    if (o instanceof LocalDate)
+      return _formatter.print((LocalDate) o);
 
     return o.toString();
   }

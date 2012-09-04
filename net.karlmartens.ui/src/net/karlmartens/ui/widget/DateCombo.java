@@ -17,8 +17,13 @@
  */
 package net.karlmartens.ui.widget;
 
+import static net.karlmartens.ui.widget.Calendar.NO_SELECTION;
+import static org.eclipse.swt.SWT.ERROR_NULL_ARGUMENT;
+import static org.eclipse.swt.SWT.error;
+
+import java.util.Arrays;
+
 import net.karlmartens.platform.util.DateSupport;
-import net.karlmartens.platform.util.NullSafe;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
@@ -333,7 +338,7 @@ public final class DateCombo extends Composite {
     _text.paste();
   }
 
-  public boolean getCalendarVisible() {
+  public boolean isCalendarVisible() {
     checkWidget();
     return isDropped();
   }
@@ -353,10 +358,42 @@ public final class DateCombo extends Composite {
     _calendar.setSelection(year, month, day);
     _calendar.scrollTo(year, month);
 
+    if (Arrays.equals(Calendar.NO_SELECTION, new int[] { year, month, day }))
+      return;
+
     final LocalDate ld = new LocalDate(year, month, day);
-    final String dStr = _dateFormat.print(ld);
-    if (!NullSafe.equals(dStr, _text.getText()))
-      _text.setText(dStr);
+    setText(_dateFormat.print(ld));
+  }
+
+  public String getText() {
+    checkWidget();
+    return _text.getText();
+  }
+
+  public void setText(String text) {
+    checkWidget();
+    if (text == null)
+      error(ERROR_NULL_ARGUMENT);
+
+    if (text.equals(_text.getText()))
+      return;
+
+    _text.setText(text);
+
+    int[] selection;
+    try {
+      final LocalDate ld = _dateFormat.parseLocalDate(text);
+      selection = new int[] { ld.getYear(), ld.getMonthOfYear(),
+          ld.getDayOfMonth() };
+    } catch (IllegalArgumentException e) {
+      selection = NO_SELECTION;
+    }
+    setSelection(selection[0], selection[1], selection[2]);
+  }
+
+  public void setTextSelection(int start) {
+    checkWidget();
+    _text.setSelection(start);
   }
 
   public void addDays(int days) {
@@ -474,7 +511,7 @@ public final class DateCombo extends Composite {
       _calendar.setSelection(date[0], date[1], date[2]);
   }
 
-  private DateTimeFormatter createDateFormat() {
+  public static DateTimeFormatter createDateFormat() {
     final int pivotYear = DateSupport.currentYear() + 40;
     final DateTimeParser[] parsers = new DateTimeParser[] { //
     //
@@ -855,10 +892,9 @@ public final class DateCombo extends Composite {
               final LocalDate ld = _dateFormat.parseLocalDate(_text.getText());
               setSelection(ld.getYear(), ld.getMonthOfYear(),
                   ld.getDayOfMonth());
-            } catch (UnsupportedOperationException e) {
-              // Ignore;
             } catch (IllegalArgumentException e) {
-              // Ignore
+              setSelection(Calendar.NO_SELECTION[0], Calendar.NO_SELECTION[1],
+                  Calendar.NO_SELECTION[2]);
             }
           }
         });
@@ -1109,6 +1145,9 @@ public final class DateCombo extends Composite {
 
       case SWT.Selection: {
         final int[] date = _calendar.getSelection();
+        if (Arrays.equals(date, Calendar.NO_SELECTION))
+          break;
+
         _text.setText(_dateFormat
             .print(new LocalDate(date[0], date[1], date[2])));
         _text.selectAll();
@@ -1242,10 +1281,15 @@ public final class DateCombo extends Composite {
       case SWT.FocusOut: {
         if (!hasFocus)
           return;
-        final Control focusControl = getDisplay().getFocusControl();
-        if (focusControl == _arrow || focusControl == _calendar
-            || focusControl == _text)
-          return;
+        Control focusControl = getDisplay().getFocusControl();
+        while (focusControl != null) {
+          if (focusControl == this || focusControl == _text
+              || focusControl == _arrow || focusControl == _calendar)
+            return;
+
+          focusControl = focusControl.getParent();
+        }
+
         hasFocus = false;
 
         final Shell shell = getShell();

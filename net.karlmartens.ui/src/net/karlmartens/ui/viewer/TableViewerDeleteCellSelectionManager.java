@@ -36,15 +36,18 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
 
-public final class TableViewerDeleteCellSelectionManager extends CellSelectionModifier {
+public final class TableViewerDeleteCellSelectionManager extends
+    CellSelectionModifier {
 
   private final TableViewer _viewer;
-  
-  public TableViewerDeleteCellSelectionManager(IWorkbenchPartSite site, TableViewer viewer) {
+
+  public TableViewerDeleteCellSelectionManager(IWorkbenchPartSite site,
+      TableViewer viewer) {
     super(viewer);
     _viewer = viewer;
-    
-    final IHandlerService service = (IHandlerService) site.getService(IHandlerService.class);
+
+    final IHandlerService service = (IHandlerService) site
+        .getService(IHandlerService.class);
     activateHandler(service);
   }
 
@@ -54,36 +57,37 @@ public final class TableViewerDeleteCellSelectionManager extends CellSelectionMo
     hookControl();
   }
 
-  private void delete() {
+  private boolean delete() {
     final Point[] selection = _viewer.doGetCellSelections();
     if (selection == null || selection.length == 0)
-      return;
+      return false;
 
-    if (!isEditable(selection)) {
-      return;
-    }
+    if (!isEditable(selection))
+      return false;
 
     final String[] values = new String[selection.length];
     Arrays.fill(values, "");
     setValues(selection, values);
     _viewer.refresh();
+    return true;
   }
-  
-  private void activateHandler(final IHandlerService service) {
-    
-    final IHandlerActivation activation = service.activateHandler(IWorkbenchCommandConstants.EDIT_DELETE, new AbstractHandler() {      
-      @Override
-      public Object execute(ExecutionEvent event) throws ExecutionException {
-        delete();
-        return null;
-      }
 
-      @Override
-      public void setEnabled(Object evaluationContext) {
-        setBaseEnabled(UiUtil.hasFocus(_viewer.getControl(), true));
-      }
-    });
-    
+  private void activateHandler(final IHandlerService service) {
+
+    final IHandlerActivation activation = service.activateHandler(
+        IWorkbenchCommandConstants.EDIT_DELETE, new AbstractHandler() {
+          @Override
+          public Object execute(ExecutionEvent event) throws ExecutionException {
+            delete();
+            return null;
+          }
+
+          @Override
+          public void setEnabled(Object evaluationContext) {
+            setBaseEnabled(UiUtil.hasFocus(_viewer.getControl(), true));
+          }
+        });
+
     final Table table = _viewer.getControl();
     new Listener() {
       {
@@ -91,13 +95,13 @@ public final class TableViewerDeleteCellSelectionManager extends CellSelectionMo
         table.addListener(SWT.FocusIn, this);
         table.addListener(SWT.FocusOut, this);
       }
-      
+
       @Override
       public void handleEvent(Event event) {
         if (event.type == SWT.Dispose) {
           handleDispose(event);
         } else if (event.type == SWT.FocusIn || event.type == SWT.FocusOut) {
-          ((IHandler2)activation.getHandler()).setEnabled(null);
+          ((IHandler2) activation.getHandler()).setEnabled(null);
         }
       }
 
@@ -109,7 +113,7 @@ public final class TableViewerDeleteCellSelectionManager extends CellSelectionMo
       }
     };
   }
-  
+
   private void hookControl() {
     final Table table = _viewer.getControl();
     final Display display = table.getDisplay();
@@ -119,13 +123,13 @@ public final class TableViewerDeleteCellSelectionManager extends CellSelectionMo
         display.addFilter(SWT.KeyDown, this);
         table.addListener(SWT.Dispose, this);
       }
-      
+
       @Override
       public void handleEvent(Event event) {
         if (event.type == SWT.KeyDown)
           handleKeyPressed(event);
         else if (event.type == SWT.Dispose)
-          handleDispose(event);        
+          handleDispose(event);
       }
 
       private void handleDispose(Event event) {
@@ -136,12 +140,12 @@ public final class TableViewerDeleteCellSelectionManager extends CellSelectionMo
       private void handleKeyPressed(Event event) {
         if ((event.stateMask & SWT.MODIFIER_MASK) != 0)
           return;
-        
+
         switch (event.keyCode) {
           case SWT.DEL:
           case SWT.BS:
-            delete();
-            UiUtil.consume(event);
+            if (delete())
+              UiUtil.consume(event);
         }
       }
     };
