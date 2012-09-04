@@ -1063,7 +1063,6 @@ public final class CalendarCombo extends Composite {
       }
 
       case SWT.MouseUp: {
-        System.out.println("MouseUp");
         if (event.button != 1)
           return;
         dropDown(false);
