@@ -69,7 +69,7 @@ final class TestCalendarComboEditingSupport extends EditingSupport {
     try {
       final LocalDate ld = _formatter.parseLocalDate((String) value);
       data[_index] = ld;
-    } catch (IllegalArgumentException e) {
+    } catch (Throwable e) {
       data[_index] = null;
     }
   }
