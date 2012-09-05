@@ -67,7 +67,7 @@ public final class Table extends Composite {
   public static final String GROUP_COMMAND = "TimeSeriesTable.Group.Command";
   public static final String GROUP_VISIBLE_COLUMNS = "TimeSeriesTable.Group.VisibleColumns";
 
-  public static final int SORT_DECENDING = -1;
+  public static final int SORT_DESCENDING = -1;
   public static final int SORT_NONE = 0;
   public static final int SORT_ASCENDING = 1;
 
@@ -717,7 +717,7 @@ public final class Table extends Composite {
   public void sort(int index, int direction) {
     checkWidget();
     checkColumnIndex(index);
-    if (direction != SORT_ASCENDING && direction != SORT_DECENDING)
+    if (direction != SORT_ASCENDING && direction != SORT_DESCENDING)
       SWT.error(SWT.ERROR_INVALID_ARGUMENT);
 
     if (_itemCount <= 1)
@@ -865,7 +865,7 @@ public final class Table extends Composite {
     _previousSortImage = null;
     _lastSortColumnIndex = -1;
     _lastSortDirection = SORT_NONE;
-    if (index < 0 || index >= _columnCount || (direction != SORT_ASCENDING && direction != SORT_DECENDING))
+    if (index < 0 || index >= _columnCount || (direction != SORT_ASCENDING && direction != SORT_DESCENDING))
       return;
 
     final TableColumn column = getColumn(index);
