@@ -38,9 +38,9 @@ public final class TableViewerTest {
 
   public static void main(String[] args) throws Exception {
     final int fixedColumns = 4;
-    final Object[][] input = new Object[5][];
+    final Object[][] input = new Object[40][];
     for (int i = 0; i < input.length; i++) {
-      input[i] = new Object[302];
+      input[i] = new Object[20];
       input[i][0] = "Item " + Integer.toString(i);
       input[i][1] = Boolean.valueOf(i % 3 == 0);
       input[i][2] = TestComboEditingSupport.ITEMS[0 + (i % TestComboEditingSupport.ITEMS.length)];
@@ -93,7 +93,7 @@ public final class TableViewerTest {
     c4.getColumn().setText("Date");
     c4.getColumn().setWidth(90);
 
-    for (int i = fixedColumns; i < 302; i++) {
+    for (int i = fixedColumns; i < input[0].length; i++) {
       final TableViewerColumn c = new TableViewerColumn(viewer, SWT.RIGHT);
       c.setLabelProvider(new TestColumnLabelProvider(i));
       c.setEditingSupport(new TestTextEditingSupport(viewer, i, SWT.RIGHT));
@@ -108,6 +108,7 @@ public final class TableViewerTest {
     table.setBackground(display.getSystemColor(SWT.COLOR_WHITE));
     table.setFont(new Font(display, "Arial", 8, SWT.NORMAL));
     table.addColumnSortSupport();
+    table.addColumnFilterSupport();
     table.setFixedColumnCount(fixedColumns);
 
     viewer.setInput(input);

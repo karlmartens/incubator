@@ -22,6 +22,7 @@ import java.util.BitSet;
 import java.util.Comparator;
 
 import net.karlmartens.platform.util.ArraySupport;
+import net.karlmartens.platform.util.Filter;
 import net.karlmartens.platform.util.NumberStringComparator;
 import net.karlmartens.ui.Images;
 
@@ -115,7 +116,8 @@ public final class Table extends Composite {
     _cellSelectionManager = new CellSelectionManager(this);
     _columnManager = new TableColumnManager(this, _table);
 
-    final PassthoughEventListener passthroughListener = new PassthoughEventListener(this);
+    final PassthoughEventListener passthroughListener = new PassthoughEventListener(
+        this);
     passthroughListener.addSource(_table);
 
     hookControls();
@@ -321,7 +323,8 @@ public final class Table extends Composite {
 
     final BitSet selectedRows = new BitSet();
     for (Point selection : _table.getCellSelection()) {
-      if (_showHeader && selection.y < _table.getModel().getFixedHeaderRowCount())
+      if (_showHeader
+          && selection.y < _table.getModel().getFixedHeaderRowCount())
         continue;
 
       selectedRows.set(computeRow(selection.y));
@@ -355,11 +358,13 @@ public final class Table extends Composite {
     rect.width += hCorrection;
 
     // Adjust height for fully visible rows
-    final int rows = _table.getVisibleRowCount() - model.getFixedHeaderRowCount() - model.getFixedSelectableRowCount();
+    final int rows = _table.getVisibleRowCount()
+        - model.getFixedHeaderRowCount() - model.getFixedSelectableRowCount();
     rect.height = Math.min(rows, rect.height);
 
     // Adjust height for fully visible columns
-    while (!_table.isCellFullyVisible(tableTopLeft.x + rect.width - 1, tableTopLeft.y + rect.height - 1) && rect.width > 0) {
+    while (!_table.isCellFullyVisible(tableTopLeft.x + rect.width - 1,
+        tableTopLeft.y + rect.height - 1) && rect.width > 0) {
       rect.width--;
     }
 
@@ -450,12 +455,19 @@ public final class Table extends Composite {
     checkWidget();
     final Point[] pts = _table.getCellSelection();
     final Point[] selection = new Point[pts.length];
+    int index = 0;
     for (int i = 0; i < selection.length; i++) {
       final Point pt = pts[i];
-      selection[i] = new Point(pt.x, computeRow(pt.y));
+      final Point selectionPt = new Point(pt.x, computeRow(pt.y));
+      final TableColumn column = getColumn(selectionPt.x);
+      final TableItem item = getItem(selectionPt.y);
+      if (!column.isVisible() || !item.isVisible())
+        continue;
+
+      selection[index++] = selectionPt;
     }
 
-    return selection;
+    return Arrays.copyOf(selection, index);
   }
 
   public Point getFocusCell() {
@@ -724,7 +736,8 @@ public final class Table extends Composite {
       return;
 
     final TableItem[] newItems = Arrays.copyOf(_items, _items.length);
-    final Comparator<TableItem> comparator = new TableItemComparator(new NumberStringComparator(), index, direction);
+    final Comparator<TableItem> comparator = new TableItemComparator(
+        new NumberStringComparator(), index, direction);
     Arrays.sort(newItems, 0, _itemCount, comparator);
 
     _items = newItems;
@@ -755,6 +768,28 @@ public final class Table extends Composite {
     _columnManager.enableColumnSort();
   }
 
+  public void addColumnFilterSupport() {
+    _columnManager.enableColumnFiltering();
+  }
+
+  public void setFilter(Filter<TableItem> filter) {
+    checkWidget();
+    if (filter == null) {
+      for (int i = 0; i < _itemCount; i++)
+        _items[i].setVisible(true);
+
+      redraw();
+      return;
+    }
+
+    for (int i = 0; i < _itemCount; i++) {
+      final TableItem item = _items[i];
+      item.setVisible(filter.accepts(item));
+    }
+
+    redraw();
+  }
+
   void createItem(TableColumn item, int index) {
     checkWidget();
     if (index < 0 || index > _columnCount)
@@ -766,7 +801,8 @@ public final class Table extends Composite {
       _columns = newColumns;
     }
 
-    System.arraycopy(_columns, index, _columns, index + 1, _columnCount++ - index);
+    System.arraycopy(_columns, index, _columns, index + 1, _columnCount++
+        - index);
     _columns[index] = item;
 
     if (index == _lastSortColumnIndex)
@@ -865,7 +901,8 @@ public final class Table extends Composite {
     _previousSortImage = null;
     _lastSortColumnIndex = -1;
     _lastSortDirection = SORT_NONE;
-    if (index < 0 || index >= _columnCount || (direction != SORT_ASCENDING && direction != SORT_DESCENDING))
+    if (index < 0 || index >= _columnCount
+        || (direction != SORT_ASCENDING && direction != SORT_DESCENDING))
       return;
 
     final TableColumn column = getColumn(index);
@@ -1062,6 +1099,17 @@ public final class Table extends Composite {
       return _rowHeight;
     }
 
+    public int getRowHeight(int row) {
+      if (row == 0 && _showHeader)
+        return _rowHeight;
+
+      final TableItem item = getItem(computeRow(row));
+      if (item.isVisible())
+        return _rowHeight;
+
+      return 0;
+    }
+
     @Override
     public Object doGetContentAt(int col, int row) {
       // This seems weird but it a KTable behaviour to ask for data that
@@ -1095,9 +1143,12 @@ public final class Table extends Composite {
       // Not used
     }
 
-    private final ImageFixedCellRenderer _headerRenderer = new ImageFixedCellRenderer(SWT.BOLD | DefaultCellRenderer.INDICATION_FOCUS_ROW);
-    private final TextCellRenderer _renderer = new TextCellRenderer(DefaultCellRenderer.INDICATION_FOCUS);
-    private final CheckableCellRenderer _checkRenderer = new CheckableCellRenderer(DefaultCellRenderer.INDICATION_FOCUS);
+    private final ImageFixedCellRenderer _headerRenderer = new ImageFixedCellRenderer(
+        SWT.BOLD | DefaultCellRenderer.INDICATION_FOCUS_ROW);
+    private final TextCellRenderer _renderer = new TextCellRenderer(
+        DefaultCellRenderer.INDICATION_FOCUS);
+    private final CheckableCellRenderer _checkRenderer = new CheckableCellRenderer(
+        DefaultCellRenderer.INDICATION_FOCUS);
 
     @Override
     public KTableCellRenderer doGetCellRenderer(int col, int row) {
@@ -1124,20 +1175,25 @@ public final class Table extends Composite {
       if ((SWT.CHECK & column.getStyle()) > 0) {
         renderer = _checkRenderer;
         _checkRenderer.setActive(_isActive);
-        renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_CENTER | SWTX.ALIGN_VERTICAL_CENTER);
+        renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_CENTER
+            | SWTX.ALIGN_VERTICAL_CENTER);
       } else {
         renderer = _renderer;
         _renderer.setActive(_isActive);
-        renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_LEFT | SWTX.ALIGN_VERTICAL_CENTER);
+        renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_LEFT
+            | SWTX.ALIGN_VERTICAL_CENTER);
       }
 
       final int style = column.getStyle();
       if ((style & SWT.LEFT) > 0) {
-        renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_LEFT | SWTX.ALIGN_VERTICAL_CENTER);
+        renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_LEFT
+            | SWTX.ALIGN_VERTICAL_CENTER);
       } else if ((style & SWT.RIGHT) > 0) {
-        renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_RIGHT | SWTX.ALIGN_VERTICAL_CENTER);
+        renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_RIGHT
+            | SWTX.ALIGN_VERTICAL_CENTER);
       } else if ((style & SWT.CENTER) > 0) {
-        renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_CENTER | SWTX.ALIGN_VERTICAL_CENTER);
+        renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_CENTER
+            | SWTX.ALIGN_VERTICAL_CENTER);
       }
 
       final int modelRow = computeRow(row);
@@ -1161,7 +1217,8 @@ public final class Table extends Composite {
 
   };
 
-  private final class TableListener implements ControlListener, KTableCellResizeListener, PaintListener, DisposeListener, FocusListener {
+  private final class TableListener implements ControlListener,
+      KTableCellResizeListener, PaintListener, DisposeListener, FocusListener {
 
     @Override
     public void controlMoved(ControlEvent e) {
@@ -1261,7 +1318,7 @@ public final class Table extends Composite {
     protected void onKeyDown(KeyEvent e) {
       // Disable default even handling
     }
-    
+
     @Override
     protected void doCalculations() {
       super.doCalculations();
@@ -1286,7 +1343,9 @@ public final class Table extends Composite {
 
         // Add height of data rows to display
         int rowsVisible = 0;
-        for (int i = m_Model.getFixedHeaderRowCount(); i < m_Model.getFixedHeaderRowCount() + m_numRowsVisibleInPreferredSize && i < m_Model.getRowCount(); i++) {
+        for (int i = m_Model.getFixedHeaderRowCount(); i < m_Model
+            .getFixedHeaderRowCount() + m_numRowsVisibleInPreferredSize
+            && i < m_Model.getRowCount(); i++) {
           height += m_Model.getRowHeight(i);
           rowsVisible++;
         }
@@ -1304,7 +1363,8 @@ public final class Table extends Composite {
         }
 
         // Add width of data columns to display
-        for (int i = m_Model.getFixedHeaderColumnCount(); i < m_Model.getFixedHeaderColumnCount() + m_numColsVisibleInPreferredSize
+        for (int i = m_Model.getFixedHeaderColumnCount(); i < m_Model
+            .getFixedHeaderColumnCount() + m_numColsVisibleInPreferredSize
             && i < m_Model.getColumnCount(); i++) {
           width += m_Model.getColumnWidth(i);
         }

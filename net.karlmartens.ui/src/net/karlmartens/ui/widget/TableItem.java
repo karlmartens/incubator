@@ -25,6 +25,7 @@ import org.eclipse.swt.graphics.Rectangle;
 public final class TableItem extends AbstractTableItem {
 
   private final Table _parent;
+  private boolean _isVisible = true;
 
   public TableItem(Table parent) {
     this(parent, parent.getItemCount());
@@ -43,6 +44,14 @@ public final class TableItem extends AbstractTableItem {
 
     _parent.setSortIndicator(-1, SORT_NONE);
     return true;
+  }
+
+  public boolean isVisible() {
+    return _isVisible;
+  }
+
+  void setVisible(boolean visible) {
+    _isVisible = visible;
   }
 
   public Table getParent() {

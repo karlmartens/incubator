@@ -66,7 +66,7 @@ final class TestComboEditingSupport extends EditingSupport {
   protected void setValue(Object element, Object value) {
     final Object[] data = (Object[]) element;
     final int index = indexOf(value);
-    data[_index] = index == -1 ? null : ITEMS[index];
+    data[_index] = index == -1 ? "" : ITEMS[index];
   }
 
   private int indexOf(Object value) {
