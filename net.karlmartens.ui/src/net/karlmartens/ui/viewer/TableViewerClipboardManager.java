@@ -182,7 +182,7 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
     };
   }
 
-  private void hookControl(Control control) {
+  private void hookControl(final Control control) {
     final ClipboardStrategy clipboardStrategy = new ClipboardStrategy();
 
     final Listener listener = new Listener() {
@@ -190,29 +190,45 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
       public void handleEvent(Event event) {
         if (!clipboardStrategy.isClipboardEvent(event))
           return;
+        
+        if (!hasFocus(control))
+          return;
 
         switch (clipboardStrategy.getOperation(event)) {
           case OPERATION_COPY:
             if (isOperationEnabled(OPERATION_COPY)) {
-              copy();
-              UiUtil.consume(event);
+              if (copy())
+                UiUtil.consume(event);
             }
             break;
 
           case OPERATION_PASTE:
             if (isOperationEnabled(OPERATION_PASTE)) {
-              paste();
-              UiUtil.consume(event);
+              if (paste())
+                UiUtil.consume(event);
             }
             break;
 
           case OPERATION_CUT:
             if (isOperationEnabled(OPERATION_CUT)) {
-              cut();
-              UiUtil.consume(event);
+              if (cut())
+                UiUtil.consume(event);
             }
             break;
         }
+      }
+
+      private boolean hasFocus(Control control) {
+        final Display display = control.getDisplay();
+        Control focus = display.getFocusControl();
+        while (focus != null) {
+          if (focus == control)
+            return true;
+          
+          focus = focus.getParent();
+        }
+
+        return false;
       }
     };
 
