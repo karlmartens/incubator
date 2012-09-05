@@ -388,14 +388,24 @@ public final class Calendar extends Composite {
     return new YearMonthDay(_cal);
   }
 
-  private YearMonthDay computePage(int x, int y) {
-    if (_NONE.equals(_date))
+  private YearMonthDay computePage(YearMonthDay ymd, int x, int y) {
+    if (_NONE.equals(ymd))
       return _NONE;
 
-    _date.apply(_cal);
+    ymd.apply(_cal);
     _cal.add(MONTH, y);
     _cal.add(YEAR, x);
     return new YearMonthDay(_cal);
+  }
+
+  private YearMonth computePage(YearMonth ym, int x, int y) {
+    if (_NONE.toYearMonth().equals(ym))
+      return _NONE.toYearMonth();
+
+    ym.apply(_cal);
+    _cal.add(MONTH, y);
+    _cal.add(YEAR, x);
+    return new YearMonth(_cal);
   }
 
   private YearMonthDay computeHome() {
@@ -441,11 +451,16 @@ public final class Calendar extends Composite {
   }
 
   private void keyPressed(Event event) {
+    YearMonth scroll = null;
     YearMonthDay candidate = null;
     switch (event.keyCode) {
       case SWT.ARROW_DOWN:
         if (event.stateMask == SWT.MOD1) {
-          candidate = computePage(0, 1);
+          if (_NONE.equals(_date)) {
+            scroll = computePage(_month, 0, 1);
+          } else {
+            candidate = computePage(_date, 0, 1);
+          }
         } else if (event.stateMask == SWT.NONE) {
           candidate = computeNeighbor(0, 1);
         }
@@ -453,7 +468,11 @@ public final class Calendar extends Composite {
 
       case SWT.ARROW_UP:
         if (event.stateMask == SWT.MOD1) {
-          candidate = computePage(0, -1);
+          if (_NONE.equals(_date)) {
+            scroll = computePage(_month, 0, -1);
+          } else {
+            candidate = computePage(_date, 0, -1);
+          }
         } else if (event.stateMask == SWT.NONE) {
           candidate = computeNeighbor(0, -1);
         }
@@ -461,7 +480,11 @@ public final class Calendar extends Composite {
 
       case SWT.ARROW_RIGHT:
         if (event.stateMask == SWT.CTRL) {
-          candidate = computePage(1, 0);
+          if (_NONE.equals(_date)) {
+            scroll = computePage(_month, 1, 0);
+          } else {
+            candidate = computePage(_date, 1, 0);
+          }
         } else if (event.stateMask == SWT.MOD1) {
           candidate = computeEnd();
         } else if (event.stateMask == SWT.NONE) {
@@ -471,7 +494,11 @@ public final class Calendar extends Composite {
 
       case SWT.ARROW_LEFT:
         if (event.stateMask == SWT.CTRL) {
-          candidate = computePage(-1, 0);
+          if (_NONE.equals(_date)) {
+            scroll = computePage(_month, -1, 0);
+          } else {
+            candidate = computePage(_date, -1, 0);
+          }
         } else if (event.stateMask == SWT.MOD1) {
           candidate = computeHome();
         } else if (event.stateMask == SWT.NONE) {
@@ -488,15 +515,27 @@ public final class Calendar extends Composite {
         break;
 
       case SWT.PAGE_UP:
-        candidate = computePage(0, -1);
+        if (_NONE.equals(_date)) {
+          scroll = computePage(_month, 0, -1);
+        } else {
+          candidate = computePage(_date, 0, -1);
+        }
         break;
 
       case SWT.PAGE_DOWN:
-        candidate = computePage(0, 1);
+        if (_NONE.equals(_date)) {
+          scroll = computePage(_month, 0, 1);
+        } else {
+          candidate = computePage(_date, 0, 1);
+        }
         break;
     }
 
-    navigateTo(candidate);
+    if (candidate != null)
+      navigateTo(candidate);
+
+    if (scroll != null)
+      internalScrollTo(scroll);
   }
 
   private void mouseDown(Event event) {
@@ -651,12 +690,24 @@ public final class Calendar extends Composite {
       }
 
       if (event.type == SWT.MouseHorizontalWheel) {
-        navigateTo(computePage(event.count * -1, 0));
+        if (_NONE.equals(_date)) {
+          final YearMonth candidate = computePage(_month, event.count * -1, 0);
+          internalScrollTo(candidate);
+        } else {
+          final YearMonthDay candidate = computePage(_date, event.count * -1, 0);
+          navigateTo(candidate);
+        }
         return;
       }
 
       if (event.type == SWT.MouseVerticalWheel) {
-        navigateTo(computePage(0, event.count * -1));
+        if (_NONE.equals(_date)) {
+          final YearMonth candidate = computePage(_month, 0, event.count * -1);
+          internalScrollTo(candidate);
+        } else {
+          final YearMonthDay candidate = computePage(_date, 0, event.count * -1);
+          navigateTo(candidate);
+        }
         return;
       }
 
