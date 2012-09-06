@@ -202,7 +202,23 @@ public final class Table extends Composite {
   @Override
   public void redraw() {
     checkWidget();
-    _table.redraw();
+    _requiresRedraw = true;
+    super.redraw();
+  }
+  
+  private Rectangle _partialRedraw = null;
+  private void redraw(int col, int row, int cols, int rows) {
+    if (_partialRedraw == null) {
+      _partialRedraw = new Rectangle(col, row, cols, rows);
+    } else {
+      final Rectangle r = new Rectangle(0, 0, 0, 0);
+      r.x = Math.min(col, _partialRedraw.x);
+      r.y = Math.min(row, _partialRedraw.y);
+      r.width = Math.max(_partialRedraw.x + _partialRedraw.width, col + cols) - r.x;
+      r.height = Math.max(_partialRedraw.y + _partialRedraw.height, row + rows) - r.y;
+      _partialRedraw = r;
+    }
+    
     super.redraw();
   }
 
@@ -588,7 +604,7 @@ public final class Table extends Composite {
     _items = newItems;
     _itemCount = c;
     updatePreferredSize();
-    _table.redraw();
+    redraw();
   }
 
   public void setColumnCount(int count) {
@@ -623,7 +639,7 @@ public final class Table extends Composite {
     _columnCount = c;
 
     updatePreferredSize();
-    _table.redraw();
+    redraw();
   }
 
   public void remove(int start, int end) {
@@ -634,7 +650,7 @@ public final class Table extends Composite {
     for (int i = end; i >= start; i--) {
       doRemove(i);
     }
-    _table.redraw();
+    redraw();
   }
 
   public void remove(int[] indices) {
@@ -649,7 +665,7 @@ public final class Table extends Composite {
     for (int i = idxs.length - 1; i >= 0; i--) {
       doRemove(idxs[i]);
     }
-    _table.redraw();
+    redraw();
   }
 
   public void removeAll() {
@@ -660,7 +676,7 @@ public final class Table extends Composite {
     }
     _itemCount = 0;
     updatePreferredSize();
-    _table.redraw();
+    redraw();
   }
 
   public void clear(int index) {
@@ -669,7 +685,7 @@ public final class Table extends Composite {
 
     _items[index].clear();
     setSortIndicator(-1, SORT_NONE);
-    _table.redraw();
+    redraw();
   }
 
   public void clearAll() {
@@ -678,7 +694,7 @@ public final class Table extends Composite {
       _items[i].clear();
     }
     setSortIndicator(-1, SORT_NONE);
-    _table.redraw();
+    redraw();
   }
 
   public void moveColumn(int fromIndex, int toIndex) {
@@ -708,7 +724,7 @@ public final class Table extends Composite {
     _columns[fromIndex].notifyListeners(SWT.Move, new Event());
     _columns[toIndex].notifyListeners(SWT.Move, new Event());
 
-    _table.redraw();
+    redraw();
   }
 
   public void sort(int index) {
@@ -957,11 +973,11 @@ public final class Table extends Composite {
         continue;
       }
 
-      _table.redraw(0, previous - height + 1, width, height);
+      redraw(0, previous - height + 1, width, height);
       previous = index;
     }
 
-    _table.redraw(0, previous - height + 1, width, height);
+    redraw(0, previous - height + 1, width, height);
   }
 
   private void doRemove(int index) {
@@ -1149,6 +1165,7 @@ public final class Table extends Composite {
         DefaultCellRenderer.INDICATION_FOCUS);
     private final CheckableCellRenderer _checkRenderer = new CheckableCellRenderer(
         DefaultCellRenderer.INDICATION_FOCUS);
+    private final HiddenCellRenderer _hiddenRenderer = new HiddenCellRenderer();
 
     @Override
     public KTableCellRenderer doGetCellRenderer(int col, int row) {
@@ -1168,9 +1185,17 @@ public final class Table extends Composite {
       }
 
       if (col < 0 || col >= _columnCount)
-        return _renderer;
+        return _hiddenRenderer;
 
       final TableColumn column = getColumn(col);
+      if (!column.isVisible())
+        return _hiddenRenderer;
+
+      final int modelRow = computeRow(row);
+      final TableItem item = getItem(modelRow);
+      if (!item.isVisible())
+        return _hiddenRenderer;
+      
       final DefaultCellRenderer renderer;
       if ((SWT.CHECK & column.getStyle()) > 0) {
         renderer = _checkRenderer;
@@ -1195,9 +1220,6 @@ public final class Table extends Composite {
         renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_CENTER
             | SWTX.ALIGN_VERTICAL_CENTER);
       }
-
-      final int modelRow = computeRow(row);
-      final TableItem item = getItem(modelRow);
       renderer.setDefaultBackground(item.getBackground(col));
       renderer.setDefaultForeground(item.getForeground(col));
       renderer.setFont(item.getFont(col));
@@ -1227,12 +1249,12 @@ public final class Table extends Composite {
 
     @Override
     public void focusLost(FocusEvent e) {
-      _table.redraw();
+      redraw();
     }
 
     @Override
     public void focusGained(FocusEvent e) {
-      _table.redraw();
+      redraw();
     }
 
     @Override
@@ -1240,15 +1262,23 @@ public final class Table extends Composite {
       if (e.getSource() == Table.this) {
         final Rectangle ca = getClientArea();
         _table.setBounds(0, 0, ca.width, ca.height);
-        _table.redraw();
+        redraw();
       }
     }
 
     @Override
     public void paintControl(PaintEvent e) {
-      if (e.getSource() == Table.this && _requiresRedraw) {
-        _requiresRedraw = false;
-        _table.redraw();
+      if (e.getSource() == Table.this) {
+        if (_requiresRedraw) {
+          _table.redraw();
+          _requiresRedraw = false;
+          _partialRedraw = null;
+        }
+        
+        if (_partialRedraw != null) {
+          _table.redraw(_partialRedraw);
+          _partialRedraw = null;
+        }
       }
     }
 
