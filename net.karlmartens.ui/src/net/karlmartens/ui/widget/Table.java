@@ -390,16 +390,6 @@ public final class Table extends Composite {
     return rect;
   }
 
-  public int getVisibleColumnCount() {
-    checkWidget();
-    return getVisibleScrollableCells().width;
-  }
-
-  public int getVisibleRowCount() {
-    checkWidget();
-    return getVisibleScrollableCells().height;
-  }
-
   public void deselectAll() {
     checkWidget();
     _table.clearSelection();

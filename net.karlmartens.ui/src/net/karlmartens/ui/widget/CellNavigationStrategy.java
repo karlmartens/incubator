@@ -190,8 +190,16 @@ public final class CellNavigationStrategy {
     if (table.getItemCount() <= 0)
       return null;
 
-    final int y = Math.max(0,
-        currentSelectedCell.y - (table.getVisibleRowCount() - 1));
+    final int index = currentSelectedCell.y
+        - table.getVisibleScrollableCells().height - 1;
+    int y = Math.max(0, index);
+    while (!table.getItem(y).isVisible() && y < table.getItemCount()) {
+      y++;
+    }
+
+    if (y >= table.getItemCount())
+      return null;
+
     return new Point(currentSelectedCell.x, y);
   }
 
@@ -199,8 +207,17 @@ public final class CellNavigationStrategy {
     if (table.getItemCount() <= 0)
       return null;
 
-    final int y = Math.min(table.getItemCount() - 1, currentSelectedCell.y
-        + (table.getVisibleRowCount() - 1));
+    final int index = currentSelectedCell.y
+        + table.getVisibleScrollableCells().height - 1;
+    final int maxIndex = table.getItemCount() - 1;
+    int y = Math.min(index, maxIndex);
+    while (!table.getItem(y).isVisible() && y >= 0) {
+      y--;
+    }
+
+    if (y < 0)
+      return null;
+
     return new Point(currentSelectedCell.x, y);
   }
 
@@ -209,8 +226,16 @@ public final class CellNavigationStrategy {
     if (numFixedColumns >= table.getColumnCount())
       return null;
 
-    final int x = Math.max(numFixedColumns,
-        currentSelectedCell.x - (table.getVisibleColumnCount() - 1));
+    final int index = currentSelectedCell.x
+        - table.getVisibleScrollableCells().width - 1;
+    int x = Math.max(numFixedColumns, index);
+    while (!table.getColumn(x).isVisible() && x < table.getColumnCount()) {
+      x++;
+    }
+
+    if (x == table.getColumnCount())
+      return null;
+
     return new Point(x, currentSelectedCell.y);
   }
 
@@ -219,8 +244,17 @@ public final class CellNavigationStrategy {
     if (numFixedColumns >= table.getColumnCount())
       return null;
 
-    final int x = Math.min(table.getColumnCount() - 1, currentSelectedCell.x
-        + (table.getVisibleColumnCount() - 1));
+    final int max = table.getColumnCount() - 1;
+    final int index = currentSelectedCell.x
+        + table.getVisibleScrollableCells().width - 1;
+    int x = Math.min(index, max);
+    while (!table.getColumn(x).isVisible() && x >= 0) {
+      x--;
+    }
+
+    if (x < 0)
+      return null;
+
     return new Point(x, currentSelectedCell.y);
   }
 
