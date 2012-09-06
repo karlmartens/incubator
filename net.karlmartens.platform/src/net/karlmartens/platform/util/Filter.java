@@ -30,6 +30,14 @@ public abstract class Filter<T> {
 
   public abstract boolean accepts(T candidate);
 
+  public boolean equals(Object obj) {
+    return super.equals(obj);
+  }
+
+  public int hashCode() {
+    return super.hashCode();
+  }
+
   public static final Filter<Object> ALL = new Filter<Object>() {
     @Override
     public boolean accepts(Object candidate) {
@@ -58,6 +66,10 @@ public abstract class Filter<T> {
     return new EnumeratedFilter<T>(items);
   }
 
+  public Filter<T> and(Filter<T> other) {
+    return new AndFilter<T>(this, other);
+  }
+
   private static class EnumeratedFilter<T> extends Filter<T> {
 
     private final Set<T> _accepts;
@@ -71,5 +83,76 @@ public abstract class Filter<T> {
       return _accepts.contains(candidate);
     }
 
+    @Override
+    public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((_accepts == null) ? 0 : _accepts.hashCode());
+      return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj)
+        return true;
+      if (obj == null)
+        return false;
+      if (getClass() != obj.getClass())
+        return false;
+      EnumeratedFilter<?> other = (EnumeratedFilter<?>) obj;
+      if (_accepts == null) {
+        if (other._accepts != null)
+          return false;
+      } else if (!_accepts.equals(other._accepts))
+        return false;
+      return true;
+    }
+  }
+
+  private static class AndFilter<T> extends Filter<T> {
+
+    private final Filter<T> _a;
+    private final Filter<T> _b;
+
+    public AndFilter(Filter<T> a, Filter<T> b) {
+      _a = a;
+      _b = b;
+    }
+
+    @Override
+    public boolean accepts(T candidate) {
+      return _a.accepts(candidate) && _b.accepts(candidate);
+    }
+
+    @Override
+    public int hashCode() {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + ((_a == null) ? 0 : _a.hashCode());
+      result = prime * result + ((_b == null) ? 0 : _b.hashCode());
+      return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj)
+        return true;
+      if (!super.equals(obj))
+        return false;
+      if (getClass() != obj.getClass())
+        return false;
+      AndFilter<?> other = (AndFilter<?>) obj;
+      if (_a == null) {
+        if (other._a != null)
+          return false;
+      } else if (!_a.equals(other._a))
+        return false;
+      if (_b == null) {
+        if (other._b != null)
+          return false;
+      } else if (!_b.equals(other._b))
+        return false;
+      return true;
+    }
   }
 }

@@ -777,25 +777,20 @@ public final class Table extends Composite {
     _columnManager.enableColumnSort();
   }
 
-  public void addColumnFilterSupport() {
-    _columnManager.enableColumnFiltering();
-  }
+  void updateFilteredItems() {
+    Filter<TableItem> filter = Filter.all();
+    for (int i = 0; i < _columnCount; i++) {
+      final Filter<TableItem> oFilter = _columns[i].getFilter();
+      if (oFilter == null)
+        continue;
 
-  public void setFilter(Filter<TableItem> filter) {
-    checkWidget();
-    if (filter == null) {
-      for (int i = 0; i < _itemCount; i++)
-        _items[i].setVisible(true);
-
-      redraw();
-      return;
+      filter = filter.and(oFilter);
     }
 
     for (int i = 0; i < _itemCount; i++) {
       final TableItem item = _items[i];
       item.setVisible(filter.accepts(item));
     }
-
     redraw();
   }
 

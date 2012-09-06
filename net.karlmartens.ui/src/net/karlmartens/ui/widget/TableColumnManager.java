@@ -52,12 +52,11 @@ final class TableColumnManager {
   private final KTableImpl _table;
   private final MenuManager _columnMenu;
   private final SortColumnsContribution _sortColumnsContribution;
-  private final FilterColumnsContribution _filterColumnsContribution;
+  private final FilterGroupContribution _filterGroupContribution;
   private final ResizeColumnAction _resizeColumnAction;
   private final ResizeAllColumnsAction _resizeAllColumnsAction;
 
   private boolean _columnsSortable = false;
-  private boolean _columnsFilterable = false;
 
   private int _columnIndex;
   private Point _offset;
@@ -72,22 +71,16 @@ final class TableColumnManager {
     _table = table;
 
     _sortColumnsContribution = new SortColumnsContribution(this, _container);
-    _filterColumnsContribution = new FilterColumnsContribution(this, _container);
+    _filterGroupContribution = new FilterGroupContribution(_container);
     _resizeColumnAction = new ResizeColumnAction(_container, -1);
     _resizeAllColumnsAction = new ResizeAllColumnsAction(_container);
 
     final ResourceBundle bundle = ResourceBundle
         .getBundle("net.karlmartens.ui.locale.messages");
-
     final IMenuManager showHideMenu = new MenuManager(
         bundle.getString("ShowHideColumns.TEXT"));
     showHideMenu.add(new VisibleColumnsContribution(_container));
     showHideMenu.update();
-
-    final IMenuManager filterMenu = new MenuManager(
-        bundle.getString("FilterColumns.TEXT"));
-    filterMenu.add(_filterColumnsContribution);
-    filterMenu.update();
 
     _columnMenu = new MenuManager();
     _columnMenu.add(new GroupMarker(Table.GROUP_COMMAND));
@@ -98,7 +91,7 @@ final class TableColumnManager {
     _columnMenu.add(new GroupMarker(Table.GROUP_VISIBLE_COLUMNS));
     _columnMenu.add(new Separator());
     _columnMenu.add(showHideMenu);
-    _columnMenu.add(filterMenu);
+    _columnMenu.add(_filterGroupContribution);
     _columnMenu.update();
 
     hookControl();
@@ -114,14 +107,6 @@ final class TableColumnManager {
 
   void enableColumnSort() {
     _columnsSortable = true;
-  }
-
-  boolean isFilteringEnabled() {
-    return _columnsFilterable;
-  }
-
-  void enableColumnFiltering() {
-    _columnsFilterable = true;
   }
 
   private void hookControl() {
@@ -146,7 +131,7 @@ final class TableColumnManager {
 
   private Menu buildMenu(int columnIndex) {
     _sortColumnsContribution.setColumnIndex(columnIndex);
-    _filterColumnsContribution.setColumnIndex(columnIndex);
+    _filterGroupContribution.setColumnIndex(columnIndex);
     _resizeColumnAction.setColumnIndex(columnIndex);
     _columnMenu.createContextMenu(_table);
     return _columnMenu.getMenu();

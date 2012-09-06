@@ -18,7 +18,7 @@
 package net.karlmartens.ui.action;
 
 import net.karlmartens.platform.util.Filter;
-import net.karlmartens.ui.widget.Table;
+import net.karlmartens.ui.widget.TableColumn;
 import net.karlmartens.ui.widget.TableItem;
 
 import org.eclipse.jface.action.Action;
@@ -29,23 +29,26 @@ import org.eclipse.jface.action.Action;
  */
 public final class FilterColumnAction extends Action {
 
-  private final Table _table;
+  private final TableColumn _column;
   private final Filter<TableItem> _filter;
 
-  public FilterColumnAction(Table table, String text, Filter<TableItem> filter) {
-    _table = table;
+  public FilterColumnAction(TableColumn column, String text,
+      Filter<TableItem> filter) {
+    _column = column;
     _filter = filter;
     setText(text);
+    setChecked(filter.equals(column.getFilter()));
   }
 
   @Override
   public void run() {
-    if (Filter.<TableItem> all() == _filter) {
-      _table.setFilter(null);
+    if (Filter.<TableItem> all() == _filter
+        || _filter.equals(_column.getFilter())) {
+      _column.setFilter(null);
       return;
     }
 
-    _table.setFilter(_filter);
+    _column.setFilter(_filter);
   }
 
 }

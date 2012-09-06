@@ -94,6 +94,7 @@ public final class TableViewerTest {
       c.getColumn().setText("Test " + Integer.toString(i + 1));
       c.getColumn().setWidth(40);
       c.getColumn().setHideable(false);
+      c.getColumn().setFilterable(false);
     }
 
     final Table table = viewer.getControl();
@@ -101,7 +102,6 @@ public final class TableViewerTest {
     table.setBackground(display.getSystemColor(SWT.COLOR_WHITE));
     table.setFont(new Font(display, "Arial", 8, SWT.NORMAL));
     table.addColumnSortSupport();
-    table.addColumnFilterSupport();
     table.setFixedColumnCount(fixedColumns);
 
     viewer.setInput(input);

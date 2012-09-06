@@ -1,5 +1,5 @@
 /**
- *   Copyright 2011 Karl Martens
+ *   Copyright 2012 Karl Martens
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -17,37 +17,46 @@
  */
 package net.karlmartens.ui.widget;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 
 import net.karlmartens.platform.util.Filter;
 import net.karlmartens.platform.util.NullSafe;
-import net.karlmartens.platform.util.StringComparator;
+import net.karlmartens.platform.util.NumberStringComparator;
 import net.karlmartens.ui.action.FilterColumnAction;
 
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.ui.actions.CompoundContributionItem;
 
-final class FilterColumnsContribution extends CompoundContributionItem {
+/**
+ * @author karl
+ * 
+ */
+final class FilterGroupContribution extends CompoundContributionItem {
 
-  private final TableColumnManager _manager;
   private final Table _table;
-  private final ResourceBundle _bundle;
+  private final String _menuText;
+  private final String _allText;
+  private final String _topTextText;
 
-  private int _columnIndex = -1;
+  private int _columnIndex;
 
-  public FilterColumnsContribution(TableColumnManager manager, Table table) {
-    _manager = manager;
+  public FilterGroupContribution(Table table) {
     _table = table;
-    _bundle = ResourceBundle.getBundle("net.karlmartens.ui.locale.messages");
+
+    final ResourceBundle bundle = ResourceBundle
+        .getBundle("net.karlmartens.ui.locale.messages");
+    _menuText = bundle.getString("FilterColumns.TEXT");
+    _allText = bundle.getString("Filter.All.TEXT");
+    _topTextText = bundle.getString("Filter.TopTen.TEXT");
   }
 
   public void setColumnIndex(int columnIndex) {
@@ -56,14 +65,17 @@ final class FilterColumnsContribution extends CompoundContributionItem {
 
   @Override
   protected IContributionItem[] getContributionItems() {
-    if (!_manager.isFilteringEnabled() || _columnIndex < 0
-        || _columnIndex >= _table.getColumnCount())
+    if (_columnIndex < 0 || _columnIndex >= _table.getColumnCount())
+      return new IContributionItem[0];
+    final TableColumn column = _table.getColumn(_columnIndex);
+    if (!column.isFilterable())
       return new IContributionItem[0];
 
-    final List<IContributionItem> filters = new ArrayList<IContributionItem>();
-    final IAction allFilter = new FilterColumnAction(_table,
-        _bundle.getString("Filter.All.TEXT"), Filter.<TableItem> all());
-    filters.add(new ActionContributionItem(allFilter));
+    final IMenuManager menu = new MenuManager(_menuText);
+
+    final IAction allAction = new FilterColumnAction(column, _allText,
+        Filter.<TableItem> all());
+    menu.add(new ActionContributionItem(allAction));
 
     final TableItem[] items = _table.getItems();
     Arrays.sort(items, new TableItemSorter(_columnIndex));
@@ -71,11 +83,11 @@ final class FilterColumnsContribution extends CompoundContributionItem {
     final int from = Math.max(items.length - 10, 0);
     final int to = from + Math.min(10, items.length);
     final TableItem[] topTen = Arrays.copyOfRange(items, from, to);
-    final IAction topTenFilter = new FilterColumnAction(_table,
-        _bundle.getString("Filter.TopTen.TEXT"), Filter.accepting(topTen));
-    filters.add(new ActionContributionItem(topTenFilter));
+    final IAction topTenFilter = new FilterColumnAction(column, _topTextText,
+        Filter.accepting(topTen));
+    menu.add(new ActionContributionItem(topTenFilter));
 
-    filters.add(new Separator());
+    menu.add(new Separator());
 
     String lastValue = null;
     final Set<TableItem> acceptedItems = new HashSet<TableItem>();
@@ -84,9 +96,9 @@ final class FilterColumnsContribution extends CompoundContributionItem {
       if (!NullSafe.equals(lastValue, value)) {
         if (!acceptedItems.isEmpty()) {
           final TableItem[] arr = acceptedItems.toArray(new TableItem[0]);
-          final IAction action = new FilterColumnAction(_table, lastValue,
+          final IAction action = new FilterColumnAction(column, lastValue,
               Filter.accepting(arr));
-          filters.add(new ActionContributionItem(action));
+          menu.add(new ActionContributionItem(action));
         }
 
         lastValue = value;
@@ -98,17 +110,19 @@ final class FilterColumnsContribution extends CompoundContributionItem {
 
     if (!acceptedItems.isEmpty()) {
       final TableItem[] arr = acceptedItems.toArray(new TableItem[0]);
-      final IAction action = new FilterColumnAction(_table, lastValue,
+      final IAction action = new FilterColumnAction(column, lastValue,
           Filter.accepting(arr));
-      filters.add(new ActionContributionItem(action));
+      menu.add(new ActionContributionItem(action));
     }
 
-    return filters.toArray(new IContributionItem[0]);
+    menu.update();
+
+    return new IContributionItem[] { menu };
   }
 
   private static class TableItemSorter implements Comparator<TableItem> {
 
-    private final Comparator<String> _comparator = new StringComparator(false);
+    private final Comparator<String> _comparator = new NumberStringComparator();
     private int _index;
 
     public TableItemSorter(int columnIndex) {
@@ -130,6 +144,5 @@ final class FilterColumnsContribution extends CompoundContributionItem {
       final String s2 = o2.getText(_index);
       return _comparator.compare(s1, s2);
     }
-
   }
 }
