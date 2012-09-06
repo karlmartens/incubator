@@ -205,8 +205,9 @@ public final class Table extends Composite {
     _requiresRedraw = true;
     super.redraw();
   }
-  
+
   private Rectangle _partialRedraw = null;
+
   private void redraw(int col, int row, int cols, int rows) {
     if (_partialRedraw == null) {
       _partialRedraw = new Rectangle(col, row, cols, rows);
@@ -214,11 +215,13 @@ public final class Table extends Composite {
       final Rectangle r = new Rectangle(0, 0, 0, 0);
       r.x = Math.min(col, _partialRedraw.x);
       r.y = Math.min(row, _partialRedraw.y);
-      r.width = Math.max(_partialRedraw.x + _partialRedraw.width, col + cols) - r.x;
-      r.height = Math.max(_partialRedraw.y + _partialRedraw.height, row + rows) - r.y;
+      r.width = Math.max(_partialRedraw.x + _partialRedraw.width, col + cols)
+          - r.x;
+      r.height = Math.max(_partialRedraw.y + _partialRedraw.height, row + rows)
+          - r.y;
       _partialRedraw = r;
     }
-    
+
     super.redraw();
   }
 
@@ -1119,7 +1122,11 @@ public final class Table extends Composite {
       if (row == 0 && _showHeader)
         return _rowHeight;
 
-      final TableItem item = getItem(computeRow(row));
+      final int rIndex = computeRow(row);
+      if (rIndex < 0 || rIndex >= _itemCount)
+        return 0;
+
+      final TableItem item = getItem(rIndex);
       if (item.isVisible())
         return _rowHeight;
 
@@ -1195,7 +1202,7 @@ public final class Table extends Composite {
       final TableItem item = getItem(modelRow);
       if (!item.isVisible())
         return _hiddenRenderer;
-      
+
       final DefaultCellRenderer renderer;
       if ((SWT.CHECK & column.getStyle()) > 0) {
         renderer = _checkRenderer;
@@ -1274,7 +1281,7 @@ public final class Table extends Composite {
           _requiresRedraw = false;
           _partialRedraw = null;
         }
-        
+
         if (_partialRedraw != null) {
           _table.redraw(_partialRedraw);
           _partialRedraw = null;

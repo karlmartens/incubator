@@ -23,15 +23,13 @@ import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_PASTE;
 import net.karlmartens.platform.util.NumberStringComparator;
 import net.karlmartens.ui.widget.Table;
 
-import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
 import org.joda.time.LocalDate;
 
 public final class TableViewerTest {
@@ -54,13 +52,9 @@ public final class TableViewerTest {
     }
 
     final Shell shell = new Shell();
-    shell.setLayout(new GridLayout(1, false));
+    shell.setLayout(new FillLayout());
 
     final Display display = shell.getDisplay();
-
-    final Text text = new Text(shell, SWT.BORDER);
-    text.setLayoutData(GridDataFactory.fillDefaults().grab(true, false)
-        .create());
 
     final TableViewer viewer = new TableViewer(shell);
     viewer.setContentProvider(new ArrayContentProvider());
@@ -103,7 +97,6 @@ public final class TableViewerTest {
     }
 
     final Table table = viewer.getControl();
-    table.setLayoutData(GridDataFactory.fillDefaults().create());
     table.setHeaderVisible(true);
     table.setBackground(display.getSystemColor(SWT.COLOR_WHITE));
     table.setFont(new Font(display, "Arial", 8, SWT.NORMAL));
