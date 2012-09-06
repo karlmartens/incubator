@@ -79,16 +79,15 @@ final class TableColumnManager {
         .getBundle("net.karlmartens.ui.locale.messages");
     final IMenuManager showHideMenu = new MenuManager(
         bundle.getString("ShowHideColumns.TEXT"));
+    showHideMenu.add(new GroupMarker(Table.GROUP_VISIBLE_COLUMNS));
     showHideMenu.add(new VisibleColumnsContribution(_container));
     showHideMenu.update();
 
     _columnMenu = new MenuManager();
     _columnMenu.add(new GroupMarker(Table.GROUP_COMMAND));
     _columnMenu.add(_sortColumnsContribution);
-    _columnMenu.add(new Separator());
     _columnMenu.add(_resizeColumnAction);
     _columnMenu.add(_resizeAllColumnsAction);
-    _columnMenu.add(new GroupMarker(Table.GROUP_VISIBLE_COLUMNS));
     _columnMenu.add(new Separator());
     _columnMenu.add(showHideMenu);
     _columnMenu.add(_filterGroupContribution);

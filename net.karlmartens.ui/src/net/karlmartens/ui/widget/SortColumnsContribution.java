@@ -23,6 +23,7 @@ import net.karlmartens.ui.action.SortColumnAction;
 
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.ui.actions.CompoundContributionItem;
 
 final class SortColumnsContribution extends CompoundContributionItem {
@@ -49,13 +50,15 @@ final class SortColumnsContribution extends CompoundContributionItem {
         || _columnIndex >= _table.getColumnCount())
       return new IContributionItem[0];
 
-    final IContributionItem[] items = new IContributionItem[2];
+    final IContributionItem[] items = new IContributionItem[3];
     items[0] = new ActionContributionItem(new SortColumnAction(_table,
         _columnIndex, Table.SORT_ASCENDING,
         _bundle.getString("SortColumnAction.Ascending.TEXT")));
     items[1] = new ActionContributionItem(new SortColumnAction(_table,
         _columnIndex, Table.SORT_DESCENDING,
         _bundle.getString("SortColumnAction.Descending.TEXT")));
+    items[2] = new Separator();
+
     return items;
   }
 
