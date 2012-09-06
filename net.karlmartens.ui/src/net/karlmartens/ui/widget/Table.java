@@ -1167,11 +1167,13 @@ public final class Table extends Composite {
         _headerRenderer.setFont(getFont());
         _headerRenderer.setImage(null);
         _headerRenderer.setActive(_isActive);
+        _headerRenderer.setFiltered(false);
 
         if (col < 0 || col >= _columnCount)
           return _headerRenderer;
 
         final TableColumn column = getColumn(col);
+        _headerRenderer.setFiltered(column.getFilter() != null);
         _headerRenderer.setImage(column.getImage());
         return _headerRenderer;
       }

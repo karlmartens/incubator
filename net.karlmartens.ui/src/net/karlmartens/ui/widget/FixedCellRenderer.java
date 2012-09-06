@@ -29,12 +29,18 @@ import de.kupzog.ktable.KTableModel;
  * @author karl
  * 
  */
-public class FixedCellRenderer extends de.kupzog.ktable.renderers.FixedCellRenderer {
+public class FixedCellRenderer extends
+    de.kupzog.ktable.renderers.FixedCellRenderer {
 
-  public static Color COLOR_INACTIVE_BGROWFOCUS = Display.getDefault().getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND);
-  public static Color COLOR_INACTIVE_FGROWFOCUS = Display.getDefault().getSystemColor(SWT.COLOR_TITLE_INACTIVE_FOREGROUND);
-  
+  public static Color COLOR_INACTIVE_BGROWFOCUS = Display.getDefault()
+      .getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND);
+  public static Color COLOR_INACTIVE_FGROWFOCUS = Display.getDefault()
+      .getSystemColor(SWT.COLOR_TITLE_INACTIVE_FOREGROUND);
+  public static Color COLOR_FILTER_INDICATOR = Display.getDefault()
+      .getSystemColor(SWT.COLOR_BLUE);
+
   private boolean _active = true;
+  private boolean _filtered;
 
   /**
    * A constructor that lets the caller specify the style.
@@ -59,14 +65,19 @@ public class FixedCellRenderer extends de.kupzog.ktable.renderers.FixedCellRende
   public FixedCellRenderer(int style) {
     super(style);
   }
-  
+
   public void setActive(boolean active) {
-    _active  = active;
+    _active = active;
   }
 
-  public void drawCell(GC gc, Rectangle rect, int col, int row, Object content, boolean focus, boolean fixed, boolean clicked, KTableModel model) {
+  public void setFiltered(boolean filtered) {
+    _filtered = filtered;
+  }
+
+  public void drawCell(GC gc, Rectangle rect, int col, int row, Object content,
+      boolean focus, boolean fixed, boolean clicked, KTableModel model) {
     applyFont(gc);
-    
+
     // set up the colors:
     Color bgColor = getBackground();
     Color bottomBorderColor = COLOR_LINE_DARKGRAY;
@@ -87,19 +98,29 @@ public class FixedCellRenderer extends de.kupzog.ktable.renderers.FixedCellRende
         bgColor = COLOR_INACTIVE_BGROWFOCUS;
         bottomBorderColor = COLOR_INACTIVE_BGROWFOCUS;
         rightBorderColor = COLOR_INACTIVE_BGROWFOCUS;
-        fgColor = COLOR_INACTIVE_FGROWFOCUS;        
+        fgColor = COLOR_INACTIVE_FGROWFOCUS;
       }
     }
 
     // STYLE_FLAT:
     if ((m_Style & STYLE_FLAT) != 0) {
-      rect = drawDefaultSolidCellLine(gc, rect, bottomBorderColor, rightBorderColor);
+      rect = drawDefaultSolidCellLine(gc, rect, bottomBorderColor,
+          rightBorderColor);
+
+      final Rectangle oRect = new Rectangle(rect.x, rect.y, rect.width,
+          rect.height);
 
       // draw content:
       drawCellContent(gc, rect, col, row, content, model, bgColor, fgColor);
 
+      if (_filtered) {
+        gc.setBackground(COLOR_FILTER_INDICATOR);
+        gc.fillArc(oRect.x + oRect.width - 4, oRect.y + oRect.height - 4, 3, 3,
+            0, 360);
+      }
     } else { // STYLE_PUSH
-      drawCellButton(gc, rect, "", clicked && (m_Style & INDICATION_CLICKED) != 0);
+      drawCellButton(gc, rect, "", clicked
+          && (m_Style & INDICATION_CLICKED) != 0);
 
       // push style border is drawn, exclude:
       rect.x += 2;
@@ -107,8 +128,17 @@ public class FixedCellRenderer extends de.kupzog.ktable.renderers.FixedCellRende
       rect.width -= 5;
       rect.height -= 5;
 
+      final Rectangle oRect = new Rectangle(rect.x, rect.y, rect.width,
+          rect.height);
+
       // draw content:
       drawCellContent(gc, rect, col, row, content, model, bgColor, fgColor);
+
+      if (_filtered) {
+        gc.setBackground(COLOR_FILTER_INDICATOR);
+        gc.fillArc(oRect.x + oRect.width - 4, oRect.y + oRect.height - 4, 3, 3,
+            0, 360);
+      }
     }
     resetFont(gc);
   }
