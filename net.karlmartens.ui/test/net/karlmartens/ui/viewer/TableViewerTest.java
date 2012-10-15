@@ -38,7 +38,7 @@ public final class TableViewerTest {
 
   public static void main(String[] args) throws Exception {
     final int fixedColumns = 4;
-    final Object[][] input = new Object[5][];
+    final Object[][] input = new Object[100][];
     for (int i = 0; i < input.length; i++) {
       input[i] = new Object[302];
       input[i][0] = "Item " + Integer.toString(i);
@@ -109,6 +109,7 @@ public final class TableViewerTest {
     table.setFont(new Font(display, "Arial", 8, SWT.NORMAL));
     table.addColumnSortSupport();
     table.setFixedColumnCount(fixedColumns);
+    table.setFixedRowCount(3);
 
     viewer.setInput(input);
 

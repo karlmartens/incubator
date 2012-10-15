@@ -104,11 +104,12 @@ public final class CellSelectionManager {
       return;
 
     int dirX = _focusCell.x > cell.x ? -1 : 1;
-    final int dirY = _focusCell.y > cell.y ? -1 : 1;
+    int dirY = _focusCell.y > cell.y ? -1 : 1;
 
     final Point vCell = new Point(cell.x, cell.y);
     final Rectangle visible = _table.getVisibleScrollableCells();
     final int numFixedCols = _table.getFixedColumnCount();
+    final int numFixedRows = _table.getFixedRowCount();
     if (visible.x > numFixedCols) { 
         if (dirX < 0 &&  cell.x < numFixedCols) {
           vCell.x = visible.x - 1;
@@ -116,7 +117,14 @@ public final class CellSelectionManager {
           vCell.x = numFixedCols;
         }
 
+        if (dirY < 0 &&  cell.y < numFixedRows) {
+          vCell.y = visible.y - 1;
+        } else if (dirY > 0 && cell.y == numFixedRows) {
+          vCell.y = numFixedRows;
+        }
+
         dirX = _focusCell.x > vCell.x ? -1 : 1;
+        dirY = _focusCell.y > vCell.y ? -1 : 1;
     }
 
     if (!multi) {

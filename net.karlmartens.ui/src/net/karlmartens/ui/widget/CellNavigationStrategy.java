@@ -158,16 +158,18 @@ public final class CellNavigationStrategy {
   }
 
   private Point doPageUp(Table table, Point currentSelectedCell, Event event) {
-    if (table.getItemCount() <= 0)
+    final int numFixedRows = table.getFixedRowCount();
+    if (numFixedRows >= table.getItemCount())
       return null;
 
-    final int y = Math.max(0,
+    final int y = Math.max(numFixedRows,
         currentSelectedCell.y - (table.getVisibleRowCount() - 1));
     return new Point(currentSelectedCell.x, y);
   }
 
   private Point doPageDown(Table table, Point currentSelectedCell, Event event) {
-    if (table.getItemCount() <= 0)
+    final int numFixedRows = table.getFixedRowCount();
+    if (numFixedRows >= table.getItemCount())
       return null;
 
     final int y = Math.min(table.getItemCount() - 1, currentSelectedCell.y

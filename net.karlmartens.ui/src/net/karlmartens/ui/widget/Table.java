@@ -85,6 +85,7 @@ public final class Table extends Composite {
   private int _rowHeight;
 
   private int _fixedColumnCount = 0;
+  private int _fixedRowCount = 0;
   private int _itemCount = 0;
   private TableItem[] _items = new TableItem[0];
   private int _columnCount = 0;
@@ -217,11 +218,27 @@ public final class Table extends Composite {
 
   public void setFixedColumnCount(int count) {
     checkWidget();
-    if (count < 0 || count > _columnCount)
+    if (count < 0)
       SWT.error(SWT.ERROR_INVALID_RANGE);
 
     _fixedColumnCount = count;
 
+    updatePreferredSize();
+    redraw();
+  }
+  
+  public int getFixedRowCount() {
+    checkWidget();
+    return _fixedRowCount;
+  }
+  
+  public void setFixedRowCount(int count) {
+    checkWidget();
+    if (count < 0)
+      SWT.error(SWT.ERROR_INVALID_RANGE);
+    
+    _fixedRowCount = count;
+    
     updatePreferredSize();
     redraw();
   }
@@ -509,7 +526,7 @@ public final class Table extends Composite {
     checkNull(item);
 
     final int index = indexOf(item);
-    if (index < 0)
+    if (index < _fixedRowCount)
       return;
 
     final Rectangle r = getVisibleScrollableCells();
@@ -703,7 +720,8 @@ public final class Table extends Composite {
     checkWidget();
     checkColumnIndex(index);
 
-    if (_itemCount <= 1)
+    final int firstRow = Math.max(0, Math.min(_fixedRowCount, _items.length));
+    if (_itemCount <= firstRow + 1)
       return;
 
     if (index != _lastSortColumnIndex || _lastSortDirection == SORT_NONE) {
@@ -720,12 +738,13 @@ public final class Table extends Composite {
     if (direction != SORT_ASCENDING && direction != SORT_DECENDING)
       SWT.error(SWT.ERROR_INVALID_ARGUMENT);
 
-    if (_itemCount <= 1)
+    final int firstRow = Math.max(0, Math.min(_fixedRowCount, _items.length));
+    if (_itemCount <= firstRow + 1)
       return;
 
     final TableItem[] newItems = Arrays.copyOf(_items, _items.length);
     final Comparator<TableItem> comparator = new TableItemComparator(new NumberStringComparator(), index, direction);
-    Arrays.sort(newItems, 0, _itemCount, comparator);
+    Arrays.sort(newItems, firstRow, _itemCount, comparator);
 
     _items = newItems;
     setSortIndicator(index, direction);
@@ -1005,7 +1024,7 @@ public final class Table extends Composite {
 
     @Override
     public int getFixedSelectableRowCount() {
-      return 0;
+      return _fixedRowCount;
     }
 
     @Override
@@ -1073,7 +1092,11 @@ public final class Table extends Composite {
       if (_showHeader && row == 0)
         return column.getText();
 
-      final TableItem item = getItem(computeRow(row));
+      final int modelRow = computeRow(row);
+      if (modelRow < 0 || modelRow >= _itemCount)
+        return "";
+      
+      final TableItem item = getItem(modelRow);
       final String text = item.getText(col);
       if ((SWT.CHECK & column.getStyle()) > 0)
         return Boolean.valueOf(text);
@@ -1101,7 +1124,7 @@ public final class Table extends Composite {
 
     @Override
     public KTableCellRenderer doGetCellRenderer(int col, int row) {
-      if (getFixedRowCount() > 0 && row == 0) {
+      if (getFixedHeaderRowCount() > 0 && row == 0) {
         _headerRenderer.setDefaultBackground(getBackground());
         _headerRenderer.setDefaultForeground(getForeground());
         _headerRenderer.setFont(getFont());
@@ -1141,6 +1164,9 @@ public final class Table extends Composite {
       }
 
       final int modelRow = computeRow(row);
+      if (modelRow < 0 || modelRow >= _itemCount)
+        return renderer;
+      
       final TableItem item = getItem(modelRow);
       renderer.setDefaultBackground(item.getBackground(col));
       renderer.setDefaultForeground(item.getForeground(col));
@@ -1151,7 +1177,8 @@ public final class Table extends Composite {
 
     @Override
     public int doGetRowCount() {
-      return getFixedRowCount() + _itemCount;
+      final int rows = Math.max(0, _itemCount - _fixedRowCount);
+      return getFixedRowCount() + rows;
     }
 
     @Override
