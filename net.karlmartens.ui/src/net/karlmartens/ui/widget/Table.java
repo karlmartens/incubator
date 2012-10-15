@@ -80,7 +80,6 @@ public final class Table extends Composite {
   private final KTableImpl _table;
   private final TableListener _listener;
 
-  private boolean _requiresRedraw = true;
   private boolean _isActive = true;
   private boolean _showHeader = false;
   private int _rowHeight;
@@ -203,10 +202,10 @@ public final class Table extends Composite {
   @Override
   public void redraw() {
     checkWidget();
-    _requiresRedraw = true;
-    super.redraw();
+    _table.redraw();
   }
 
+  private final int[] _partialRedrawId = new int[1];
   private Rectangle _partialRedraw = null;
 
   private void redraw(int col, int row, int cols, int rows) {
@@ -222,8 +221,17 @@ public final class Table extends Composite {
           - r.y;
       _partialRedraw = r;
     }
-
-    super.redraw();
+    
+    final int id = ++_partialRedrawId[0];
+    getDisplay().timerExec(100, new Runnable() {
+      @Override
+      public void run() {
+        if (id != _partialRedrawId[0] || _partialRedraw == null)
+          return;
+        
+        _table.redraw(_partialRedraw);
+        _partialRedraw = null;
+      }});
   }
 
   public void setHeaderVisible(boolean show) {
@@ -1290,18 +1298,7 @@ public final class Table extends Composite {
 
     @Override
     public void paintControl(PaintEvent e) {
-      if (e.getSource() == Table.this) {
-        if (_requiresRedraw) {
-          _table.redraw();
-          _requiresRedraw = false;
-          _partialRedraw = null;
-        }
-
-        if (_partialRedraw != null) {
-          _table.redraw(_partialRedraw);
-          _partialRedraw = null;
-        }
-      }
+      // Nothing to do
     }
 
     @Override
