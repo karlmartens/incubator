@@ -22,6 +22,7 @@ import java.util.BitSet;
 import java.util.Comparator;
 
 import net.karlmartens.platform.util.ArraySupport;
+import net.karlmartens.platform.util.Filter;
 import net.karlmartens.platform.util.NumberStringComparator;
 import net.karlmartens.ui.Images;
 
@@ -67,7 +68,7 @@ public final class Table extends Composite {
   public static final String GROUP_COMMAND = "TimeSeriesTable.Group.Command";
   public static final String GROUP_VISIBLE_COLUMNS = "TimeSeriesTable.Group.VisibleColumns";
 
-  public static final int SORT_DECENDING = -1;
+  public static final int SORT_DESCENDING = -1;
   public static final int SORT_NONE = 0;
   public static final int SORT_ASCENDING = 1;
 
@@ -116,7 +117,8 @@ public final class Table extends Composite {
     _cellSelectionManager = new CellSelectionManager(this);
     _columnManager = new TableColumnManager(this, _table);
 
-    final PassthoughEventListener passthroughListener = new PassthoughEventListener(this);
+    final PassthoughEventListener passthroughListener = new PassthoughEventListener(
+        this);
     passthroughListener.addSource(_table);
 
     hookControls();
@@ -201,7 +203,26 @@ public final class Table extends Composite {
   @Override
   public void redraw() {
     checkWidget();
-    _table.redraw();
+    _requiresRedraw = true;
+    super.redraw();
+  }
+
+  private Rectangle _partialRedraw = null;
+
+  private void redraw(int col, int row, int cols, int rows) {
+    if (_partialRedraw == null) {
+      _partialRedraw = new Rectangle(col, row, cols, rows);
+    } else {
+      final Rectangle r = new Rectangle(0, 0, 0, 0);
+      r.x = Math.min(col, _partialRedraw.x);
+      r.y = Math.min(row, _partialRedraw.y);
+      r.width = Math.max(_partialRedraw.x + _partialRedraw.width, col + cols)
+          - r.x;
+      r.height = Math.max(_partialRedraw.y + _partialRedraw.height, row + rows)
+          - r.y;
+      _partialRedraw = r;
+    }
+
     super.redraw();
   }
 
@@ -338,7 +359,8 @@ public final class Table extends Composite {
 
     final BitSet selectedRows = new BitSet();
     for (Point selection : _table.getCellSelection()) {
-      if (_showHeader && selection.y < _table.getModel().getFixedHeaderRowCount())
+      if (_showHeader
+          && selection.y < _table.getModel().getFixedHeaderRowCount())
         continue;
 
       selectedRows.set(computeRow(selection.y));
@@ -372,25 +394,17 @@ public final class Table extends Composite {
     rect.width += hCorrection;
 
     // Adjust height for fully visible rows
-    final int rows = _table.getVisibleRowCount() - model.getFixedHeaderRowCount() - model.getFixedSelectableRowCount();
+    final int rows = _table.getVisibleRowCount()
+        - model.getFixedHeaderRowCount() - model.getFixedSelectableRowCount();
     rect.height = Math.min(rows, rect.height);
 
     // Adjust height for fully visible columns
-    while (!_table.isCellFullyVisible(tableTopLeft.x + rect.width - 1, tableTopLeft.y + rect.height - 1) && rect.width > 0) {
+    while (!_table.isCellFullyVisible(tableTopLeft.x + rect.width - 1,
+        tableTopLeft.y + rect.height - 1) && rect.width > 0) {
       rect.width--;
     }
 
     return rect;
-  }
-
-  public int getVisibleColumnCount() {
-    checkWidget();
-    return getVisibleScrollableCells().width;
-  }
-
-  public int getVisibleRowCount() {
-    checkWidget();
-    return getVisibleScrollableCells().height;
   }
 
   public void deselectAll() {
@@ -467,12 +481,19 @@ public final class Table extends Composite {
     checkWidget();
     final Point[] pts = _table.getCellSelection();
     final Point[] selection = new Point[pts.length];
+    int index = 0;
     for (int i = 0; i < selection.length; i++) {
       final Point pt = pts[i];
-      selection[i] = new Point(pt.x, computeRow(pt.y));
+      final Point selectionPt = new Point(pt.x, computeRow(pt.y));
+      final TableColumn column = getColumn(selectionPt.x);
+      final TableItem item = getItem(selectionPt.y);
+      if (!column.isVisible() || !item.isVisible())
+        continue;
+
+      selection[index++] = selectionPt;
     }
 
-    return selection;
+    return Arrays.copyOf(selection, index);
   }
 
   public Point getFocusCell() {
@@ -593,7 +614,7 @@ public final class Table extends Composite {
     _items = newItems;
     _itemCount = c;
     updatePreferredSize();
-    _table.redraw();
+    redraw();
   }
 
   public void setColumnCount(int count) {
@@ -628,7 +649,7 @@ public final class Table extends Composite {
     _columnCount = c;
 
     updatePreferredSize();
-    _table.redraw();
+    redraw();
   }
 
   public void remove(int start, int end) {
@@ -639,7 +660,7 @@ public final class Table extends Composite {
     for (int i = end; i >= start; i--) {
       doRemove(i);
     }
-    _table.redraw();
+    redraw();
   }
 
   public void remove(int[] indices) {
@@ -654,7 +675,7 @@ public final class Table extends Composite {
     for (int i = idxs.length - 1; i >= 0; i--) {
       doRemove(idxs[i]);
     }
-    _table.redraw();
+    redraw();
   }
 
   public void removeAll() {
@@ -665,7 +686,7 @@ public final class Table extends Composite {
     }
     _itemCount = 0;
     updatePreferredSize();
-    _table.redraw();
+    redraw();
   }
 
   public void clear(int index) {
@@ -674,7 +695,7 @@ public final class Table extends Composite {
 
     _items[index].clear();
     setSortIndicator(-1, SORT_NONE);
-    _table.redraw();
+    redraw();
   }
 
   public void clearAll() {
@@ -683,7 +704,7 @@ public final class Table extends Composite {
       _items[i].clear();
     }
     setSortIndicator(-1, SORT_NONE);
-    _table.redraw();
+    redraw();
   }
 
   public void moveColumn(int fromIndex, int toIndex) {
@@ -713,7 +734,7 @@ public final class Table extends Composite {
     _columns[fromIndex].notifyListeners(SWT.Move, new Event());
     _columns[toIndex].notifyListeners(SWT.Move, new Event());
 
-    _table.redraw();
+    redraw();
   }
 
   public void sort(int index) {
@@ -735,7 +756,7 @@ public final class Table extends Composite {
   public void sort(int index, int direction) {
     checkWidget();
     checkColumnIndex(index);
-    if (direction != SORT_ASCENDING && direction != SORT_DECENDING)
+    if (direction != SORT_ASCENDING && direction != SORT_DESCENDING)
       SWT.error(SWT.ERROR_INVALID_ARGUMENT);
 
     final int firstRow = Math.max(0, Math.min(_fixedRowCount, _items.length));
@@ -743,7 +764,8 @@ public final class Table extends Composite {
       return;
 
     final TableItem[] newItems = Arrays.copyOf(_items, _items.length);
-    final Comparator<TableItem> comparator = new TableItemComparator(new NumberStringComparator(), index, direction);
+    final Comparator<TableItem> comparator = new TableItemComparator(
+        new NumberStringComparator(), index, direction);
     Arrays.sort(newItems, firstRow, _itemCount, comparator);
 
     _items = newItems;
@@ -774,6 +796,23 @@ public final class Table extends Composite {
     _columnManager.enableColumnSort();
   }
 
+  void updateFilteredItems() {
+    Filter<TableItem> filter = Filter.all();
+    for (int i = 0; i < _columnCount; i++) {
+      final Filter<TableItem> oFilter = _columns[i].getFilter();
+      if (oFilter == null)
+        continue;
+
+      filter = filter.and(oFilter);
+    }
+
+    for (int i = 0; i < _itemCount; i++) {
+      final TableItem item = _items[i];
+      item.setVisible(filter.accepts(item));
+    }
+    redraw();
+  }
+
   void createItem(TableColumn item, int index) {
     checkWidget();
     if (index < 0 || index > _columnCount)
@@ -785,7 +824,8 @@ public final class Table extends Composite {
       _columns = newColumns;
     }
 
-    System.arraycopy(_columns, index, _columns, index + 1, _columnCount++ - index);
+    System.arraycopy(_columns, index, _columns, index + 1, _columnCount++
+        - index);
     _columns[index] = item;
 
     if (index == _lastSortColumnIndex)
@@ -884,7 +924,8 @@ public final class Table extends Composite {
     _previousSortImage = null;
     _lastSortColumnIndex = -1;
     _lastSortDirection = SORT_NONE;
-    if (index < 0 || index >= _columnCount || (direction != SORT_ASCENDING && direction != SORT_DECENDING))
+    if (index < 0 || index >= _columnCount
+        || (direction != SORT_ASCENDING && direction != SORT_DESCENDING))
       return;
 
     final TableColumn column = getColumn(index);
@@ -939,11 +980,11 @@ public final class Table extends Composite {
         continue;
       }
 
-      _table.redraw(0, previous - height + 1, width, height);
+      redraw(0, previous - height + 1, width, height);
       previous = index;
     }
 
-    _table.redraw(0, previous - height + 1, width, height);
+    redraw(0, previous - height + 1, width, height);
   }
 
   private void doRemove(int index) {
@@ -1081,6 +1122,21 @@ public final class Table extends Composite {
       return _rowHeight;
     }
 
+    public int getRowHeight(int row) {
+      if (row == 0 && _showHeader)
+        return _rowHeight;
+
+      final int rIndex = computeRow(row);
+      if (rIndex < 0 || rIndex >= _itemCount)
+        return 0;
+
+      final TableItem item = getItem(rIndex);
+      if (item.isVisible())
+        return _rowHeight;
+
+      return 0;
+    }
+
     @Override
     public Object doGetContentAt(int col, int row) {
       // This seems weird but it a KTable behaviour to ask for data that
@@ -1118,9 +1174,13 @@ public final class Table extends Composite {
       // Not used
     }
 
-    private final ImageFixedCellRenderer _headerRenderer = new ImageFixedCellRenderer(SWT.BOLD | DefaultCellRenderer.INDICATION_FOCUS_ROW);
-    private final TextCellRenderer _renderer = new TextCellRenderer(DefaultCellRenderer.INDICATION_FOCUS);
-    private final CheckableCellRenderer _checkRenderer = new CheckableCellRenderer(DefaultCellRenderer.INDICATION_FOCUS);
+    private final ImageFixedCellRenderer _headerRenderer = new ImageFixedCellRenderer(
+        SWT.BOLD | DefaultCellRenderer.INDICATION_FOCUS_ROW);
+    private final TextCellRenderer _renderer = new TextCellRenderer(
+        DefaultCellRenderer.INDICATION_FOCUS);
+    private final CheckableCellRenderer _checkRenderer = new CheckableCellRenderer(
+        DefaultCellRenderer.INDICATION_FOCUS);
+    private final HiddenCellRenderer _hiddenRenderer = new HiddenCellRenderer();
 
     @Override
     public KTableCellRenderer doGetCellRenderer(int col, int row) {
@@ -1130,44 +1190,57 @@ public final class Table extends Composite {
         _headerRenderer.setFont(getFont());
         _headerRenderer.setImage(null);
         _headerRenderer.setActive(_isActive);
+        _headerRenderer.setFiltered(false);
 
         if (col < 0 || col >= _columnCount)
           return _headerRenderer;
 
         final TableColumn column = getColumn(col);
+        _headerRenderer.setFiltered(column.getFilter() != null);
         _headerRenderer.setImage(column.getImage());
         return _headerRenderer;
       }
 
       if (col < 0 || col >= _columnCount)
-        return _renderer;
+        return _hiddenRenderer;
 
       final TableColumn column = getColumn(col);
+      if (!column.isVisible())
+        return _hiddenRenderer;
+
+      final int modelRow = computeRow(row);
+      final TableItem item = getItem(modelRow);
+      if (!item.isVisible())
+        return _hiddenRenderer;
+
       final DefaultCellRenderer renderer;
       if ((SWT.CHECK & column.getStyle()) > 0) {
         renderer = _checkRenderer;
         _checkRenderer.setActive(_isActive);
-        renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_CENTER | SWTX.ALIGN_VERTICAL_CENTER);
+        renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_CENTER
+            | SWTX.ALIGN_VERTICAL_CENTER);
       } else {
         renderer = _renderer;
         _renderer.setActive(_isActive);
-        renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_LEFT | SWTX.ALIGN_VERTICAL_CENTER);
+        renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_LEFT
+            | SWTX.ALIGN_VERTICAL_CENTER);
       }
 
       final int style = column.getStyle();
       if ((style & SWT.LEFT) > 0) {
-        renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_LEFT | SWTX.ALIGN_VERTICAL_CENTER);
+        renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_LEFT
+            | SWTX.ALIGN_VERTICAL_CENTER);
       } else if ((style & SWT.RIGHT) > 0) {
-        renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_RIGHT | SWTX.ALIGN_VERTICAL_CENTER);
+        renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_RIGHT
+            | SWTX.ALIGN_VERTICAL_CENTER);
       } else if ((style & SWT.CENTER) > 0) {
-        renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_CENTER | SWTX.ALIGN_VERTICAL_CENTER);
+        renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_CENTER
+            | SWTX.ALIGN_VERTICAL_CENTER);
       }
 
-      final int modelRow = computeRow(row);
       if (modelRow < 0 || modelRow >= _itemCount)
         return renderer;
       
-      final TableItem item = getItem(modelRow);
       renderer.setDefaultBackground(item.getBackground(col));
       renderer.setDefaultForeground(item.getForeground(col));
       renderer.setFont(item.getFont(col));
@@ -1188,7 +1261,8 @@ public final class Table extends Composite {
 
   };
 
-  private final class TableListener implements ControlListener, KTableCellResizeListener, PaintListener, DisposeListener, FocusListener {
+  private final class TableListener implements ControlListener,
+      KTableCellResizeListener, PaintListener, DisposeListener, FocusListener {
 
     @Override
     public void controlMoved(ControlEvent e) {
@@ -1197,12 +1271,12 @@ public final class Table extends Composite {
 
     @Override
     public void focusLost(FocusEvent e) {
-      _table.redraw();
+      redraw();
     }
 
     @Override
     public void focusGained(FocusEvent e) {
-      _table.redraw();
+      redraw();
     }
 
     @Override
@@ -1210,15 +1284,23 @@ public final class Table extends Composite {
       if (e.getSource() == Table.this) {
         final Rectangle ca = getClientArea();
         _table.setBounds(0, 0, ca.width, ca.height);
-        _table.redraw();
+        redraw();
       }
     }
 
     @Override
     public void paintControl(PaintEvent e) {
-      if (e.getSource() == Table.this && _requiresRedraw) {
-        _requiresRedraw = false;
-        _table.redraw();
+      if (e.getSource() == Table.this) {
+        if (_requiresRedraw) {
+          _table.redraw();
+          _requiresRedraw = false;
+          _partialRedraw = null;
+        }
+
+        if (_partialRedraw != null) {
+          _table.redraw(_partialRedraw);
+          _partialRedraw = null;
+        }
       }
     }
 
@@ -1288,7 +1370,7 @@ public final class Table extends Composite {
     protected void onKeyDown(KeyEvent e) {
       // Disable default even handling
     }
-    
+
     @Override
     protected void doCalculations() {
       super.doCalculations();
@@ -1313,7 +1395,9 @@ public final class Table extends Composite {
 
         // Add height of data rows to display
         int rowsVisible = 0;
-        for (int i = m_Model.getFixedHeaderRowCount(); i < m_Model.getFixedHeaderRowCount() + m_numRowsVisibleInPreferredSize && i < m_Model.getRowCount(); i++) {
+        for (int i = m_Model.getFixedHeaderRowCount(); i < m_Model
+            .getFixedHeaderRowCount() + m_numRowsVisibleInPreferredSize
+            && i < m_Model.getRowCount(); i++) {
           height += m_Model.getRowHeight(i);
           rowsVisible++;
         }
@@ -1331,7 +1415,8 @@ public final class Table extends Composite {
         }
 
         // Add width of data columns to display
-        for (int i = m_Model.getFixedHeaderColumnCount(); i < m_Model.getFixedHeaderColumnCount() + m_numColsVisibleInPreferredSize
+        for (int i = m_Model.getFixedHeaderColumnCount(); i < m_Model
+            .getFixedHeaderColumnCount() + m_numColsVisibleInPreferredSize
             && i < m_Model.getColumnCount(); i++) {
           width += m_Model.getColumnWidth(i);
         }

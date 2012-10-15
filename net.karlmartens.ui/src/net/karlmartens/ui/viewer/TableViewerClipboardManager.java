@@ -34,6 +34,8 @@ import net.karlmartens.ui.Activator;
 import net.karlmartens.ui.UiUtil;
 import net.karlmartens.ui.widget.ClipboardStrategy;
 import net.karlmartens.ui.widget.Table;
+import net.karlmartens.ui.widget.TableColumn;
+import net.karlmartens.ui.widget.TableItem;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -182,7 +184,7 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
     };
   }
 
-  private void hookControl(Control control) {
+  private void hookControl(final Control control) {
     final ClipboardStrategy clipboardStrategy = new ClipboardStrategy();
 
     final Listener listener = new Listener() {
@@ -190,29 +192,45 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
       public void handleEvent(Event event) {
         if (!clipboardStrategy.isClipboardEvent(event))
           return;
+        
+        if (!hasFocus(control))
+          return;
 
         switch (clipboardStrategy.getOperation(event)) {
           case OPERATION_COPY:
             if (isOperationEnabled(OPERATION_COPY)) {
-              copy();
-              UiUtil.consume(event);
+              if (copy())
+                UiUtil.consume(event);
             }
             break;
 
           case OPERATION_PASTE:
             if (isOperationEnabled(OPERATION_PASTE)) {
-              paste();
-              UiUtil.consume(event);
+              if (paste())
+                UiUtil.consume(event);
             }
             break;
 
           case OPERATION_CUT:
             if (isOperationEnabled(OPERATION_CUT)) {
-              cut();
-              UiUtil.consume(event);
+              if (cut())
+                UiUtil.consume(event);
             }
             break;
         }
+      }
+
+      private boolean hasFocus(Control control) {
+        final Display display = control.getDisplay();
+        Control focus = display.getFocusControl();
+        while (focus != null) {
+          if (focus == control)
+            return true;
+          
+          focus = focus.getParent();
+        }
+
+        return false;
       }
     };
 
@@ -304,33 +322,28 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
         final Rectangle targetRect;
         if (cells.length == 1) {
           // Paste top-left anchor
-          final int width = Math.min(dataRect.width, _viewer.doGetColumnCount()
-              - anchor.x);
-          final int height = Math.min(dataRect.height, _viewer.doGetItemCount()
-              - anchor.y);
-          targetRect = new Rectangle(anchor.x, anchor.y, width, height);
+          targetRect = computeViewerAvailableCellBlock(new Rectangle(anchor.x,
+              anchor.y, dataRect.width, dataRect.height));
+
         } else if (dataRect.width == 1 || dataRect.height == 1) {
           // Fill
-          final int width = Math.min(length, _viewer.doGetColumnCount()
-              - anchor.x);
-          final int height = Math.min(cells.length / length,
-              _viewer.doGetItemCount() - anchor.y);
-          targetRect = new Rectangle(anchor.x, anchor.y, width, height);
+          targetRect = computeViewerAvailableCellBlock(new Rectangle(anchor.x,
+              anchor.y, length, cells.length / length));
 
-          final String[][] newData = new String[height][width];
+          final String[][] newData = new String[targetRect.height][targetRect.width];
           if (dataRect.width == 1) {
             if (dataRect.height == 1) {
               for (String[] r : newData) {
                 Arrays.fill(r, data[0][0]);
               }
             } else if (dataRect.height == targetRect.height) {
-              for (int i = 0; i < height; i++) {
+              for (int i = 0; i < targetRect.height; i++) {
                 Arrays.fill(newData[i], data[i][0]);
               }
             }
           } else if (dataRect.width == targetRect.width) {
-            for (int x = 0; x < width; x++) {
-              for (int y = 0; y < height; y++) {
+            for (int x = 0; x < targetRect.width; x++) {
+              for (int y = 0; y < targetRect.height; y++) {
                 newData[y][x] = data[0][x];
               }
             }
@@ -339,11 +352,8 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
           data = newData;
         } else {
           // Paste into region
-          final int width = Math.min(length, _viewer.doGetColumnCount()
-              - anchor.x);
-          final int height = Math.min(cells.length / length,
-              _viewer.doGetItemCount() - anchor.y);
-          targetRect = new Rectangle(anchor.x, anchor.y, width, height);
+          targetRect = computeViewerAvailableCellBlock(new Rectangle(anchor.x,
+              anchor.y, length, cells.length / length));
         }
 
         final Point[] targetCells = computeCells(targetRect);
@@ -442,14 +452,30 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
     return length;
   }
 
-  private static Point[] computeCells(Rectangle region) {
+  private Point[] computeCells(Rectangle region) {
+    final Table t = _viewer.getControl();
+
+    final Point pt = new Point(0, 0);
     final Point[] pts = new Point[region.width * region.height];
     int i = 0;
-    for (int y = region.y; y < region.y + region.height; y++) {
-      for (int x = region.x; x < region.x + region.width; x++) {
+    for (int y = region.y; y < t.getItemCount() && pt.y < region.height; y++) {
+      final TableItem row = t.getItem(y);
+      if (!row.isVisible())
+        continue;
+
+      pt.x = 0;
+      for (int x = region.x; x < t.getColumnCount() && pt.x < region.width; x++) {
+        final TableColumn column = t.getColumn(x);
+        if (!column.isVisible())
+          continue;
+
         pts[i++] = new Point(x, y);
+        pt.x++;
       }
+
+      pt.y++;
     }
+
     return pts;
   }
 
@@ -460,6 +486,35 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
         dest[i * dimensions.x + j] = sourceRow[j];
       }
     }
+  }
+
+  private Rectangle computeViewerAvailableCellBlock(Rectangle block) {
+    final Table t = _viewer.getControl();
+
+    final Rectangle available = new Rectangle(block.x, block.y, 0, 0);
+    for (int x = available.x; x < t.getColumnCount(); x++) {
+      if (available.width >= block.width)
+        break;
+
+      if (t.getColumn(x).isVisible()) {
+        available.width++;
+      } else if (available.x == x) {
+        available.x++;
+      }
+    }
+
+    for (int y = available.y; y < t.getItemCount(); y++) {
+      if (available.height >= block.height)
+        break;
+
+      if (t.getItem(y).isVisible()) {
+        available.height++;
+      } else if (available.y == y) {
+        available.y++;
+      }
+    }
+
+    return available;
   }
 
   private static void showUnsupportedDialog(Shell shell) {

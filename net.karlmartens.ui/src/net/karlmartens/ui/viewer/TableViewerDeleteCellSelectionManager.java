@@ -28,6 +28,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler2;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
@@ -68,7 +69,7 @@ public final class TableViewerDeleteCellSelectionManager extends
     final String[] values = new String[selection.length];
     Arrays.fill(values, "");
     setValues(selection, values);
-    _viewer.refresh();
+    _viewer.refresh(true);
     return true;
   }
 
@@ -140,6 +141,9 @@ public final class TableViewerDeleteCellSelectionManager extends
       private void handleKeyPressed(Event event) {
         if ((event.stateMask & SWT.MODIFIER_MASK) != 0)
           return;
+        
+        if (!hasFocus())
+          return;
 
         switch (event.keyCode) {
           case SWT.DEL:
@@ -147,6 +151,18 @@ public final class TableViewerDeleteCellSelectionManager extends
             if (delete())
               UiUtil.consume(event);
         }
+      }
+
+      private boolean hasFocus() {
+        Control focus = display.getFocusControl();
+        while (focus != null) {
+          if (focus == table)
+            return true;
+          
+          focus = focus.getParent();
+        }
+
+        return false;
       }
     };
   }

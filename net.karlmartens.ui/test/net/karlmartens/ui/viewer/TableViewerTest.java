@@ -23,15 +23,13 @@ import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_PASTE;
 import net.karlmartens.platform.util.NumberStringComparator;
 import net.karlmartens.ui.widget.Table;
 
-import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
 import org.joda.time.LocalDate;
 
 public final class TableViewerTest {
@@ -40,7 +38,7 @@ public final class TableViewerTest {
     final int fixedColumns = 4;
     final Object[][] input = new Object[100][];
     for (int i = 0; i < input.length; i++) {
-      input[i] = new Object[302];
+      input[i] = new Object[20];
       input[i][0] = "Item " + Integer.toString(i);
       input[i][1] = Boolean.valueOf(i % 3 == 0);
       input[i][2] = TestComboEditingSupport.ITEMS[0 + (i % TestComboEditingSupport.ITEMS.length)];
@@ -54,13 +52,9 @@ public final class TableViewerTest {
     }
 
     final Shell shell = new Shell();
-    shell.setLayout(new GridLayout(1, false));
+    shell.setLayout(new FillLayout());
 
     final Display display = shell.getDisplay();
-
-    final Text text = new Text(shell, SWT.BORDER);
-    text.setLayoutData(GridDataFactory.fillDefaults().grab(true, false)
-        .create());
 
     final TableViewer viewer = new TableViewer(shell);
     viewer.setContentProvider(new ArrayContentProvider());
@@ -93,17 +87,17 @@ public final class TableViewerTest {
     c4.getColumn().setText("Date");
     c4.getColumn().setWidth(90);
 
-    for (int i = fixedColumns; i < 302; i++) {
+    for (int i = fixedColumns; i < input[0].length; i++) {
       final TableViewerColumn c = new TableViewerColumn(viewer, SWT.RIGHT);
       c.setLabelProvider(new TestColumnLabelProvider(i));
       c.setEditingSupport(new TestTextEditingSupport(viewer, i, SWT.RIGHT));
       c.getColumn().setText("Test " + Integer.toString(i + 1));
       c.getColumn().setWidth(40);
       c.getColumn().setHideable(false);
+      c.getColumn().setFilterable(false);
     }
 
     final Table table = viewer.getControl();
-    table.setLayoutData(GridDataFactory.fillDefaults().create());
     table.setHeaderVisible(true);
     table.setBackground(display.getSystemColor(SWT.COLOR_WHITE));
     table.setFont(new Font(display, "Arial", 8, SWT.NORMAL));

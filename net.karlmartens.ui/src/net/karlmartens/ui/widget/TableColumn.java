@@ -17,6 +17,8 @@
  */
 package net.karlmartens.ui.widget;
 
+import net.karlmartens.platform.util.Filter;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.SelectionListener;
@@ -31,7 +33,8 @@ public final class TableColumn extends Item {
   private boolean _moveable = true;
   private boolean _hideable = true;
   private boolean _visible = true;
-
+  private boolean _filterable = true;
+  private Filter<TableItem> _filter;
 
   /**
    * <p>
@@ -74,7 +77,7 @@ public final class TableColumn extends Item {
   public void setWidth(int width) {
     _width = width;
     _parent.redraw();
-    
+
     notifyListeners(SWT.Resize, new Event());
   }
 
@@ -89,11 +92,11 @@ public final class TableColumn extends Item {
   public boolean isMoveable() {
     return _moveable;
   }
-  
+
   public void setHideable(boolean state) {
     _hideable = state;
   }
-  
+
   public boolean isHideable() {
     return _hideable;
   }
@@ -105,6 +108,23 @@ public final class TableColumn extends Item {
 
   public boolean isVisible() {
     return _visible;
+  }
+
+  public void setFilterable(boolean filterable) {
+    _filterable = filterable;
+  }
+
+  public boolean isFilterable() {
+    return _filterable;
+  }
+
+  public void setFilter(Filter<TableItem> filter) {
+    _filter = filter;
+    _parent.updateFilteredItems();
+  }
+
+  public Filter<TableItem> getFilter() {
+    return _filter;
   }
 
   public void addControlListener(ControlListener listener) {

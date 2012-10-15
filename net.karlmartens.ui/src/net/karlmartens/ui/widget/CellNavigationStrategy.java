@@ -144,15 +144,44 @@ public final class CellNavigationStrategy {
 
   private Point getNeighbor(Table table, Point currentSelectedCell, Point delta) {
     final Point pt = new Point(currentSelectedCell.x, currentSelectedCell.y);
-    for (;;) {
-      pt.x += delta.x;
-      pt.y += delta.y;
-      if (pt.x < 0 || //
-          pt.y < 0 || pt.x >= table.getColumnCount() || //
-          pt.y >= table.getItemCount())
+    final int columnCount = table.getColumnCount();
+    final int itemCount = table.getItemCount();
+    if (delta.x == 0) {
+      if (delta.y == 0)
+        return currentSelectedCell;
+
+      if (pt.x < 0 || pt.x >= columnCount)
         return null;
 
-      if (table.getColumn(pt.x).isVisible())
+      final TableColumn column = table.getColumn(pt.x);
+      if (!column.isVisible())
+        return null;
+
+      for (;;) {
+        pt.y += delta.y;
+        if (pt.y < 0 || pt.y >= itemCount)
+          return null;
+
+        final TableItem item = table.getItem(pt.y);
+        if (item.isVisible())
+          return pt;
+      }
+    }
+
+    if (pt.y < 0 || pt.y >= itemCount)
+      return null;
+
+    final TableItem item = table.getItem(pt.y);
+    if (!item.isVisible())
+      return null;
+
+    for (;;) {
+      pt.x += delta.x;
+      if (pt.x < 0 || pt.x >= columnCount)
+        return null;
+
+      final TableColumn column = table.getColumn(pt.x);
+      if (column.isVisible())
         return pt;
     }
   }
@@ -162,8 +191,16 @@ public final class CellNavigationStrategy {
     if (numFixedRows >= table.getItemCount())
       return null;
 
-    final int y = Math.max(numFixedRows,
-        currentSelectedCell.y - (table.getVisibleRowCount() - 1));
+    final int index = currentSelectedCell.y
+        - table.getVisibleScrollableCells().height - 1;
+    int y = Math.max(numFixedRows, index);
+    while (!table.getItem(y).isVisible() && y < table.getItemCount()) {
+      y++;
+    }
+
+    if (y >= table.getItemCount())
+      return null;
+
     return new Point(currentSelectedCell.x, y);
   }
 
@@ -172,8 +209,17 @@ public final class CellNavigationStrategy {
     if (numFixedRows >= table.getItemCount())
       return null;
 
-    final int y = Math.min(table.getItemCount() - 1, currentSelectedCell.y
-        + (table.getVisibleRowCount() - 1));
+    final int index = currentSelectedCell.y
+        + table.getVisibleScrollableCells().height - 1;
+    final int maxIndex = table.getItemCount() - 1;
+    int y = Math.min(index, maxIndex);
+    while (!table.getItem(y).isVisible() && y >= 0) {
+      y--;
+    }
+
+    if (y < 0)
+      return null;
+
     return new Point(currentSelectedCell.x, y);
   }
 
@@ -182,8 +228,16 @@ public final class CellNavigationStrategy {
     if (numFixedColumns >= table.getColumnCount())
       return null;
 
-    final int x = Math.max(numFixedColumns,
-        currentSelectedCell.x - (table.getVisibleColumnCount() - 1));
+    final int index = currentSelectedCell.x
+        - table.getVisibleScrollableCells().width - 1;
+    int x = Math.max(numFixedColumns, index);
+    while (!table.getColumn(x).isVisible() && x < table.getColumnCount()) {
+      x++;
+    }
+
+    if (x == table.getColumnCount())
+      return null;
+
     return new Point(x, currentSelectedCell.y);
   }
 
@@ -192,8 +246,17 @@ public final class CellNavigationStrategy {
     if (numFixedColumns >= table.getColumnCount())
       return null;
 
-    final int x = Math.min(table.getColumnCount() - 1, currentSelectedCell.x
-        + (table.getVisibleColumnCount() - 1));
+    final int max = table.getColumnCount() - 1;
+    final int index = currentSelectedCell.x
+        + table.getVisibleScrollableCells().width - 1;
+    int x = Math.min(index, max);
+    while (!table.getColumn(x).isVisible() && x >= 0) {
+      x--;
+    }
+
+    if (x < 0)
+      return null;
+
     return new Point(x, currentSelectedCell.y);
   }
 

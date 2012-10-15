@@ -37,7 +37,8 @@ public class ImageFixedCellRenderer extends FixedCellRenderer {
     _image = image;
   }
 
-  protected void drawCellContent(GC gc, Rectangle rect, int col, int row, Object content, KTableModel model, Color bgColor, Color fgColor) {
+  protected void drawCellContent(GC gc, Rectangle rect, int col, int row,
+      Object content, KTableModel model, Color bgColor, Color fgColor) {
     final int originalWidth = rect.width;
     final Point pt = new Point(0, 0);
 
@@ -46,7 +47,7 @@ public class ImageFixedCellRenderer extends FixedCellRenderer {
       final Rectangle imageBounds = image.getBounds();
       pt.x = rect.x + rect.width - 8;
       rect.width -= imageBounds.width + 8;
-      pt.y = rect.y + rect.height / 2 - imageBounds.height / 2;
+      pt.y = rect.y + rect.height / 2 - imageBounds.height / 2 - 2;
 
       // do not draw if there is not enough space for the image:
       if (rect.width + 4 < imageBounds.width) {
@@ -58,7 +59,14 @@ public class ImageFixedCellRenderer extends FixedCellRenderer {
     drawCellContent(gc, rect, content.toString(), null, fgColor, bgColor);
 
     if (image != null) {
-      gc.fillRectangle(rect.x + rect.width, rect.y, Math.min(image.getBounds().width + 8, originalWidth - rect.width - 1), rect.height);
+      gc.setBackground(bgColor);
+      gc.fillRectangle(
+          rect.x + rect.width,
+          rect.y,
+          Math.min(image.getBounds().width + 8, originalWidth - rect.width - 1),
+          rect.height);
+
+      gc.setBackground(bgColor);
       gc.drawImage(image, pt.x, pt.y);
     }
   }

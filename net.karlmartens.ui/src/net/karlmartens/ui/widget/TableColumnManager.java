@@ -17,6 +17,8 @@
  */
 package net.karlmartens.ui.widget;
 
+import java.util.ResourceBundle;
+
 import net.karlmartens.ui.action.ResizeAllColumnsAction;
 import net.karlmartens.ui.action.ResizeColumnAction;
 import net.karlmartens.ui.widget.Table.KTableImpl;
@@ -49,6 +51,8 @@ final class TableColumnManager {
   private final Table _container;
   private final KTableImpl _table;
   private final MenuManager _columnMenu;
+  private final SortColumnsContribution _sortColumnsContribution;
+  private final FilterGroupContribution _filterGroupContribution;
   private final ResizeColumnAction _resizeColumnAction;
   private final ResizeAllColumnsAction _resizeAllColumnsAction;
 
@@ -66,16 +70,27 @@ final class TableColumnManager {
     _container = container;
     _table = table;
 
+    _sortColumnsContribution = new SortColumnsContribution(this, _container);
+    _filterGroupContribution = new FilterGroupContribution(_container);
     _resizeColumnAction = new ResizeColumnAction(_container, -1);
     _resizeAllColumnsAction = new ResizeAllColumnsAction(_container);
 
+    final ResourceBundle bundle = ResourceBundle
+        .getBundle("net.karlmartens.ui.locale.messages");
+    final IMenuManager showHideMenu = new MenuManager(
+        bundle.getString("ShowHideColumns.TEXT"));
+    showHideMenu.add(new GroupMarker(Table.GROUP_VISIBLE_COLUMNS));
+    showHideMenu.add(new VisibleColumnsContribution(_container));
+    showHideMenu.update();
+
     _columnMenu = new MenuManager();
     _columnMenu.add(new GroupMarker(Table.GROUP_COMMAND));
+    _columnMenu.add(_sortColumnsContribution);
     _columnMenu.add(_resizeColumnAction);
     _columnMenu.add(_resizeAllColumnsAction);
-    _columnMenu.add(new GroupMarker(Table.GROUP_VISIBLE_COLUMNS));
     _columnMenu.add(new Separator());
-    _columnMenu.add(new VisibleColumnsContribution(_container));
+    _columnMenu.add(showHideMenu);
+    _columnMenu.add(_filterGroupContribution);
     _columnMenu.update();
 
     hookControl();
@@ -83,6 +98,10 @@ final class TableColumnManager {
 
   IMenuManager getMenuManager() {
     return _columnMenu;
+  }
+
+  boolean isSortEnabled() {
+    return _columnsSortable;
   }
 
   void enableColumnSort() {
@@ -110,6 +129,8 @@ final class TableColumnManager {
   }
 
   private Menu buildMenu(int columnIndex) {
+    _sortColumnsContribution.setColumnIndex(columnIndex);
+    _filterGroupContribution.setColumnIndex(columnIndex);
     _resizeColumnAction.setColumnIndex(columnIndex);
     _columnMenu.createContextMenu(_table);
     return _columnMenu.getMenu();
@@ -125,7 +146,8 @@ final class TableColumnManager {
 
     if (_image != null)
       _image.dispose();
-    _image = new Image(getDisplay(), new Rectangle(0, 0, cellCords.width, height));
+    _image = new Image(getDisplay(), new Rectangle(0, 0, cellCords.width,
+        height));
     _image.getImageData().alpha = 0;
 
     final GC gc = new GC(_table);
@@ -181,7 +203,8 @@ final class TableColumnManager {
 
   private final Listener _widgetListener = new Listener();
 
-  private final class Listener implements MouseListener, MouseMoveListener, MenuDetectListener, DisposeListener {
+  private final class Listener implements MouseListener, MouseMoveListener,
+      MenuDetectListener, DisposeListener {
 
     @Override
     public void mouseDoubleClick(MouseEvent e) {
@@ -189,7 +212,8 @@ final class TableColumnManager {
         return;
 
       final Point cellCord = _table.getCellForCoordinates(e.x, e.y);
-      if (cellCord.y < 0 || cellCord.y >= _table.getModel().getFixedHeaderRowCount())
+      if (cellCord.y < 0
+          || cellCord.y >= _table.getModel().getFixedHeaderRowCount())
         return;
 
       final TableColumn column = _container.getColumn(cellCord.x);
@@ -230,7 +254,8 @@ final class TableColumnManager {
       }
 
       final Point cellCord = _table.getCellForCoordinates(e.x, e.y);
-      if (cellCord.y < 0 || cellCord.y >= _table.getModel().getFixedHeaderRowCount()) {
+      if (cellCord.y < 0
+          || cellCord.y >= _table.getModel().getFixedHeaderRowCount()) {
         cancelColumnMove();
         cancelSelection();
         return;
@@ -272,7 +297,8 @@ final class TableColumnManager {
       }
 
       final Point cellCord = _table.getCellForCoordinates(e.x, e.y);
-      if (cellCord.x < 0 || cellCord.x >= _container.getColumnCount() || _columnIndex == cellCord.x) {
+      if (cellCord.x < 0 || cellCord.x >= _container.getColumnCount()
+          || _columnIndex == cellCord.x) {
         cancelColumnMove();
 
         if (isSelectionActive()) {
