@@ -17,7 +17,12 @@
  */
 package net.karlmartens.ui;
 
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Queue;
+
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
@@ -36,13 +41,18 @@ public final class UiUtil {
     if (control == null || control.isDisposed())
       return false;
 
+    final Queue<Control> controls = new LinkedList<Control>();
+    controls.add(control);
+    
     final Control focusContol = control.getDisplay().getFocusControl();
-    Control candidate = control;
-    while (candidate != null) {
+    
+    while (!controls.isEmpty()) {
+      final Control candidate = controls.poll();
       if (candidate == focusContol)
         return true;
 
-      candidate = all ? candidate.getParent() : null;
+      if (all && (candidate instanceof Composite))
+        controls.addAll(Arrays.asList(((Composite)candidate).getChildren()));
     }
 
     return false;

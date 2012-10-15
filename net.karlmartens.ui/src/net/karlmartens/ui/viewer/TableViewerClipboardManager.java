@@ -96,47 +96,48 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
   private void activateHandlers(final IHandlerService service) {
     final List<IHandlerActivation> activations = new ArrayList<IHandlerActivation>();
 
-    if (isOperationEnabled(OPERATION_COPY)) {
-      activations.add(service.activateHandler(
-          IWorkbenchCommandConstants.EDIT_COPY, new AbstractHandler() {
-            @Override
-            public Object execute(ExecutionEvent event)
-                throws ExecutionException {
+    activations.add(service.activateHandler(
+        IWorkbenchCommandConstants.EDIT_COPY, new AbstractHandler() {
+          @Override
+          public Object execute(ExecutionEvent event)
+              throws ExecutionException {
+            if (isOperationEnabled(OPERATION_COPY))
               copy();
-              return null;
-            }
+            
+            return null;
+          }
 
-            @Override
-            public void setEnabled(Object evaluationContext) {
-              setBaseEnabled(UiUtil.hasFocus(_viewer.getControl(), true));
-            }
-          }));
-    }
+          @Override
+          public void setEnabled(Object evaluationContext) {
+            setBaseEnabled(UiUtil.hasFocus(_viewer.getControl(), true));
+          }
+        }));
 
-    if (isOperationEnabled(OPERATION_CUT)) {
-      activations.add(service.activateHandler(
-          IWorkbenchCommandConstants.EDIT_CUT, new AbstractHandler() {
-            @Override
-            public Object execute(ExecutionEvent event)
-                throws ExecutionException {
-              copy();
-              return null;
-            }
+    activations.add(service.activateHandler(
+        IWorkbenchCommandConstants.EDIT_CUT, new AbstractHandler() {
+          @Override
+          public Object execute(ExecutionEvent event)
+              throws ExecutionException {
+            if (isOperationEnabled(OPERATION_CUT))
+              cut();
+            
+            return null;
+          }
 
-            @Override
-            public void setEnabled(Object evaluationContext) {
-              setBaseEnabled(UiUtil.hasFocus(_viewer.getControl(), true));
-            }
-          }));
-    }
+          @Override
+          public void setEnabled(Object evaluationContext) {
+            setBaseEnabled(UiUtil.hasFocus(_viewer.getControl(), true));
+          }
+        }));
 
-    if (isOperationEnabled(OPERATION_PASTE)) {
       activations.add(service.activateHandler(
           IWorkbenchCommandConstants.EDIT_PASTE, new AbstractHandler() {
             @Override
             public Object execute(ExecutionEvent event)
                 throws ExecutionException {
-              paste();
+              if (isOperationEnabled(OPERATION_PASTE))
+                paste();
+              
               return null;
             }
 
@@ -145,7 +146,6 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
               setBaseEnabled(UiUtil.hasFocus(_viewer.getControl(), true));
             }
           }));
-    }
 
     final Table t = _viewer.getControl();
 
