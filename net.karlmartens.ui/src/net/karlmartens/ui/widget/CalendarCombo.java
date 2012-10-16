@@ -517,17 +517,17 @@ public final class CalendarCombo extends Composite {
     //
         new DateTimeFormatterBuilder()//
             .appendTwoDigitYear(pivotYear, false)//
-            .appendLiteral('/')//
+            .appendLiteral('-')//
             .appendMonthOfYear(1)//
-            .appendLiteral('/')//
+            .appendLiteral('-')//
             .appendDayOfMonth(1)//
             .toParser(),
 
         new DateTimeFormatterBuilder()//
             .appendYear(4, 4)//
-            .appendLiteral('/')//
+            .appendLiteral('-')//
             .appendMonthOfYear(1)//
-            .appendLiteral('/')//
+            .appendLiteral('-')//
             .appendDayOfMonth(1)//
             .toParser(), //
 
