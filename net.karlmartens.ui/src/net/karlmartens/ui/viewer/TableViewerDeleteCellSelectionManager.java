@@ -63,9 +63,6 @@ public final class TableViewerDeleteCellSelectionManager extends
     if (selection == null || selection.length == 0)
       return false;
 
-    if (!isEditable(selection))
-      return false;
-
     final String[] values = new String[selection.length];
     Arrays.fill(values, "");
     setValues(selection, values);

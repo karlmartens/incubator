@@ -357,11 +357,6 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
         }
 
         final Point[] targetCells = computeCells(targetRect);
-        if (!isEditable(targetCells)) {
-          result[0] = false;
-          return;
-        }
-
         final String[] values = new String[targetRect.width * targetRect.height];
         Arrays.fill(values, "");
         copy(data, values, new Point(targetRect.width, targetRect.height));

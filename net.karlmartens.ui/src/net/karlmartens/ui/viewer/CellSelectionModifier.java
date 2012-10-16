@@ -34,20 +34,17 @@ public abstract class CellSelectionModifier {
     _viewer = viewer;
     _editSupport = new EditingSupportProxy(viewer);
   }
+  
+  private boolean isEditable(Point cell) {
+    _editSupport._base = getEditingSupport(cell);
 
-  protected final boolean isEditable(Point[] cells) {
-    for (int i = 0; i < cells.length; i++) {
-      final Point cell = cells[i];
-      _editSupport._base = getViewerColumn(cell.x).doGetEditingSupport();
+    final TableItem item = _viewer.doGetItem(cell.y);
+    if (!_editSupport.canEdit(item.getData()))
+      return false;
 
-      final TableItem item = _viewer.doGetItem(cell.y);
-      if (!_editSupport.canEdit(item.getData()))
-        return false;
-
-      final ViewerCell vCell = getViewerCell(cell);
-      if (_editSupport.getCellEditor(vCell.getElement()).isActivated())
-        return false;
-    }
+    final ViewerCell vCell = getViewerCell(cell);
+    if (_editSupport.getCellEditor(vCell.getElement()).isActivated())
+      return false;
 
     return true;
   }
@@ -97,6 +94,9 @@ public abstract class CellSelectionModifier {
   }
 
   private void setValue(Point pt, String value) {
+    if (!isEditable(pt))
+      return;
+    
     final ViewerCell cell = getViewerCell(pt);
     if (cell == null)
       return;
