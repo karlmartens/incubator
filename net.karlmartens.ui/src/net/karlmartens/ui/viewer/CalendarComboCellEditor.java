@@ -37,6 +37,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
+import org.joda.time.format.DateTimeFormatter;
 
 public class CalendarComboCellEditor extends CellEditor {
 
@@ -47,21 +48,41 @@ public class CalendarComboCellEditor extends CellEditor {
 
   private static final int DEFAULT_STYLE = SWT.NONE;
 
+  private final DateTimeFormatter _dateFormat;
   private boolean _selectAll = true;
   private String _selection;
 
   private CalendarCombo _control;
 
   public CalendarComboCellEditor() {
-    setStyle(DEFAULT_STYLE);
+    this(DEFAULT_STYLE, CalendarCombo.createDateFormat());
+  }
+
+  public CalendarComboCellEditor(DateTimeFormatter dateFormat) {
+    this(DEFAULT_STYLE, dateFormat);
+  }
+
+  public CalendarComboCellEditor(int style, DateTimeFormatter dateFormat) {
+    setStyle(style);
+    _dateFormat = dateFormat;
   }
 
   public CalendarComboCellEditor(Composite parent) {
-    this(parent, DEFAULT_STYLE);
+    this(parent, DEFAULT_STYLE, CalendarCombo.createDateFormat());
   }
 
   public CalendarComboCellEditor(Composite parent, int style) {
-    super(parent, style);
+    this(parent, style, CalendarCombo.createDateFormat());
+  }
+
+  public CalendarComboCellEditor(Composite parent, DateTimeFormatter dateFormat) {
+    this(parent, DEFAULT_STYLE, dateFormat);
+  }
+
+  public CalendarComboCellEditor(Composite parent, int style, DateTimeFormatter dateFormat) {
+    setStyle(style);
+    _dateFormat = dateFormat;
+    create(parent);
   }
 
   public LayoutData getLayoutData() {
@@ -106,7 +127,7 @@ public class CalendarComboCellEditor extends CellEditor {
   }
 
   protected Control createControl(Composite parent) {
-    _control = new CalendarCombo(parent, getStyle());
+    _control = new CalendarCombo(parent, getStyle(), _dateFormat);
     _control.setFont(parent.getFont());
 
     _control.addKeyListener(new KeyAdapter() {

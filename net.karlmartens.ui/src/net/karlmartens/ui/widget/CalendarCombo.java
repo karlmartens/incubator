@@ -101,6 +101,9 @@ public final class CalendarCombo extends Composite {
    * @param style
    *          the style of widget to construct
    * 
+   * @param dateFormart
+   *          the format used for printing and parsing dates.
+   * 
    * @exception IllegalArgumentException
    *              <ul>
    *              <li>ERROR_NULL_ARGUMENT - if the parent is null</li>
@@ -116,12 +119,12 @@ public final class CalendarCombo extends Composite {
    * @see SWT#FLAT
    * @see Widget#getStyle()
    */
-  public CalendarCombo(Composite parent, int style) {
+  public CalendarCombo(Composite parent, int style, DateTimeFormatter dateFormat) {
     super(parent, style = checkStyle(style));
     final int textStyle = checkTextStyle(style);
     final int arrowStyle = checkArrowStyle(style);
 
-    _dateFormat = createDateFormat();
+    _dateFormat = dateFormat;
 
     _shell = super.getShell();
     _text = new Text(this, textStyle);
@@ -152,6 +155,10 @@ public final class CalendarCombo extends Composite {
     setSelection(date[0], date[1], date[2]);
 
     initAccessible();
+  }
+  
+  public CalendarCombo(Composite parent, int style) {
+    this(parent, style, createDateFormat());
   }
 
   public Control[] getChildren() {
