@@ -124,6 +124,8 @@ public class CalendarComboCellEditor extends CellEditor {
 
     if (text != null)
       getControl().setText(text);
+
+    _control.setEnabled(true);
   }
 
   protected Control createControl(Composite parent) {
@@ -199,7 +201,13 @@ public class CalendarComboCellEditor extends CellEditor {
     fireApplyEditorValue();
     deactivate();
   }
-
+  
+  public void deactivate() {
+    super.deactivate();
+    
+    _control.setEnabled(false);
+  }
+  
   protected void focusLost() {
     if (isActivated()) {
       applyEditorValueAndDeactivate();
@@ -227,6 +235,8 @@ public class CalendarComboCellEditor extends CellEditor {
         break;
     }
   }
+  
+  
 
   private void notifyParentAndFocus(KeyEvent e) {
     if (_control == null || _control.isDisposed())

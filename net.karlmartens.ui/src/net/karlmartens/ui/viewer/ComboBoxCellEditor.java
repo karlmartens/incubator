@@ -113,7 +113,7 @@ public class ComboBoxCellEditor extends CellEditor {
       }
     }
 
-    getControl().select(index);
+    _control.select(index);
 
     if (_activationStyle != SWT.NONE) {
       boolean dropDown = false;
@@ -132,15 +132,24 @@ public class ComboBoxCellEditor extends CellEditor {
       }
 
       if (dropDown) {
-        getControl().getDisplay().asyncExec(new Runnable() {
+        _control.getDisplay().asyncExec(new Runnable() {
           public void run() {
-            ((CCombo) getControl()).setListVisible(true);
+            _control.setListVisible(true);
           }
         });
       }
     }
+    
+    _control.setEnabled(true);
   }
+  
+  public void deactivate() {
+    if (_control == null || _control.isDisposed())
+      return;
 
+    super.deactivate();
+    _control.setEnabled(false);
+  }
   protected Control createControl(Composite parent) {
     _control = new CCombo(parent, getStyle());
     _control.setFont(parent.getFont());
