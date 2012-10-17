@@ -123,6 +123,19 @@ public final class Table extends Composite {
     hookControls();
   }
 
+  public Control[] getChildren() {
+    checkWidget();
+    return new Control[0];
+  }
+
+  public boolean isFocusControl() {
+    checkWidget();
+    if (_table.isFocusControl())
+      return true;
+    
+    return super.isFocusControl();
+  }
+
   @Override
   public Point computeSize(int wHint, int hHint, boolean changed) {
     checkWidget();
@@ -189,14 +202,6 @@ public final class Table extends Composite {
   @Override
   public boolean setFocus() {
     return _table.forceFocus();
-  }
-
-  @Override
-  public boolean isFocusControl() {
-    if (_table.isFocusControl())
-      return true;
-
-    return super.isFocusControl();
   }
 
   @Override
@@ -1326,6 +1331,16 @@ public final class Table extends Composite {
 
     private KTableImpl(Composite parent, int style) {
       super(parent, style);
+    }
+
+    public boolean isFocusControl() {
+      for (Control control : getChildren()) {
+        if (control.isFocusControl()) {
+          return true;
+        }
+      }
+      
+      return super.isFocusControl();
     }
 
     void setIgnoreMouseMove(boolean b) {

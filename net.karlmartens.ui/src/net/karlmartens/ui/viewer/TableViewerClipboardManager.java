@@ -109,7 +109,7 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
 
           @Override
           public void setEnabled(Object evaluationContext) {
-            setBaseEnabled(UiUtil.hasFocus(_viewer.getControl(), true));
+            setBaseEnabled(_viewer.getControl().isFocusControl());
           }
         }));
 
@@ -126,7 +126,7 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
 
           @Override
           public void setEnabled(Object evaluationContext) {
-            setBaseEnabled(UiUtil.hasFocus(_viewer.getControl(), true));
+            setBaseEnabled(_viewer.getControl().isFocusControl());
           }
         }));
 
@@ -143,7 +143,7 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
 
             @Override
             public void setEnabled(Object evaluationContext) {
-              setBaseEnabled(UiUtil.hasFocus(_viewer.getControl(), true));
+              setBaseEnabled(_viewer.getControl().isFocusControl());
             }
           }));
 

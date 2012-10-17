@@ -82,7 +82,7 @@ public final class TableViewerDeleteCellSelectionManager extends
 
           @Override
           public void setEnabled(Object evaluationContext) {
-            setBaseEnabled(UiUtil.hasFocus(_viewer.getControl(), true));
+            setBaseEnabled(_viewer.getControl().isFocusControl());
           }
         });
 
