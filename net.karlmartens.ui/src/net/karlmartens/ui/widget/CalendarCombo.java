@@ -249,6 +249,7 @@ public final class CalendarCombo extends Composite {
      */
     if (isDisposed())
       return;
+    
     // TEMPORARY CODE
     if (_popup == null || _popup.isDisposed())
       return;
@@ -557,9 +558,9 @@ public final class CalendarCombo extends Composite {
 
     final DateTimePrinter printer = new DateTimeFormatterBuilder()//
         .appendYear(4, 4)//
-        .appendLiteral('/')//
+        .appendLiteral('-')//
         .appendMonthOfYear(2)//
-        .appendLiteral('/')//
+        .appendLiteral('-')//
         .appendDayOfMonth(2)//
         .toPrinter();
 
