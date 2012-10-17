@@ -1077,20 +1077,6 @@ public final class Table extends Composite {
     return row;
   }
 
-  private void updateActive() {
-    Control control = getDisplay().getFocusControl();
-    while (control != null) {
-      if (control == this) {
-        _isActive = true;
-        return;
-      }
-
-      control = control.getParent();
-    }
-
-    _isActive = false;
-  }
-
   private static int checkStyle(int style) {
     final int mask = SWT.BORDER | SWT.MULTI;
     return style & mask;
@@ -1398,6 +1384,11 @@ public final class Table extends Composite {
 
       return super.isFocusControl();
     }
+    
+    @Override
+    public boolean setFocus() {
+      return _table.forceFocus();
+    }
 
     void setIgnoreMouseMove(boolean b) {
       _ignoreMouseMove = b;
@@ -1442,7 +1433,7 @@ public final class Table extends Composite {
     @Override
     protected void doCalculations() {
       super.doCalculations();
-      updateActive();
+      _isActive = isFocusControl();
     }
 
     @Override
