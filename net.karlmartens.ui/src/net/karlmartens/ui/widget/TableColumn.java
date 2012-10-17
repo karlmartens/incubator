@@ -90,6 +90,9 @@ public final class TableColumn extends Item {
   }
 
   public boolean isMoveable() {
+    if (isHeaderColumn())
+      return false;
+    
     return _moveable;
   }
 
@@ -98,6 +101,9 @@ public final class TableColumn extends Item {
   }
 
   public boolean isHideable() {
+    if (isHeaderColumn())
+      return false;
+
     return _hideable;
   }
 
@@ -107,6 +113,9 @@ public final class TableColumn extends Item {
   }
 
   public boolean isVisible() {
+    if (isHeaderColumn())
+      return true;
+
     return _visible;
   }
 
@@ -115,6 +124,9 @@ public final class TableColumn extends Item {
   }
 
   public boolean isFilterable() {
+    if (isHeaderColumn())
+      return false;
+
     return _filterable;
   }
 
@@ -124,6 +136,9 @@ public final class TableColumn extends Item {
   }
 
   public Filter<TableItem> getFilter() {
+    if (isHeaderColumn())
+      return null;
+
     return _filter;
   }
 
@@ -156,5 +171,9 @@ public final class TableColumn extends Item {
     _width = 0;
     _moveable = true;
     _visible = true;
+  }
+
+  private boolean isHeaderColumn() {
+    return _parent.getFixedHeaderColumnCount() < _parent.indexOf(this);
   }
 }

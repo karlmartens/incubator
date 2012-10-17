@@ -85,7 +85,9 @@ public final class Table extends Composite {
   private int _rowHeight;
 
   private int _fixedColumnCount = 0;
+  private int _fixedHeaderColumnCount = 0;
   private int _fixedRowCount = 0;
+  private int _fixedHeaderRowCount = 0;
   private int _itemCount = 0;
   private TableItem[] _items = new TableItem[0];
   private int _columnCount = 0;
@@ -132,7 +134,7 @@ public final class Table extends Composite {
     checkWidget();
     if (_table.isFocusControl())
       return true;
-    
+
     return super.isFocusControl();
   }
 
@@ -226,17 +228,18 @@ public final class Table extends Composite {
           - r.y;
       _partialRedraw = r;
     }
-    
+
     final int id = ++_partialRedrawId[0];
     getDisplay().timerExec(100, new Runnable() {
       @Override
       public void run() {
         if (id != _partialRedrawId[0] || _partialRedraw == null)
           return;
-        
+
         _table.redraw(_partialRedraw);
         _partialRedraw = null;
-      }});
+      }
+    });
   }
 
   public void setHeaderVisible(boolean show) {
@@ -260,22 +263,61 @@ public final class Table extends Composite {
     updatePreferredSize();
     redraw();
   }
-  
+
+  public int getFixedHeaderColumnCount() {
+    checkWidget();
+    return _fixedHeaderColumnCount;
+  }
+
+  public void setFixedHeaderColumnCount(int count) {
+    checkWidget();
+    if (count < 0)
+      SWT.error(SWT.ERROR_INVALID_RANGE);
+
+    if (_fixedColumnCount < count)
+      setFixedColumnCount(count);
+
+    _fixedHeaderColumnCount = count;
+
+    updatePreferredSize();
+    redraw();
+  }
+
   public int getFixedRowCount() {
     checkWidget();
     return _fixedRowCount;
   }
-  
+
   public void setFixedRowCount(int count) {
     checkWidget();
     if (count < 0)
       SWT.error(SWT.ERROR_INVALID_RANGE);
-    
+
     _fixedRowCount = count;
-    
+
     updatePreferredSize();
     redraw();
   }
+
+  public int getFixedHeaderRowCount() {
+    checkWidget();
+    return _fixedHeaderRowCount;
+  }
+  
+  public void setFixedHeaderRowCount(int count) {
+    checkWidget();
+    if (count < 0)
+      SWT.error(SWT.ERROR_INVALID_RANGE);
+    
+    if (_fixedRowCount < count)
+      setFixedRowCount(count);
+    
+    _fixedHeaderRowCount = count;
+
+    updatePreferredSize();
+    redraw();
+  }
+  
 
   public int getItemCount() {
     checkWidget();
@@ -1073,22 +1115,22 @@ public final class Table extends Composite {
 
     @Override
     public int getFixedHeaderRowCount() {
-      return _showHeader ? 1 : 0;
+      return (_showHeader ? 1 : 0) + _fixedHeaderRowCount;
     }
 
     @Override
     public int getFixedSelectableRowCount() {
-      return _fixedRowCount;
+      return _fixedRowCount - _fixedHeaderRowCount;
     }
 
     @Override
     public int getFixedHeaderColumnCount() {
-      return 0;
+      return _fixedHeaderColumnCount;
     }
 
     @Override
     public int getFixedSelectableColumnCount() {
-      return _fixedColumnCount;
+      return _fixedColumnCount - _fixedHeaderColumnCount;
     }
 
     @Override
@@ -1164,7 +1206,7 @@ public final class Table extends Composite {
       final int modelRow = computeRow(row);
       if (modelRow < 0 || modelRow >= _itemCount)
         return "";
-      
+
       final TableItem item = getItem(modelRow);
       final String text = item.getText(col);
       if ((SWT.CHECK & column.getStyle()) > 0)
@@ -1189,6 +1231,9 @@ public final class Table extends Composite {
 
     private final ImageFixedCellRenderer _headerRenderer = new ImageFixedCellRenderer(
         SWT.BOLD | DefaultCellRenderer.INDICATION_FOCUS_ROW);
+    private final FixedCellRenderer _altHeaderRenderer = new FixedCellRenderer(
+        SWT.BOLD | DefaultCellRenderer.INDICATION_FOCUS_ROW
+            | DefaultCellRenderer.STYLE_FLAT);
     private final TextCellRenderer _renderer = new TextCellRenderer(
         DefaultCellRenderer.INDICATION_FOCUS);
     private final CheckableCellRenderer _checkRenderer = new CheckableCellRenderer(
@@ -1197,7 +1242,7 @@ public final class Table extends Composite {
 
     @Override
     public KTableCellRenderer doGetCellRenderer(int col, int row) {
-      if (getFixedHeaderRowCount() > 0 && row == 0) {
+      if (_showHeader && row == 0) {
         _headerRenderer.setDefaultBackground(getBackground());
         _headerRenderer.setDefaultForeground(getForeground());
         _headerRenderer.setFont(getFont());
@@ -1227,7 +1272,18 @@ public final class Table extends Composite {
         return _hiddenRenderer;
 
       final DefaultCellRenderer renderer;
-      if ((SWT.CHECK & column.getStyle()) > 0) {
+      if (row < getFixedHeaderRowCount() || col < getFixedHeaderColumnCount()) {
+        renderer = _altHeaderRenderer;
+        _altHeaderRenderer.setActive(_isActive);
+        
+        int alignment = SWTX.ALIGN_VERTICAL_CENTER;
+        if (row < getFixedHeaderRowCount()) {
+          alignment |= SWTX.ALIGN_HORIZONTAL_CENTER;
+        } else {
+          alignment |= SWTX.ALIGN_HORIZONTAL_LEFT;
+        }
+        renderer.setAlignment(alignment);
+      } else if ((SWT.CHECK & column.getStyle()) > 0) {
         renderer = _checkRenderer;
         _checkRenderer.setActive(_isActive);
         renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_CENTER
@@ -1253,7 +1309,7 @@ public final class Table extends Composite {
 
       if (modelRow < 0 || modelRow >= _itemCount)
         return renderer;
-      
+
       renderer.setDefaultBackground(item.getBackground(col));
       renderer.setDefaultForeground(item.getForeground(col));
       renderer.setFont(item.getFont(col));
@@ -1339,7 +1395,7 @@ public final class Table extends Composite {
           return true;
         }
       }
-      
+
       return super.isFocusControl();
     }
 

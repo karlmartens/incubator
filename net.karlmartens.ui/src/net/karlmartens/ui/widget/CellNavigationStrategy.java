@@ -146,11 +146,13 @@ public final class CellNavigationStrategy {
     final Point pt = new Point(currentSelectedCell.x, currentSelectedCell.y);
     final int columnCount = table.getColumnCount();
     final int itemCount = table.getItemCount();
+    final int minY = table.getFixedHeaderRowCount();
+    final int minX = table.getFixedHeaderColumnCount();
     if (delta.x == 0) {
       if (delta.y == 0)
         return currentSelectedCell;
 
-      if (pt.x < 0 || pt.x >= columnCount)
+      if (pt.x < minX || pt.x >= columnCount)
         return null;
 
       final TableColumn column = table.getColumn(pt.x);
@@ -159,7 +161,7 @@ public final class CellNavigationStrategy {
 
       for (;;) {
         pt.y += delta.y;
-        if (pt.y < 0 || pt.y >= itemCount)
+        if (pt.y < minY || pt.y >= itemCount)
           return null;
 
         final TableItem item = table.getItem(pt.y);
@@ -168,7 +170,7 @@ public final class CellNavigationStrategy {
       }
     }
 
-    if (pt.y < 0 || pt.y >= itemCount)
+    if (pt.y < minY || pt.y >= itemCount)
       return null;
 
     final TableItem item = table.getItem(pt.y);
@@ -177,7 +179,7 @@ public final class CellNavigationStrategy {
 
     for (;;) {
       pt.x += delta.x;
-      if (pt.x < 0 || pt.x >= columnCount)
+      if (pt.x < minX || pt.x >= columnCount)
         return null;
 
       final TableColumn column = table.getColumn(pt.x);
