@@ -260,6 +260,8 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
           result[0] = length == 0;
           return;
         }
+        
+        _viewer.cancelEditing();
 
         final String[] values = getValues(cells);
 
@@ -312,6 +314,8 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
           result[0] = true;
           return;
         }
+        
+        _viewer.cancelEditing();
 
         final Rectangle dataRect = new Rectangle(0, 0, 0, data.length);
         for (String[] dataRow : data) {
