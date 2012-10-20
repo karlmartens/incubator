@@ -17,6 +17,8 @@
  */
 package net.karlmartens.ui.widget;
 
+import net.karlmartens.ui.util.Colors;
+
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Rectangle;
 
@@ -58,7 +60,7 @@ class CheckableCellRenderer extends de.kupzog.ktable.renderers.CheckableCellRend
       // draw focus sign:
       if (focus && (m_Style & INDICATION_FOCUS)!=0) {
           rect = drawDefaultSolidCellLine(gc, rect, COLOR_LINE_LIGHTGRAY, COLOR_LINE_LIGHTGRAY);
-          drawCheckableImage(gc, rect, content, COLOR_BGFOCUS, clicked);
+          drawCheckableImage(gc, rect, content, Colors.blend(getBackground(), COLOR_BGFOCUS, 0.75), clicked);
           if (_active)
             gc.drawFocus(rect.x, rect.y, rect.width, rect.height);
           

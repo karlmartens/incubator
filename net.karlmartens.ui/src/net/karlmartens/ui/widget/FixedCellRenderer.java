@@ -88,22 +88,30 @@ public class FixedCellRenderer extends
       bottomBorderColor = COLOR_TEXT;
       rightBorderColor = COLOR_TEXT;
     }
+    
+    boolean flat = (m_Style & STYLE_FLAT) != 0;
     if (focus && (m_Style & INDICATION_FOCUS_ROW) != 0) {
       if (_active) {
         bgColor = COLOR_BGROWFOCUS;
-        bottomBorderColor = COLOR_BGROWFOCUS;
-        rightBorderColor = COLOR_BGROWFOCUS;
         fgColor = COLOR_FGROWFOCUS;
+        
+        if (!flat) {
+          bottomBorderColor = COLOR_BGROWFOCUS;
+          rightBorderColor = COLOR_BGROWFOCUS;
+        }
       } else {
         bgColor = COLOR_INACTIVE_BGROWFOCUS;
-        bottomBorderColor = COLOR_INACTIVE_BGROWFOCUS;
-        rightBorderColor = COLOR_INACTIVE_BGROWFOCUS;
         fgColor = COLOR_INACTIVE_FGROWFOCUS;
+        
+        if (!flat) {
+          bottomBorderColor = COLOR_INACTIVE_BGROWFOCUS;
+          rightBorderColor = COLOR_INACTIVE_BGROWFOCUS;
+        }
       }
     }
 
     // STYLE_FLAT:
-    if ((m_Style & STYLE_FLAT) != 0) {
+    if (flat) {
       rect = drawDefaultSolidCellLine(gc, rect, bottomBorderColor,
           rightBorderColor);
 

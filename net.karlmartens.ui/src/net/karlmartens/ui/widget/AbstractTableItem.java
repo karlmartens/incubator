@@ -31,6 +31,8 @@ abstract class AbstractTableItem extends Item {
   private Control _parent;
   protected String[] _strings;
   protected Image[] _images;
+  protected Integer _style;
+  protected Integer[] _cellStyles;
   protected Color _background;
   protected Color[] _cellBackgrounds;
   protected Color _foreground;
@@ -102,6 +104,67 @@ abstract class AbstractTableItem extends Item {
     }
     _parent.redraw();
     return true;
+  }
+  
+  public int getStyle() {
+    checkWidget();
+    if (_style == null)
+      return super.getStyle();
+    
+    return _style;
+  }
+
+  public int getStyle(int index) {
+    checkWidget();
+    
+    if (_cellStyles == null || index < 0 || index >= _cellStyles.length || _cellStyles[index] == null)
+      return getStyle();
+
+    return _cellStyles[index];
+  }
+  
+  public void setStyle(int style) {
+    checkWidget();
+    
+    if (_style != null && _style.intValue() == style)
+      return;
+    
+    _style = style;
+    _parent.redraw();
+  }
+
+  public void setStyle(Integer[] styles) {
+    checkWidget();
+    if (styles == null)
+      SWT.error(SWT.ERROR_NULL_ARGUMENT);
+
+    for (int i = 0; i < styles.length; i++) {
+      final Integer style = styles[i];
+      if (style == null)
+        continue;
+      setStyle(i, style);
+    }
+  }
+
+  public void setStyle(int index, Integer style) {
+    checkWidget();
+
+    final int count = Math.max(1, doGetColumnCount());
+    if (index < 0 || index >= count)
+      return;
+
+    if (_cellStyles == null) {
+      _cellStyles = new Integer[count];
+    }
+
+    if (_cellStyles[index] == style)
+      return;
+
+    if (style != null && style.equals(_cellStyles[index]))
+      return;
+
+    _cellStyles[index] = style;
+    _parent.redraw();
   }
 
   public Image getImage(int index) {
@@ -332,6 +395,8 @@ abstract class AbstractTableItem extends Item {
     super.setImage(null);
     _strings = null;
     _images = null;
+    _style = null;
+    _cellStyles = null;
     _font = null;
     _cellFonts = null;
     _background = null;
@@ -348,6 +413,7 @@ abstract class AbstractTableItem extends Item {
   void swapColumns(int firstIndex, int secondIndex) {
     ArraySupport.swap(_strings, firstIndex, secondIndex);
     ArraySupport.swap(_images, firstIndex, secondIndex);
+    ArraySupport.swap(_cellStyles, firstIndex, secondIndex);
     ArraySupport.swap(_cellFonts, firstIndex, secondIndex);
     ArraySupport.swap(_cellBackgrounds, firstIndex, secondIndex);
     ArraySupport.swap(_cellForegrounds, firstIndex, secondIndex);

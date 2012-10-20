@@ -17,6 +17,8 @@
  */
 package net.karlmartens.ui.widget;
 
+import net.karlmartens.ui.util.Colors;
+
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Rectangle;
 
@@ -66,7 +68,7 @@ class TextCellRenderer extends de.kupzog.ktable.renderers.TextCellRenderer {
       if (focus && (m_Style & INDICATION_FOCUS)!=0) {
           // draw content:
           rect = drawDefaultSolidCellLine(gc, rect, COLOR_LINE_LIGHTGRAY, COLOR_LINE_LIGHTGRAY);
-          drawCellContent(gc, rect, content.toString(), null, getForeground(), COLOR_BGFOCUS);
+          drawCellContent(gc, rect, content.toString(), null, getForeground(), Colors.blend(getBackground(), COLOR_BGFOCUS, 0.75));
           if (_active) 
             gc.drawFocus(rect.x, rect.y, rect.width, rect.height);
           
@@ -85,6 +87,6 @@ class TextCellRenderer extends de.kupzog.ktable.renderers.TextCellRenderer {
           drawCommentSign(gc, rect);
       
       resetFont(gc);
-  }
+  }  
 
 }
