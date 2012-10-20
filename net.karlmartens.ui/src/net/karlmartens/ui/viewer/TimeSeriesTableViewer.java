@@ -292,7 +292,7 @@ public final class TimeSeriesTableViewer extends TableViewer {
   private final CellNavigationStrategy _navigationStrategy = new CellNavigationStrategy();
 
   private void handleKeyPressed(Event e) {
-    if (!_navigationStrategy.isNavigationEvent(e) && !_navigationStrategy.isExpandEvent(e) && !_navigationStrategy.isSelectAllEvent(e))
+    if (!_navigationStrategy.isNavigationEvent(e) && !_navigationStrategy.isExpandEvent(e))
       return;
     
     final Rectangle rect = _table.getVisibleScrollableCells();

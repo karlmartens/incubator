@@ -23,6 +23,7 @@ import java.util.Comparator;
 
 import net.karlmartens.platform.util.ArraySupport;
 import net.karlmartens.platform.util.Filter;
+import net.karlmartens.platform.util.NullSafe;
 import net.karlmartens.platform.util.NumberStringComparator;
 import net.karlmartens.ui.Images;
 
@@ -530,6 +531,11 @@ public final class Table extends Composite {
       newSelection[index++] = i;
     }
     setSelection(newSelection);
+  }
+  
+  public void selectAll() {
+    checkWidget();
+    _cellSelectionManager.selectAll();
   }
 
   public Point[] getCellSelections() {
@@ -1281,7 +1287,20 @@ public final class Table extends Composite {
             | SWTX.ALIGN_VERTICAL_CENTER);
       }
 
-      final int style = column.getStyle();
+      applyStyle(column.getStyle(), renderer);
+
+      if (modelRow < 0 || modelRow >= _itemCount)
+        return renderer;
+
+      renderer.setDefaultBackground(item.getBackground(col));
+      renderer.setDefaultForeground(item.getForeground(col));
+      renderer.setFont(item.getFont(col));
+      applyStyle(item.getStyle(col), renderer);
+
+      return renderer;
+    }
+
+    private void applyStyle(int style, DefaultCellRenderer renderer) {
       if ((style & SWT.LEFT) > 0) {
         renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_LEFT
             | SWTX.ALIGN_VERTICAL_CENTER);
@@ -1292,15 +1311,6 @@ public final class Table extends Composite {
         renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_CENTER
             | SWTX.ALIGN_VERTICAL_CENTER);
       }
-
-      if (modelRow < 0 || modelRow >= _itemCount)
-        return renderer;
-
-      renderer.setDefaultBackground(item.getBackground(col));
-      renderer.setDefaultForeground(item.getForeground(col));
-      renderer.setFont(item.getFont(col));
-
-      return renderer;
     }
 
     @Override
@@ -1314,6 +1324,27 @@ public final class Table extends Composite {
       return _columnCount;
     }
 
+    public Point doBelongsToCell(int col, int row) {
+      if (col >= _fixedHeaderColumnCount && row >= _fixedHeaderRowCount)
+        return super.doBelongsToCell(col, row);
+      
+      if (col <= 0 || row < 0)
+        return super.doBelongsToCell(col, row);
+      
+      final Point pt = new Point(col, row);
+      while (pt.x > 0) {
+        for (int y = pt.y; y >= 0; y--) {
+          final Object o1 = doGetContentAt(pt.x, y);
+          final Object o2 = doGetContentAt(pt.x - 1, y);
+          if (!NullSafe.equals(o1, o2))
+            return pt;
+        }
+        
+        pt.x--;
+      }
+      
+      return pt;
+    }
   };
 
   private final class TableListener implements ControlListener,

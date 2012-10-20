@@ -157,7 +157,7 @@ public final class CellSelectionManager {
     _table.showItem(_table.getItem(vCell.y));
   }
 
-  private void selectAll() {
+  public void selectAll() {
     final int cols = _table.getColumnCount();
     final int rows = _table.getItemCount();
     if (cols <= 0 || rows <= 0)
@@ -300,10 +300,6 @@ public final class CellSelectionManager {
     if (_navigationStrategy.isExpandEvent(e)) {
       final Point cell = _navigationStrategy.findSelectedCell(_table, _expansionCell, e);
       expandSelection(cell, false);
-    }
-    
-    if (_navigationStrategy.isSelectAllEvent(e)) {
-      selectAll();
     }
   }
 

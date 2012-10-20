@@ -59,16 +59,6 @@ public final class CellNavigationStrategy {
     return false;
   }
 
-  public boolean isSelectAllEvent(Event event) {
-    switch (event.keyCode) {
-      case 'a':
-      case 'A':
-        return (event.stateMask & SWT.MOD1) > 0;
-    }
-
-    return false;
-  }
-
   public Point findSelectedCell(Table table, Point currentSelectedCell,
       Event event) {
     if (currentSelectedCell == null)
