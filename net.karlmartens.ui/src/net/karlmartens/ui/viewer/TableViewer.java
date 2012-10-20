@@ -48,16 +48,9 @@ public class TableViewer extends AbstractTableViewer {
     hookControl(control);
   }
 
-  public final void addClipboardSupport(int operations) {
-    new TableViewerClipboardManager(this, operations);
-  }
-
-  public final void addDeleteCellSelectionSupport() {
-    new TableViewerDeleteCellSelectionManager(this);
-  }
- 
   @Override
-  protected final TableViewerRow internalCreateNewRowPart(int style, int rowIndex) {
+  protected final TableViewerRow internalCreateNewRowPart(int style,
+      int rowIndex) {
     final TableItem item;
     if (rowIndex >= 0) {
       item = new TableItem(_control, rowIndex);
@@ -70,7 +63,7 @@ public class TableViewer extends AbstractTableViewer {
 
   @Override
   protected final int doIndexOf(Item item) {
-    return _control.indexOf((TableItem)item);
+    return _control.indexOf((TableItem) item);
   }
 
   @Override
@@ -176,9 +169,13 @@ public class TableViewer extends AbstractTableViewer {
 
   @Override
   protected final ColumnViewerEditor createViewerEditor() {
-    return new TableViewerEditor(this, //
-        new TableEditorActivationStrategy(this), ColumnViewerEditor.TABBING_HORIZONTAL | ColumnViewerEditor.TABBING_MOVE_TO_ROW_NEIGHBOR
-            | ColumnViewerEditor.TABBING_VERTICAL | ColumnViewerEditor.KEYBOARD_ACTIVATION);
+    return new TableViewerEditor(
+        this, //
+        new TableEditorActivationStrategy(this),
+        ColumnViewerEditor.TABBING_HORIZONTAL
+            | ColumnViewerEditor.TABBING_MOVE_TO_ROW_NEIGHBOR
+            | ColumnViewerEditor.TABBING_VERTICAL
+            | ColumnViewerEditor.KEYBOARD_ACTIVATION);
   }
 
   @Override
@@ -201,7 +198,7 @@ public class TableViewer extends AbstractTableViewer {
   protected final int doGetColumnCount() {
     return _control.getColumnCount();
   }
-  
+
   @Override
   public final Table getControl() {
     return _control;
@@ -218,7 +215,7 @@ public class TableViewer extends AbstractTableViewer {
   protected final void doSetFocusCell(Point cell, boolean multi) {
     _control.setFocusCell(cell, multi);
   }
-  
+
   @Override
   protected final void preservingSelection(Runnable updateCode) {
     final Point[] selection = _control.getCellSelections();

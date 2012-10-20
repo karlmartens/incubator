@@ -19,7 +19,9 @@ package net.karlmartens.ui.viewer;
 
 import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_COPY;
 import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_CUT;
+import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_DELETE;
 import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_PASTE;
+import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_SELECT_ALL;
 import net.karlmartens.platform.util.NumberStringComparator;
 import net.karlmartens.ui.widget.Table;
 
@@ -59,9 +61,6 @@ public final class TableViewerTest {
     final TableViewer viewer = new TableViewer(shell);
     viewer.setContentProvider(new ArrayContentProvider());
     viewer.setComparator(new ViewerComparator(new NumberStringComparator()));
-    viewer.addDeleteCellSelectionSupport();
-    viewer
-        .addClipboardSupport(OPERATION_COPY | OPERATION_CUT | OPERATION_PASTE);
 
     final TableViewerColumn c1 = new TableViewerColumn(viewer, SWT.NONE);
     c1.setLabelProvider(new TestColumnLabelProvider(0));
@@ -104,6 +103,9 @@ public final class TableViewerTest {
     table.addColumnSortSupport();
     table.setFixedColumnCount(fixedColumns);
     table.setFixedRowCount(3);
+
+    new TableViewerClipboardManager(viewer, OPERATION_COPY | OPERATION_CUT
+        | OPERATION_DELETE | OPERATION_PASTE | OPERATION_SELECT_ALL);
 
     viewer.setInput(input);
 

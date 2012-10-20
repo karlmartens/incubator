@@ -24,16 +24,25 @@ public class ClipboardStrategy {
 
   public static final int OPERATION_NONE = 0;
   public static final int OPERATION_COPY = 1;
-  public static final int OPERATION_CUT = 2;
-  public static final int OPERATION_PASTE = 4;
+  public static final int OPERATION_PASTE = 2;
+  public static final int OPERATION_DELETE = 4;
+  public static final int OPERATION_SELECT_ALL = 8;
+  public static final int OPERATION_CUT = OPERATION_COPY | OPERATION_DELETE;
 
   public boolean isClipboardEvent(Event e) {
-    if ((e.stateMask & (SWT.MODIFIER_MASK ^ SWT.MOD1)) != 0 || ((e.stateMask & SWT.MOD1) == 0))
+    if ((e.stateMask & SWT.MODIFIER_MASK) == 0) {
+      return SWT.BS == e.keyCode //
+          || SWT.DEL == e.keyCode;
+    }
+
+    if ((e.stateMask & (SWT.MODIFIER_MASK ^ SWT.MOD1)) != 0
+        || ((e.stateMask & SWT.MOD1) == 0))
       return false;
 
     return 'c' == e.keyCode //
         || 'v' == e.keyCode //
-        || 'x' == e.keyCode;
+        || 'x' == e.keyCode //
+        || 'a' == e.keyCode;
   }
 
   public int getOperation(Event e) {
@@ -49,6 +58,13 @@ public class ClipboardStrategy {
 
       case 'x':
         return OPERATION_CUT;
+
+      case 'a':
+        return OPERATION_SELECT_ALL;
+
+      case SWT.DEL:
+      case SWT.BS:
+        return OPERATION_DELETE;
     }
 
     return OPERATION_NONE;

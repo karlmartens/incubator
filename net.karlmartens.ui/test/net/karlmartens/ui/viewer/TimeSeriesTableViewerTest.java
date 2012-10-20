@@ -22,6 +22,7 @@ import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_COPY;
 import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_CUT;
+import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_DELETE;
 import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_PASTE;
 
 import java.text.DecimalFormat;
@@ -60,7 +61,8 @@ public final class TimeSeriesTableViewerTest {
     final int seriesLength = _dates.length;
     _input = new Object[500][];
     for (int i = 0; i < _input.length; i++) {
-      _input[i] = new Object[] { "Item " + Integer.toString(i), Boolean.valueOf(i % 3 == 0), "stuff", generateSeries(seriesLength) };
+      _input[i] = new Object[] { "Item " + Integer.toString(i),
+          Boolean.valueOf(i % 3 == 0), "stuff", generateSeries(seriesLength) };
     }
   }
 
@@ -81,7 +83,8 @@ public final class TimeSeriesTableViewerTest {
             assertNull(context.getElementAt(499));
             assertEquals(0, control.getCellSelections().length);
             for (int i = 0; i < 499; i++) {
-              assertEquals("Element " + Integer.toString(i), (Object) _input[i], context.getElementAt(i));
+              assertEquals("Element " + Integer.toString(i),
+                  (Object) _input[i], context.getElementAt(i));
             }
 
             final Point[] expectedTopSelection = new Point[] { new Point(5, 0) };
@@ -89,9 +92,11 @@ public final class TimeSeriesTableViewerTest {
             context.remove((Object) _input[0]);
             assertEquals(498, control.getItemCount());
             for (int i = 1; i < 499; i++) {
-              assertEquals("Element " + Integer.toString(i - 1), (Object) _input[i], context.getElementAt(i - 1));
+              assertEquals("Element " + Integer.toString(i - 1),
+                  (Object) _input[i], context.getElementAt(i - 1));
             }
-            assertTrue(Arrays.equals(expectedTopSelection, control.getCellSelections()));
+            assertTrue(Arrays.equals(expectedTopSelection,
+                control.getCellSelections()));
 
             context.remove(new Object[] { _input[10], _input[20], _input[30] });
             assertEquals(495, control.getItemCount());
@@ -100,10 +105,12 @@ public final class TimeSeriesTableViewerTest {
               if (i == 10 || i == 20 || i == 30)
                 continue;
 
-              assertEquals("Element " + Integer.toString(index), (Object) _input[i], context.getElementAt(index));
+              assertEquals("Element " + Integer.toString(index),
+                  (Object) _input[i], context.getElementAt(index));
               index++;
             }
-            assertTrue(Arrays.equals(expectedTopSelection, control.getCellSelections()));
+            assertTrue(Arrays.equals(expectedTopSelection,
+                control.getCellSelections()));
 
             context.setInput(null);
             assertEquals(0, control.getItemCount());
@@ -160,7 +167,8 @@ public final class TimeSeriesTableViewerTest {
           public void run(TimeSeriesTableViewer context) {
             for (int i = 2; i >= 0; i--) {
               final Object[][] input = Arrays.copyOf(_input, i);
-              context.getControl().setCellSelections(new Point[] { new Point(4, i) });
+              context.getControl().setCellSelections(
+                  new Point[] { new Point(4, i) });
               context.setInput(input);
               Display.getCurrent().readAndDispatch();
             }
@@ -187,7 +195,8 @@ public final class TimeSeriesTableViewerTest {
     viewer.setComparator(new ViewerComparator(new NumberStringComparator()));
 
     final Table table = viewer.getControl();
-    table.getColumn(0).addSelectionListener(new TestSelectionListener("Period Column"));
+    table.getColumn(0).addSelectionListener(
+        new TestSelectionListener("Period Column"));
 
     viewer.addSelectionChangedListener(new ISelectionChangedListener() {
       @Override
@@ -196,8 +205,8 @@ public final class TimeSeriesTableViewerTest {
       }
     });
 
-    viewer.addClipboardSupport(OPERATION_COPY | OPERATION_CUT | OPERATION_PASTE);
-    viewer.addDeleteCellSelectionSupport();
+    new TableViewerClipboardManager(viewer, OPERATION_COPY | OPERATION_CUT
+        | OPERATION_DELETE | OPERATION_PASTE);
 
     final Display display = shell.getDisplay();
     shell.open();
@@ -214,10 +223,13 @@ public final class TimeSeriesTableViewerTest {
     public TimeSeriesTableViewer run(Shell shell) {
       final Display display = shell.getDisplay();
 
-      final TimeSeriesTableViewer viewer = TimeSeriesTableViewer.newTimeSeriesTable(shell);
+      final TimeSeriesTableViewer viewer = TimeSeriesTableViewer
+          .newTimeSeriesTable(shell);
       viewer.setLabelProvider(new TestColumnLabelProvider(0));
-      viewer.setEditingSupport(new TestTimeSeriesEditingSupport(new DecimalFormat("#,##0.0000"), 3));
-      viewer.setDateFormat(new LocalDateFormat(DateTimeFormat.forPattern("MMM yyyy")));
+      viewer.setEditingSupport(new TestTimeSeriesEditingSupport(
+          new DecimalFormat("#,##0.0000"), 3));
+      viewer.setDateFormat(new LocalDateFormat(DateTimeFormat
+          .forPattern("MMM yyyy")));
       viewer.setNumberFormat(new DecimalFormat("#,##0.00"));
       viewer.setScrollDataMode(ScrollDataMode.SELECTED_ROWS);
 

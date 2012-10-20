@@ -19,7 +19,9 @@ package net.karlmartens.ui.viewer;
 
 import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_COPY;
 import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_CUT;
+import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_DELETE;
 import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_PASTE;
+import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_SELECT_ALL;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -30,6 +32,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import net.karlmartens.platform.util.Pair;
 import net.karlmartens.ui.Activator;
 import net.karlmartens.ui.UiUtil;
 import net.karlmartens.ui.widget.ClipboardStrategy;
@@ -82,15 +85,15 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
     activateHandlers(service);
   }
 
-  private boolean isOperationEnabled(int operation) {
-    return (_operations & operation) != 0;
-  }
-
   public TableViewerClipboardManager(TableViewer viewer, int operations) {
     super(viewer);
     _viewer = viewer;
     _operations = operations;
     hookControl(viewer.getControl());
+  }
+
+  private boolean isOperationEnabled(int operation) {
+    return (_operations & operation) == operation;
   }
 
   private void activateHandlers(final IHandlerService service) {
@@ -99,53 +102,82 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
     activations.add(service.activateHandler(
         IWorkbenchCommandConstants.EDIT_COPY, new AbstractHandler() {
           @Override
-          public Object execute(ExecutionEvent event)
-              throws ExecutionException {
-            if (isOperationEnabled(OPERATION_COPY))
-              copy();
-            
+          public Object execute(ExecutionEvent event) throws ExecutionException {
+            copy();
             return null;
           }
 
           @Override
           public void setEnabled(Object evaluationContext) {
-            setBaseEnabled(_viewer.getControl().isFocusControl());
+            final boolean hasFocus = _viewer.getControl().isFocusControl();
+            final boolean opEnabled = isCopyEnabled();
+            setBaseEnabled(hasFocus && opEnabled);
           }
         }));
 
     activations.add(service.activateHandler(
         IWorkbenchCommandConstants.EDIT_CUT, new AbstractHandler() {
           @Override
-          public Object execute(ExecutionEvent event)
-              throws ExecutionException {
-            if (isOperationEnabled(OPERATION_CUT))
-              cut();
-            
+          public Object execute(ExecutionEvent event) throws ExecutionException {
+            cut();
             return null;
           }
 
           @Override
           public void setEnabled(Object evaluationContext) {
-            setBaseEnabled(_viewer.getControl().isFocusControl());
+            final boolean hasFocus = _viewer.getControl().isFocusControl();
+            final boolean opEnabled = isCutEnabled();
+            setBaseEnabled(hasFocus && opEnabled);
           }
         }));
 
-      activations.add(service.activateHandler(
-          IWorkbenchCommandConstants.EDIT_PASTE, new AbstractHandler() {
-            @Override
-            public Object execute(ExecutionEvent event)
-                throws ExecutionException {
-              if (isOperationEnabled(OPERATION_PASTE))
-                paste();
-              
-              return null;
-            }
+    activations.add(service.activateHandler(
+        IWorkbenchCommandConstants.EDIT_DELETE, new AbstractHandler() {
+          @Override
+          public Object execute(ExecutionEvent event) throws ExecutionException {
+            delete();
+            return null;
+          }
 
-            @Override
-            public void setEnabled(Object evaluationContext) {
-              setBaseEnabled(_viewer.getControl().isFocusControl());
-            }
-          }));
+          @Override
+          public void setEnabled(Object evaluationContext) {
+            final boolean hasFocus = _viewer.getControl().isFocusControl();
+            final boolean opEnabled = isDeleteEnabled();
+            setBaseEnabled(hasFocus && opEnabled);
+          }
+        }));
+
+    activations.add(service.activateHandler(
+        IWorkbenchCommandConstants.EDIT_PASTE, new AbstractHandler() {
+          @Override
+          public Object execute(ExecutionEvent event) throws ExecutionException {
+            paste();
+            return null;
+          }
+
+          @Override
+          public void setEnabled(Object evaluationContext) {
+            final boolean hasFocus = _viewer.getControl().isFocusControl();
+            final boolean opEnabled = isPasteEnabled();
+            setBaseEnabled(hasFocus && opEnabled);
+          }
+        }));
+
+    activations.add(service.activateHandler(
+        IWorkbenchCommandConstants.EDIT_SELECT_ALL, new AbstractHandler() {
+          @Override
+          public Object execute(ExecutionEvent event) throws ExecutionException {
+            selectAll();
+            return null;
+          }
+
+          @Override
+          public void setEnabled(Object evaluationContext) {
+            final boolean hasFocus = _viewer.getControl().isFocusControl();
+            final boolean opEnabled = isOperationEnabled(OPERATION_SELECT_ALL);
+            setBaseEnabled(hasFocus && opEnabled);
+          }
+        }));
 
     final Table t = _viewer.getControl();
 
@@ -155,6 +187,7 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
         t.addListener(SWT.Dispose, this);
         t.addListener(SWT.FocusIn, this);
         t.addListener(SWT.FocusOut, this);
+        t.addListener(SWT.Selection, this);
       }
 
       @Override
@@ -163,6 +196,7 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
           t.removeListener(SWT.Dispose, this);
           t.removeListener(SWT.FocusIn, this);
           t.removeListener(SWT.FocusOut, this);
+          t.removeListener(SWT.Selection, this);
 
           for (IHandlerActivation activation : activations) {
             try {
@@ -174,7 +208,8 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
           return;
         }
 
-        if (event.type == SWT.FocusIn || event.type == SWT.FocusOut) {
+        if (event.type == SWT.FocusIn || event.type == SWT.FocusOut
+            || event.type == SWT.Selection) {
           for (IHandlerActivation activation : activations) {
             ((IHandler2) activation.getHandler()).setEnabled(null);
           }
@@ -192,45 +227,46 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
       public void handleEvent(Event event) {
         if (!clipboardStrategy.isClipboardEvent(event))
           return;
-        
-        if (!hasFocus(control))
+
+        if (!control.isFocusControl())
           return;
 
         switch (clipboardStrategy.getOperation(event)) {
           case OPERATION_COPY:
-            if (isOperationEnabled(OPERATION_COPY)) {
+            if (isCopyEnabled()) {
               if (copy())
                 UiUtil.consume(event);
             }
             break;
 
+          case OPERATION_DELETE:
+            if (isDeleteEnabled()) {
+              if (delete())
+                UiUtil.consume(event);
+            }
+            break;
+
           case OPERATION_PASTE:
-            if (isOperationEnabled(OPERATION_PASTE)) {
+            if (isPasteEnabled()) {
               if (paste())
                 UiUtil.consume(event);
             }
             break;
 
           case OPERATION_CUT:
-            if (isOperationEnabled(OPERATION_CUT)) {
+            if (isCutEnabled()) {
               if (cut())
                 UiUtil.consume(event);
             }
             break;
-        }
-      }
 
-      private boolean hasFocus(Control control) {
-        final Display display = control.getDisplay();
-        Control focus = display.getFocusControl();
-        while (focus != null) {
-          if (focus == control)
-            return true;
-          
-          focus = focus.getParent();
+          case OPERATION_SELECT_ALL:
+            if (isOperationEnabled(OPERATION_SELECT_ALL)) {
+              selectAll();
+              UiUtil.consume(event);
+            }
+            break;
         }
-
-        return false;
       }
     };
 
@@ -248,26 +284,43 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
     });
   }
 
-  private boolean copy() {
+  private Pair<Integer, Point[]> computeRegion() {
+    final Point[] cells = _viewer.doGetCellSelections();
+    Arrays.sort(cells, _comparator);
+    final int length = computeRegion(cells);
+    if (length <= 0)
+      return Pair.of(0, new Point[0]);
+
+    return Pair.of(length, cells);
+  }
+
+  public boolean isCopyEnabled() {
+    if (!isOperationEnabled(OPERATION_COPY))
+      return false;
+
+    final int length = computeRegion().a();
+    return length > 0;
+  }
+
+  public boolean copy() {
     final boolean[] result = new boolean[1];
     BusyIndicator.showWhile(_viewer.getControl().getDisplay(), new Runnable() {
       @Override
       public void run() {
-        final Point[] cells = _viewer.doGetCellSelections();
-        Arrays.sort(cells, _comparator);
-        final int length = computeRegion(cells);
+        final Pair<Integer, Point[]> region = computeRegion();
+        final int length = region.a();
         if (length <= 0) {
-          result[0] = length == 0;
+          result[0] = region.a() == 0;
           return;
         }
-        
+
         _viewer.cancelEditing();
 
-        final String[] values = getValues(cells);
+        final String[] values = getValues(region.b());
 
         final StringWriter sw = new StringWriter();
         final CSVWriter writer = new CSVWriter(sw, '\t');
-        for (int i = 0; i < cells.length / length; i++) {
+        for (int i = 0; i < values.length / length; i++) {
           final String[] row = new String[length];
           System.arraycopy(values, i * length, row, 0, row.length);
           writer.writeNext(row);
@@ -296,32 +349,42 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
     return result[0];
   }
 
-  private boolean paste() {
+  public boolean isPasteEnabled() {
+    if (!isOperationEnabled(OPERATION_PASTE))
+      return false;
+
+    final Pair<Integer, Point[]> region = computeRegion();
+    final int length = region.a();
+    return length > 0;
+  }
+
+  public boolean paste() {
     final boolean[] result = new boolean[1];
     BusyIndicator.showWhile(_viewer.getControl().getDisplay(), new Runnable() {
       @Override
       public void run() {
-        final Point[] cells = _viewer.doGetCellSelections();
-        Arrays.sort(cells, _comparator);
-        final int length = computeRegion(cells);
+        final Pair<Integer, Point[]> region = computeRegion();
+        final int length = region.a();
         if (length <= 0) {
           result[0] = length == 0;
           return;
         }
 
-        String[][] data = readFromClipboard();
-        if (data.length == 0) {
+        final String text = readFromClipboard();
+        if (text == null || text.length() <= 0) {
           result[0] = true;
           return;
         }
-        
+
         _viewer.cancelEditing();
 
+        String[][] data = parseTable(text);
         final Rectangle dataRect = new Rectangle(0, 0, 0, data.length);
         for (String[] dataRow : data) {
           dataRect.width = Math.max(dataRect.width, dataRow.length);
         }
 
+        final Point[] cells = region.b();
         final Point anchor = cells[0];
         final Rectangle targetRect;
         if (cells.length == 1) {
@@ -376,24 +439,31 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
     return result[0];
   }
 
-  private boolean cut() {
-    if (!copy())
+  public boolean isDeleteEnabled() {
+    if (!isOperationEnabled(OPERATION_DELETE))
       return false;
 
+    final Point[] cells = _viewer.doGetCellSelections();
+    return cells != null && cells.length > 0;
+  }
+
+  public boolean delete() {
     final boolean[] result = new boolean[1];
     BusyIndicator.showWhile(_viewer.getControl().getDisplay(), new Runnable() {
       @Override
       public void run() {
-        final Point[] cells = _viewer.doGetCellSelections();
-        if (cells == null || cells.length == 0) {
+        if (!isDeleteEnabled()) {
           result[0] = true;
           return;
         }
 
+        _viewer.cancelEditing();
+
+        final Point[] cells = _viewer.doGetCellSelections();
         final String[] values = new String[cells.length];
         Arrays.fill(values, "");
         setValues(cells, values);
-        _viewer.refresh();
+        _viewer.refresh(true);
         result[0] = true;
       }
     });
@@ -401,13 +471,34 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
     return result[0];
   }
 
-  private String[][] readFromClipboard() {
+  public boolean isCutEnabled() {
+    return isCopyEnabled() && isDeleteEnabled();
+  }
+
+  public boolean cut() {
+    if (!copy())
+      return false;
+
+    return delete();
+  }
+
+  public void selectAll() {
+    BusyIndicator.showWhile(_viewer.getControl().getDisplay(), new Runnable() {
+      @Override
+      public void run() {
+        _viewer.getControl().selectAll();
+      }
+    });
+  }
+
+  private String readFromClipboard() {
     final Clipboard clipboard = new Clipboard(_viewer.getControl().getDisplay());
     final String text = (String) clipboard.getContents(TextTransfer
         .getInstance());
-    if (text == null || text.isEmpty())
-      return new String[0][0];
+    return text;
+  }
 
+  private String[][] parseTable(String text) {
     final CSVReader reader = new CSVReader(new StringReader(text), '\t');
     try {
       final List<String[]> rows = reader.readAll();
