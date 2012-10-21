@@ -126,11 +126,6 @@ public final class Table extends Composite {
     hookControls();
   }
 
-  public Control[] getChildren() {
-    checkWidget();
-    return new Control[0];
-  }
-
   public boolean isFocusControl() {
     checkWidget();
     if (_table.isFocusControl())
@@ -304,21 +299,20 @@ public final class Table extends Composite {
     checkWidget();
     return _fixedHeaderRowCount;
   }
-  
+
   public void setFixedHeaderRowCount(int count) {
     checkWidget();
     if (count < 0)
       SWT.error(SWT.ERROR_INVALID_RANGE);
-    
+
     if (_fixedRowCount < count)
       setFixedRowCount(count);
-    
+
     _fixedHeaderRowCount = count;
 
     updatePreferredSize();
     redraw();
   }
-  
 
   public int getItemCount() {
     checkWidget();
@@ -532,7 +526,7 @@ public final class Table extends Composite {
     }
     setSelection(newSelection);
   }
-  
+
   public void selectAll() {
     checkWidget();
     _cellSelectionManager.selectAll();
@@ -1267,7 +1261,7 @@ public final class Table extends Composite {
       if (row < getFixedHeaderRowCount() || col < getFixedHeaderColumnCount()) {
         renderer = _altHeaderRenderer;
         _altHeaderRenderer.setActive(_isActive);
-        
+
         int alignment = SWTX.ALIGN_VERTICAL_CENTER;
         if (row < getFixedHeaderRowCount()) {
           alignment |= SWTX.ALIGN_HORIZONTAL_CENTER;
@@ -1327,10 +1321,10 @@ public final class Table extends Composite {
     public Point doBelongsToCell(int col, int row) {
       if (col >= _fixedHeaderColumnCount && row >= _fixedHeaderRowCount)
         return super.doBelongsToCell(col, row);
-      
+
       if (col <= 0 || row < 0)
         return super.doBelongsToCell(col, row);
-      
+
       final Point pt = new Point(col, row);
       while (pt.x > 0) {
         for (int y = pt.y; y >= 0; y--) {
@@ -1339,10 +1333,10 @@ public final class Table extends Composite {
           if (!NullSafe.equals(o1, o2))
             return pt;
         }
-        
+
         pt.x--;
       }
-      
+
       return pt;
     }
   };
@@ -1415,7 +1409,7 @@ public final class Table extends Composite {
 
       return super.isFocusControl();
     }
-    
+
     @Override
     public boolean setFocus() {
       return _table.forceFocus();
