@@ -68,6 +68,14 @@ final class FilterGroupContribution extends CompoundContributionItem {
     _columnIndex = columnIndex;
   }
 
+  public void dispose() {
+    if (_menuManager == null)
+      return;
+
+    _menuManager.dispose();
+    _menuManager = null;
+  }
+
   @Override
   protected IContributionItem[] getContributionItems() {
     if (_columnIndex < 0 || _columnIndex >= _table.getColumnCount())
@@ -76,7 +84,8 @@ final class FilterGroupContribution extends CompoundContributionItem {
     if (!column.isFilterable())
       return new IContributionItem[0];
 
-    final IMenuManager menu = new MenuManager(_menuText);
+    final IMenuManager menu = getMenuManager();
+    menu.removeAll();
 
     final IAction allAction = new FilterColumnAction(column, _allText,
         Filter.<TableItem> all());
@@ -126,6 +135,16 @@ final class FilterGroupContribution extends CompoundContributionItem {
       column.setData(DATA_KEY, accepted);
     }
     return accepted;
+  }
+
+  private MenuManager _menuManager;
+
+  private MenuManager getMenuManager() {
+    if (_menuManager == null) {
+      _menuManager = new MenuManager(_menuText);
+    }
+
+    return _menuManager;
   }
 
   private static class TableItemSorter implements Comparator<TableItem> {

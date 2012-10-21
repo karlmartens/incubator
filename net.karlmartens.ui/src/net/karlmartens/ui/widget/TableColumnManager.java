@@ -191,7 +191,7 @@ final class TableColumnManager {
     public void mouseDoubleClick(MouseEvent e) {
       if (_table != e.getSource())
         return;
-      
+
       final Point cellCord = _table.getCellForCoordinates(e.x, e.y);
       if (cellCord.y < 0
           || cellCord.y >= _table.getModel().getFixedHeaderRowCount())
@@ -346,6 +346,7 @@ final class TableColumnManager {
     @Override
     public void widgetDisposed(DisposeEvent e) {
       releaseControl();
+      _filterGroupContribution.dispose();
     }
   }
 }
