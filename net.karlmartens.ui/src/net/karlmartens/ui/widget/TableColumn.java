@@ -74,6 +74,10 @@ public final class TableColumn extends Item {
     _parent.createItem(this, index);
   }
 
+  public Table table() {
+    return _parent;
+  }
+
   public void setWidth(int width) {
     _width = width;
     _parent.redraw();
@@ -92,7 +96,7 @@ public final class TableColumn extends Item {
   public boolean isMoveable() {
     if (isHeaderColumn())
       return false;
-    
+
     return _moveable;
   }
 

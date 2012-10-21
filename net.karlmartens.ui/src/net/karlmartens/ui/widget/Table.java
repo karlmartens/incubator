@@ -27,7 +27,10 @@ import net.karlmartens.platform.util.NullSafe;
 import net.karlmartens.platform.util.NumberStringComparator;
 import net.karlmartens.ui.Images;
 
+import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
@@ -66,8 +69,10 @@ public final class Table extends Composite {
 
   public static final String DATA_COLUMN = "TimeSeriesTable.Column";
 
-  public static final String GROUP_COMMAND = "TimeSeriesTable.Group.Command";
-  public static final String GROUP_VISIBLE_COLUMNS = "TimeSeriesTable.Group.VisibleColumns";
+  public static final String GROUP_COMMAND = "Table.Group.Command";
+  public static final String GROUP_EDIT = "Table.Group.Edit";
+  public static final String GROUP_DATA = "Table.Group.Data";
+  public static final String GROUP_VISIBLE_COLUMNS = "Table.Group.VisibleColumns";
 
   public static final int SORT_DESCENDING = -1;
   public static final int SORT_NONE = 0;
@@ -162,11 +167,6 @@ public final class Table extends Composite {
     }
 
     return new Point(width, height);
-  }
-
-  public IMenuManager getColumnMenuManager() {
-    checkWidget();
-    return _columnManager.getMenuManager();
   }
 
   @Override
@@ -829,6 +829,21 @@ public final class Table extends Composite {
     redraw();
   }
 
+  private IMenuManager _menuManager;
+
+  public IMenuManager getMenuManager() {
+    if (_menuManager == null) {
+      final MenuManager mm = new MenuManager();
+      mm.add(new GroupMarker(GROUP_COMMAND));
+      mm.add(new Separator(GROUP_EDIT));
+      mm.add(new Separator(GROUP_DATA));
+
+      setMenu(mm.createContextMenu(this));
+      _menuManager = mm;
+    }
+    return _menuManager;
+  }
+
   public void addSelectionListener(SelectionListener listener) {
     checkWidget();
     checkNull(listener);
@@ -863,7 +878,7 @@ public final class Table extends Composite {
 
     for (int i = 0; i < _itemCount; i++) {
       final TableItem item = _items[i];
-      item.setVisible(filter.accepts(item));
+      item.setVisible(i < getFixedRowCount() || filter.accepts(item));
     }
     redraw();
   }
@@ -1389,6 +1404,11 @@ public final class Table extends Composite {
 
       _imageAscending.dispose();
       _imageDecending.dispose();
+
+      if (_menuManager != null) {
+        _menuManager.dispose();
+        _menuManager = null;
+      }
     }
   }
 

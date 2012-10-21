@@ -39,7 +39,7 @@ public class TableTest {
     table.setFont(new Font(display, "Arial", 10, SWT.NONE));
     table.addColumnSortSupport();
 
-    IMenuManager menuManager = table.getColumnMenuManager();
+    IMenuManager menuManager = table.getMenuManager();
     menuManager.appendToGroup(Table.GROUP_COMMAND, new Action("Test") {
       @Override
       public void run() {

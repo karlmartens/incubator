@@ -53,7 +53,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler2;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.SWT;
@@ -700,47 +700,46 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
   };
 
   public void createContextMenu() {
-    final MenuManager mm = new MenuManager();
+    final IMenuManager mm = _viewer.getControl().getMenuManager();
 
     if (isOperationEnabled(OPERATION_CUT)) {
       final CutTableViewerAction cut = new CutTableViewerAction();
       cut.register(this);
-      mm.add(cut);
+      mm.appendToGroup(Table.GROUP_EDIT, cut);
     }
 
     if (isOperationEnabled(OPERATION_COPY)) {
       final CopyTableViewerAction copy = new CopyTableViewerAction();
       copy.register(this);
-      mm.add(copy);
+      mm.appendToGroup(Table.GROUP_EDIT, copy);
     }
 
     if (isOperationEnabled(OPERATION_PASTE)) {
       final PasteTableViewerAction paste = new PasteTableViewerAction();
       paste.register(this);
-      mm.add(paste);
+      mm.appendToGroup(Table.GROUP_EDIT, paste);
     }
 
     final boolean group1 = (_operations & (OPERATION_COPY | OPERATION_PASTE | OPERATION_CUT)) != 0;
     final boolean group2 = (_operations & (OPERATION_DELETE | OPERATION_SELECT_ALL)) != 0;
     if (group1 && group2)
-      mm.add(new Separator());
+      mm.appendToGroup(Table.GROUP_EDIT, new Separator());
 
     if (isOperationEnabled(OPERATION_DELETE)) {
       final DeleteTableViewerAction delete = new DeleteTableViewerAction();
       delete.register(this);
-      mm.add(delete);
+      mm.appendToGroup(Table.GROUP_EDIT, delete);
     }
 
     if (isOperationEnabled(OPERATION_SELECT_ALL)) {
       final SelectAllTableViewerAction selectAll = new SelectAllTableViewerAction();
       selectAll.register(this);
-      mm.add(selectAll);
+      mm.appendToGroup(Table.GROUP_EDIT, selectAll);
     }
 
     if (!group1 && !group2)
       return;
 
-    final Table table = _viewer.getControl();
-    table.setMenu(mm.createContextMenu(table));
+    mm.update();
   }
 }

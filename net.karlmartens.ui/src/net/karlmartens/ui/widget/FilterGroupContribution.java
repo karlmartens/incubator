@@ -17,16 +17,19 @@
  */
 package net.karlmartens.ui.widget;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 
 import net.karlmartens.platform.util.Filter;
-import net.karlmartens.platform.util.NullSafe;
 import net.karlmartens.platform.util.NumberStringComparator;
 import net.karlmartens.ui.action.FilterColumnAction;
+import net.karlmartens.ui.action.FilterColumnValueAction;
 
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IAction;
@@ -41,6 +44,8 @@ import org.eclipse.ui.actions.CompoundContributionItem;
  * 
  */
 final class FilterGroupContribution extends CompoundContributionItem {
+
+  private static final String DATA_KEY = "FilterGroupContribution.data";
 
   private final Table _table;
   private final String _menuText;
@@ -89,35 +94,38 @@ final class FilterGroupContribution extends CompoundContributionItem {
 
     menu.add(new Separator());
 
-    String lastValue = null;
-    final Set<TableItem> acceptedItems = new HashSet<TableItem>();
+    final Set<String> values = new HashSet<String>();
     for (TableItem item : items) {
       final String value = item.getText(_columnIndex);
-      if (!NullSafe.equals(lastValue, value)) {
-        if (!acceptedItems.isEmpty()) {
-          final TableItem[] arr = acceptedItems.toArray(new TableItem[0]);
-          final IAction action = new FilterColumnAction(column, lastValue,
-              Filter.accepting(arr));
-          menu.add(new ActionContributionItem(action));
-        }
-
-        lastValue = value;
-        acceptedItems.clear();
-      }
-
-      acceptedItems.add(item);
+      values.add(value);
     }
 
-    if (!acceptedItems.isEmpty()) {
-      final TableItem[] arr = acceptedItems.toArray(new TableItem[0]);
-      final IAction action = new FilterColumnAction(column, lastValue,
-          Filter.accepting(arr));
+    final Set<String> accepted = getOrCreateAccepted(column);
+    for (String value : accepted) {
+      values.add(value);
+    }
+
+    final List<String> sortedValues = new ArrayList<String>(values);
+    Collections.sort(sortedValues, new NumberStringComparator());
+    for (String value : sortedValues) {
+      final IAction action = new FilterColumnValueAction(column, value,
+          accepted);
       menu.add(new ActionContributionItem(action));
     }
 
     menu.update();
 
     return new IContributionItem[] { menu };
+  }
+
+  private Set<String> getOrCreateAccepted(TableColumn column) {
+    @SuppressWarnings("unchecked")
+    Set<String> accepted = (Set<String>) column.getData(DATA_KEY);
+    if (accepted == null) {
+      accepted = new HashSet<String>();
+      column.setData(DATA_KEY, accepted);
+    }
+    return accepted;
   }
 
   private static class TableItemSorter implements Comparator<TableItem> {

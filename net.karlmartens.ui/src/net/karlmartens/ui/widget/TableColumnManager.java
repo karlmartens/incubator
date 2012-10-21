@@ -26,7 +26,6 @@ import net.karlmartens.ui.widget.Table.KTableImpl;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -43,14 +42,12 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Shell;
 
 final class TableColumnManager {
 
   private final Table _container;
   private final KTableImpl _table;
-  private final MenuManager _columnMenu;
   private final SortColumnsContribution _sortColumnsContribution;
   private final FilterGroupContribution _filterGroupContribution;
   private final ResizeColumnAction _resizeColumnAction;
@@ -83,21 +80,15 @@ final class TableColumnManager {
     showHideMenu.add(new VisibleColumnsContribution(_container));
     showHideMenu.update();
 
-    _columnMenu = new MenuManager();
-    _columnMenu.add(new GroupMarker(Table.GROUP_COMMAND));
-    _columnMenu.add(_sortColumnsContribution);
-    _columnMenu.add(_resizeColumnAction);
-    _columnMenu.add(_resizeAllColumnsAction);
-    _columnMenu.add(new Separator());
-    _columnMenu.add(showHideMenu);
-    _columnMenu.add(_filterGroupContribution);
-    _columnMenu.update();
+    final IMenuManager columnMenu = container.getMenuManager();
+    columnMenu.appendToGroup(Table.GROUP_COMMAND, _sortColumnsContribution);
+    columnMenu.appendToGroup(Table.GROUP_COMMAND, _resizeColumnAction);
+    columnMenu.appendToGroup(Table.GROUP_COMMAND, _resizeAllColumnsAction);
+    columnMenu.appendToGroup(Table.GROUP_DATA, showHideMenu);
+    columnMenu.appendToGroup(Table.GROUP_DATA, _filterGroupContribution);
+    columnMenu.update();
 
     hookControl();
-  }
-
-  IMenuManager getMenuManager() {
-    return _columnMenu;
   }
 
   boolean isSortEnabled() {
@@ -109,31 +100,21 @@ final class TableColumnManager {
   }
 
   private void hookControl() {
-    _table.addDisposeListener(_widgetListener);
+    _container.addDisposeListener(_widgetListener);
+    _container.addMenuDetectListener(_widgetListener);
     _table.addMouseListener(_widgetListener);
     _table.addMouseMoveListener(_widgetListener);
-    _table.addMenuDetectListener(_widgetListener);
   }
 
   private void releaseControl() {
-    _columnMenu.dispose();
-
-    _table.removeDisposeListener(_widgetListener);
+    _container.removeDisposeListener(_widgetListener);
+    _container.removeMenuDetectListener(_widgetListener);
     _table.removeMouseListener(_widgetListener);
     _table.removeMouseMoveListener(_widgetListener);
-    _table.removeMenuDetectListener(_widgetListener);
   }
 
   private Display getDisplay() {
     return _table.getDisplay();
-  }
-
-  private Menu buildMenu(int columnIndex) {
-    _sortColumnsContribution.setColumnIndex(columnIndex);
-    _filterGroupContribution.setColumnIndex(columnIndex);
-    _resizeColumnAction.setColumnIndex(columnIndex);
-    _columnMenu.createContextMenu(_table);
-    return _columnMenu.getMenu();
   }
 
   private void initiateColumnMove(MouseEvent e, int colIndex) {
@@ -210,7 +191,7 @@ final class TableColumnManager {
     public void mouseDoubleClick(MouseEvent e) {
       if (_table != e.getSource())
         return;
-
+      
       final Point cellCord = _table.getCellForCoordinates(e.x, e.y);
       if (cellCord.y < 0
           || cellCord.y >= _table.getModel().getFixedHeaderRowCount())
@@ -355,14 +336,11 @@ final class TableColumnManager {
     public void menuDetected(MenuDetectEvent e) {
       final Point cord = _table.toControl(e.x, e.y);
       final Point cell = _table.getCellForCoordinates(cord.x, cord.y);
-      if (cell.y < _table.getModel().getFixedHeaderRowCount()) {
-        final Menu menu = buildMenu(cell.x);
-        menu.setData(Table.DATA_COLUMN, cell.x);
-        if (menu != null && !menu.isDisposed()) {
-          menu.setLocation(e.x, e.y);
-          menu.setVisible(true);
-        }
-      }
+
+      final int columnIndex = cell.x;
+      _sortColumnsContribution.setColumnIndex(columnIndex);
+      _filterGroupContribution.setColumnIndex(columnIndex);
+      _resizeColumnAction.setColumnIndex(columnIndex);
     }
 
     @Override
