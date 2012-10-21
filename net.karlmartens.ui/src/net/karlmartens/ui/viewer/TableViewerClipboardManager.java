@@ -23,6 +23,8 @@ import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_DELETE;
 import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_PASTE;
 import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_SELECT_ALL;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -35,6 +37,11 @@ import java.util.ResourceBundle;
 import net.karlmartens.platform.util.Pair;
 import net.karlmartens.ui.Activator;
 import net.karlmartens.ui.UiUtil;
+import net.karlmartens.ui.action.CopyTableViewerAction;
+import net.karlmartens.ui.action.CutTableViewerAction;
+import net.karlmartens.ui.action.DeleteTableViewerAction;
+import net.karlmartens.ui.action.PasteTableViewerAction;
+import net.karlmartens.ui.action.SelectAllTableViewerAction;
 import net.karlmartens.ui.widget.ClipboardStrategy;
 import net.karlmartens.ui.widget.Table;
 import net.karlmartens.ui.widget.TableColumn;
@@ -46,6 +53,8 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler2;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.BusyIndicator;
@@ -71,14 +80,20 @@ import au.com.bytecode.opencsv.CSVWriter;
 
 public final class TableViewerClipboardManager extends CellSelectionModifier {
 
+  public static String PROPERTY_ENABLED = "enabled";
+
   private final TableViewer _viewer;
   private final int _operations;
+  private final PropertyChangeSupport _pcs = new PropertyChangeSupport(this);
 
   public TableViewerClipboardManager(IWorkbenchPartSite site,
       TableViewer viewer, int operations) {
     super(viewer);
     _viewer = viewer;
     _operations = operations;
+
+    final Control control = viewer.getControl();
+    hookPropertyChange(control);
 
     final IHandlerService service = (IHandlerService) site
         .getService(IHandlerService.class);
@@ -89,7 +104,10 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
     super(viewer);
     _viewer = viewer;
     _operations = operations;
-    hookControl(viewer.getControl());
+
+    final Control control = viewer.getControl();
+    hookPropertyChange(control);
+    hookControl(control);
   }
 
   private boolean isOperationEnabled(int operation) {
@@ -282,6 +300,40 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
         display.removeFilter(SWT.KeyDown, listener);
       }
     });
+  }
+
+  private final int[] _id = new int[1];
+
+  private void hookPropertyChange(final Control control) {
+    new Listener() {
+      {
+        control.addListener(SWT.Dispose, this);
+        control.addListener(SWT.Selection, this);
+      }
+
+      @Override
+      public void handleEvent(Event event) {
+        if (event.type == SWT.Dispose) {
+          control.removeListener(SWT.Dispose, this);
+          control.removeListener(SWT.Selection, this);
+          return;
+        }
+
+        if (event.type == SWT.Selection) {
+          final int id = ++_id[0];
+          _viewer.getControl().getDisplay().timerExec(200, new Runnable() {
+            @Override
+            public void run() {
+              if (id != _id[0])
+                return;
+
+              _pcs.firePropertyChange(PROPERTY_ENABLED, null, null);
+            }
+          });
+          return;
+        }
+      }
+    };
   }
 
   private Pair<Integer, Point[]> computeRegion() {
@@ -491,6 +543,14 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
     });
   }
 
+  public void addPropertyChangeListener(PropertyChangeListener listener) {
+    _pcs.addPropertyChangeListener(listener);
+  }
+
+  public void removePropertyChangeListener(PropertyChangeListener listener) {
+    _pcs.removePropertyChangeListener(listener);
+  }
+
   private String readFromClipboard() {
     final Clipboard clipboard = new Clipboard(_viewer.getControl().getDisplay());
     final String text = (String) clipboard.getContents(TextTransfer
@@ -638,4 +698,49 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
       return o1.x - o2.x;
     }
   };
+
+  public void createContextMenu() {
+    final MenuManager mm = new MenuManager();
+
+    if (isOperationEnabled(OPERATION_CUT)) {
+      final CutTableViewerAction cut = new CutTableViewerAction();
+      cut.register(this);
+      mm.add(cut);
+    }
+
+    if (isOperationEnabled(OPERATION_COPY)) {
+      final CopyTableViewerAction copy = new CopyTableViewerAction();
+      copy.register(this);
+      mm.add(copy);
+    }
+
+    if (isOperationEnabled(OPERATION_PASTE)) {
+      final PasteTableViewerAction paste = new PasteTableViewerAction();
+      paste.register(this);
+      mm.add(paste);
+    }
+
+    final boolean group1 = (_operations & (OPERATION_COPY | OPERATION_PASTE | OPERATION_CUT)) != 0;
+    final boolean group2 = (_operations & (OPERATION_DELETE | OPERATION_SELECT_ALL)) != 0;
+    if (group1 && group2)
+      mm.add(new Separator());
+
+    if (isOperationEnabled(OPERATION_DELETE)) {
+      final DeleteTableViewerAction delete = new DeleteTableViewerAction();
+      delete.register(this);
+      mm.add(delete);
+    }
+
+    if (isOperationEnabled(OPERATION_SELECT_ALL)) {
+      final SelectAllTableViewerAction selectAll = new SelectAllTableViewerAction();
+      selectAll.register(this);
+      mm.add(selectAll);
+    }
+
+    if (!group1 && !group2)
+      return;
+
+    final Table table = _viewer.getControl();
+    table.setMenu(mm.createContextMenu(table));
+  }
 }

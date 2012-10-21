@@ -104,8 +104,10 @@ public final class TableViewerTest {
     table.setFixedColumnCount(fixedColumns);
     table.setFixedRowCount(3);
 
-    new TableViewerClipboardManager(viewer, OPERATION_COPY | OPERATION_CUT
-        | OPERATION_DELETE | OPERATION_PASTE | OPERATION_SELECT_ALL);
+    final TableViewerClipboardManager clipboardManager = new TableViewerClipboardManager(
+        viewer, OPERATION_COPY | OPERATION_CUT | OPERATION_DELETE
+            | OPERATION_PASTE | OPERATION_SELECT_ALL);
+    clipboardManager.createContextMenu();
 
     viewer.setInput(input);
 

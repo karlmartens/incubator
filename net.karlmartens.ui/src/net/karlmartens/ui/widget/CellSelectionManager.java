@@ -33,10 +33,10 @@ public final class CellSelectionManager {
   private final CellNavigationStrategy _navigationStrategy;
   private final TableListener _listener;
   private final ItemListener _itemListener;
-  
+
   private Point _focusCell;
   private Point _expansionCell;
-  
+
   private Point[] _selections = new Point[0];
   private boolean _dragExpand = false;
 
@@ -53,7 +53,8 @@ public final class CellSelectionManager {
   }
 
   public void setFocusCell(Point cell, boolean multi) {
-    if (NullSafe.equals(cell, _focusCell) && NullSafe.equals(_focusCell, _expansionCell))
+    if (NullSafe.equals(cell, _focusCell)
+        && NullSafe.equals(_focusCell, _expansionCell))
       return;
 
     final TableItem oldItem = getItemAtIndex(_focusCell);
@@ -110,21 +111,21 @@ public final class CellSelectionManager {
     final Rectangle visible = _table.getVisibleScrollableCells();
     final int numFixedCols = _table.getFixedColumnCount();
     final int numFixedRows = _table.getFixedRowCount();
-    if (visible.x > numFixedCols) { 
-        if (dirX < 0 &&  cell.x < numFixedCols) {
-          vCell.x = visible.x - 1;
-        } else if (dirX > 0 && cell.x == numFixedCols) {
-          vCell.x = numFixedCols;
-        }
+    if (visible.x > numFixedCols) {
+      if (dirX < 0 && cell.x < numFixedCols) {
+        vCell.x = visible.x - 1;
+      } else if (dirX > 0 && cell.x == numFixedCols) {
+        vCell.x = numFixedCols;
+      }
 
-        if (dirY < 0 &&  cell.y < numFixedRows) {
-          vCell.y = visible.y - 1;
-        } else if (dirY > 0 && cell.y == numFixedRows) {
-          vCell.y = numFixedRows;
-        }
+      if (dirY < 0 && cell.y < numFixedRows) {
+        vCell.y = visible.y - 1;
+      } else if (dirY > 0 && cell.y == numFixedRows) {
+        vCell.y = numFixedRows;
+      }
 
-        dirX = _focusCell.x > vCell.x ? -1 : 1;
-        dirY = _focusCell.y > vCell.y ? -1 : 1;
+      dirX = _focusCell.x > vCell.x ? -1 : 1;
+      dirY = _focusCell.y > vCell.y ? -1 : 1;
     }
 
     if (!multi) {
@@ -163,14 +164,14 @@ public final class CellSelectionManager {
     if (cols <= 0 || rows <= 0)
       return;
 
-    setFocusCell(new Point(0,0), false);
+    setFocusCell(new Point(0, 0), false);
     expandSelection(new Point(cols - 1, rows - 1), false);
   }
 
   private TableItem getItemAtIndex(Point pt) {
     if (pt == null)
       return null;
-    
+
     if (pt.y >= _table.getItemCount())
       return null;
 
@@ -198,6 +199,9 @@ public final class CellSelectionManager {
   private void handleMouseDown(Event e) {
     if (!_table.isFocusControl())
       _table.setFocus();
+
+    if (e.button != 1)
+      return;
 
     final Point cell = getCell(new Point(e.x, e.y));
     if (cell == null)
@@ -235,33 +239,35 @@ public final class CellSelectionManager {
         } else if (e.y >= rect.y + rect.height) {
           delta.y = 1;
         }
-        
+
         cell = new Point(_expansionCell.x, _expansionCell.y);
         final Rectangle selection = computeSelection();
         if (delta.x < 0) {
           cell.x = Math.max(selection.x - 1, 0);
         } else if (delta.x > 0) {
-          cell.x = Math.min(selection.x + selection.width, _table.getColumnCount() - 1);
+          cell.x = Math.min(selection.x + selection.width,
+              _table.getColumnCount() - 1);
         }
-        
+
         if (delta.y < 0) {
           cell.y = Math.max(selection.y - 1, 0);
         } else if (delta.y > 0) {
-          cell.y = Math.min(selection.y + selection.height, _table.getItemCount() - 1);
+          cell.y = Math.min(selection.y + selection.height,
+              _table.getItemCount() - 1);
         }
       }
     }
-    
+
     expandSelection(cell, isMulti(e));
   }
-  
+
   private Rectangle computeSelection() {
     if (_focusCell == null)
       return null;
-    
+
     if (_expansionCell == null || _focusCell.equals(_expansionCell))
       return new Rectangle(_focusCell.x, _focusCell.y, 1, 1);
-    
+
     final Rectangle result = new Rectangle(-1, -1, 0, 0);
     result.x = Math.min(_focusCell.x, _expansionCell.x);
     result.y = Math.min(_focusCell.y, _expansionCell.y);
@@ -274,13 +280,13 @@ public final class CellSelectionManager {
     final Rectangle rect = computeSelection();
     if (rect == null)
       return null;
-    
+
     final TableItem tlItem = _table.getItem(rect.y);
     final Rectangle tlRect = _table.getBounds(tlItem, rect.x);
-    
+
     final TableItem brItem = _table.getItem(rect.y + rect.height - 1);
     final Rectangle brRect = _table.getBounds(brItem, rect.x + rect.width - 1);
-    
+
     final Rectangle result = new Rectangle(-1, -1, 0, 0);
     result.x = tlRect.x;
     result.y = tlRect.y;
@@ -291,21 +297,23 @@ public final class CellSelectionManager {
 
   private void handleKeyDown(Event e) {
     if (_navigationStrategy.isNavigationEvent(e)) {
-      final Point cell = _navigationStrategy.findSelectedCell(_table, _focusCell, e);
+      final Point cell = _navigationStrategy.findSelectedCell(_table,
+          _focusCell, e);
       if (cell != null) {
         setFocusCell(cell, false);
       }
     }
 
     if (_navigationStrategy.isExpandEvent(e)) {
-      final Point cell = _navigationStrategy.findSelectedCell(_table, _expansionCell, e);
+      final Point cell = _navigationStrategy.findSelectedCell(_table,
+          _expansionCell, e);
       expandSelection(cell, false);
     }
   }
 
   private void handleSelection(Event e) {
-    if (_focusCell == null || _focusCell.x >= _table.getColumnCount() 
-        || getItemAtIndex(_focusCell) == e.item || e.item == null 
+    if (_focusCell == null || _focusCell.x >= _table.getColumnCount()
+        || getItemAtIndex(_focusCell) == e.item || e.item == null
         || e.item.isDisposed())
       return;
 
@@ -314,7 +322,8 @@ public final class CellSelectionManager {
   }
 
   private void handleFocusIn(Event e) {
-    if (_focusCell != null || _table.isDisposed() || _table.getItemCount() <= 0 || _table.getColumnCount() <= 0)
+    if (_focusCell != null || _table.isDisposed() || _table.getItemCount() <= 0
+        || _table.getColumnCount() <= 0)
       return;
 
     setFocusCell(new Point(0, 0), false);
