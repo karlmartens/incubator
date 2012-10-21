@@ -178,6 +178,6 @@ public final class TableColumn extends Item {
   }
 
   private boolean isHeaderColumn() {
-    return _parent.getFixedHeaderColumnCount() < _parent.indexOf(this);
+    return _parent.getFixedHeaderColumnCount() > _parent.indexOf(this);
   }
 }

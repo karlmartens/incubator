@@ -105,30 +105,31 @@ abstract class AbstractTableItem extends Item {
     _parent.redraw();
     return true;
   }
-  
+
   public int getStyle() {
     checkWidget();
     if (_style == null)
       return super.getStyle();
-    
+
     return _style;
   }
 
   public int getStyle(int index) {
     checkWidget();
-    
-    if (_cellStyles == null || index < 0 || index >= _cellStyles.length || _cellStyles[index] == null)
+
+    if (_cellStyles == null || index < 0 || index >= _cellStyles.length
+        || _cellStyles[index] == null)
       return getStyle();
 
     return _cellStyles[index];
   }
-  
+
   public void setStyle(int style) {
     checkWidget();
-    
+
     if (_style != null && _style.intValue() == style)
       return;
-    
+
     _style = style;
     _parent.redraw();
   }
@@ -237,7 +238,8 @@ abstract class AbstractTableItem extends Item {
   public Color getBackground(int index) {
     checkWidget();
 
-    if (_cellBackgrounds == null || index < 0 || index >= _cellBackgrounds.length || _cellBackgrounds[index] == null)
+    if (_cellBackgrounds == null || index < 0
+        || index >= _cellBackgrounds.length || _cellBackgrounds[index] == null)
       return getBackground();
 
     return _cellBackgrounds[index];
@@ -292,7 +294,8 @@ abstract class AbstractTableItem extends Item {
   public Color getForeground(int index) {
     checkWidget();
 
-    if (_cellForegrounds == null || index < 0 || index >= _cellForegrounds.length || _cellForegrounds[index] == null)
+    if (_cellForegrounds == null || index < 0
+        || index >= _cellForegrounds.length || _cellForegrounds[index] == null)
       return getForeground();
 
     return _cellForegrounds[index];
@@ -347,7 +350,8 @@ abstract class AbstractTableItem extends Item {
   public Font getFont(int index) {
     checkWidget();
 
-    if (_cellFonts == null || index < 0 || index >= _cellFonts.length || _cellFonts[index] == null)
+    if (_cellFonts == null || index < 0 || index >= _cellFonts.length
+        || _cellFonts[index] == null)
       return getFont();
 
     return _cellFonts[index];
@@ -413,7 +417,10 @@ abstract class AbstractTableItem extends Item {
   void swapColumns(int firstIndex, int secondIndex) {
     ArraySupport.swap(_strings, firstIndex, secondIndex);
     ArraySupport.swap(_images, firstIndex, secondIndex);
-    ArraySupport.swap(_cellStyles, firstIndex, secondIndex);
+
+    if (_cellStyles != null)
+      ArraySupport.swap(_cellStyles, firstIndex, secondIndex);
+
     ArraySupport.swap(_cellFonts, firstIndex, secondIndex);
     ArraySupport.swap(_cellBackgrounds, firstIndex, secondIndex);
     ArraySupport.swap(_cellForegrounds, firstIndex, secondIndex);
