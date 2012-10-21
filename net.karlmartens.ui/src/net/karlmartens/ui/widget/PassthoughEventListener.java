@@ -104,8 +104,6 @@ final class PassthoughEventListener {
       e.keyLocation = event.keyLocation;
       e.magnification = event.magnification;
       e.rotation = event.rotation;
-      e.segments = event.segments;
-      e.segmentsChars = event.segmentsChars;
       e.start = event.start;
       e.stateMask = event.stateMask;
       e.text = event.text;

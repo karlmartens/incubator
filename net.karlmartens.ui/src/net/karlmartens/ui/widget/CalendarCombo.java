@@ -156,7 +156,7 @@ public final class CalendarCombo extends Composite {
 
     initAccessible();
   }
-  
+
   public CalendarCombo(Composite parent, int style) {
     this(parent, style, createDateFormat());
   }
@@ -249,7 +249,7 @@ public final class CalendarCombo extends Composite {
      */
     if (isDisposed())
       return;
-    
+
     // TEMPORARY CODE
     if (_popup == null || _popup.isDisposed())
       return;
@@ -876,11 +876,6 @@ public final class CalendarCombo extends Composite {
         e.detail = event.detail;
         e.x = event.x;
         e.y = event.y;
-        if (event.detail == SWT.MENU_KEYBOARD) {
-          Point pt = getDisplay().map(_text, null, _text.getCaretLocation());
-          e.x = pt.x;
-          e.y = pt.y;
-        }
         notifyListeners(SWT.MenuDetect, e);
         event.doit = e.doit;
         event.x = e.x;
