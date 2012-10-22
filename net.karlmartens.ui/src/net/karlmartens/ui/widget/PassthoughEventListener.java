@@ -55,7 +55,8 @@ final class PassthoughEventListener {
     final int[] events = new int[] { SWT.KeyDown, SWT.KeyUp, SWT.Paint,
         SWT.MouseDoubleClick, SWT.MouseDown, SWT.MouseUp, SWT.MouseMove,
         SWT.MouseEnter, SWT.MouseExit, SWT.MouseHorizontalWheel,
-        SWT.MouseWheel, SWT.MouseVerticalWheel, SWT.MouseHover, SWT.MouseWheel };
+        SWT.MouseWheel, SWT.MouseVerticalWheel, SWT.MouseHover, SWT.MouseWheel,
+        SWT.MenuDetect };
     for (int event : events)
       control.addListener(event, _listener);
   }
@@ -66,7 +67,8 @@ final class PassthoughEventListener {
     final int[] events = new int[] { SWT.KeyDown, SWT.KeyUp, SWT.Paint,
         SWT.MouseDoubleClick, SWT.MouseDown, SWT.MouseUp, SWT.MouseMove,
         SWT.MouseEnter, SWT.MouseExit, SWT.MouseHorizontalWheel,
-        SWT.MouseWheel, SWT.MouseVerticalWheel, SWT.MouseHover, SWT.MouseWheel };
+        SWT.MouseWheel, SWT.MouseVerticalWheel, SWT.MouseHover, SWT.MouseWheel,
+        SWT.MenuDetect };
     for (int event : events)
       control.removeListener(event, _listener);
   }

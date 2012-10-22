@@ -100,15 +100,15 @@ final class TableColumnManager {
   }
 
   private void hookControl() {
-    _container.addDisposeListener(_widgetListener);
-    _container.addMenuDetectListener(_widgetListener);
+    _table.addDisposeListener(_widgetListener);
+    _table.addMenuDetectListener(_widgetListener);
     _table.addMouseListener(_widgetListener);
     _table.addMouseMoveListener(_widgetListener);
   }
 
   private void releaseControl() {
-    _container.removeDisposeListener(_widgetListener);
-    _container.removeMenuDetectListener(_widgetListener);
+    _table.removeDisposeListener(_widgetListener);
+    _table.removeMenuDetectListener(_widgetListener);
     _table.removeMouseListener(_widgetListener);
     _table.removeMouseMoveListener(_widgetListener);
   }
