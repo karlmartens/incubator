@@ -159,12 +159,14 @@ public final class CellSelectionManager {
   }
 
   public void selectAll() {
+    final int minX = _table.getFixedColumnCount();
+    final int minY = _table.getFixedRowCount();
     final int cols = _table.getColumnCount();
     final int rows = _table.getItemCount();
-    if (cols <= 0 || rows <= 0)
+    if (cols <= minX || rows <= minY)
       return;
 
-    setFocusCell(new Point(0, 0), false);
+    setFocusCell(new Point(minX, minY), false);
     expandSelection(new Point(cols - 1, rows - 1), false);
   }
 
