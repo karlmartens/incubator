@@ -23,13 +23,18 @@ import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_DELETE;
 import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_PASTE;
 import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_SELECT_ALL;
 import net.karlmartens.platform.util.NumberStringComparator;
+import net.karlmartens.ui.dialog.ConfigureColumnsDialog;
 import net.karlmartens.ui.widget.Table;
 
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.joda.time.LocalDate;
@@ -54,9 +59,13 @@ public final class TableViewerTest {
     }
 
     final Shell shell = new Shell();
-    shell.setLayout(new FillLayout());
+    shell.setLayout(GridLayoutFactory.swtDefaults().create());
 
     final Display display = shell.getDisplay();
+
+    final Button b = new Button(shell, SWT.PUSH);
+    b.setLayoutData(GridDataFactory.swtDefaults().create());
+    b.setText("Columns");
 
     final TableViewer viewer = new TableViewer(shell);
     viewer.setContentProvider(new ArrayContentProvider());
@@ -97,6 +106,10 @@ public final class TableViewerTest {
     }
 
     final Table table = viewer.getControl();
+    table.setLayoutData(GridDataFactory//
+        .fillDefaults()//
+        .grab(true, true)//
+        .create());
     table.setHeaderVisible(true);
     table.setBackground(display.getSystemColor(SWT.COLOR_WHITE));
     table.setFont(new Font(display, "Arial", 8, SWT.NORMAL));
@@ -108,6 +121,15 @@ public final class TableViewerTest {
         viewer, OPERATION_COPY | OPERATION_CUT | OPERATION_DELETE
             | OPERATION_PASTE | OPERATION_SELECT_ALL);
     clipboardManager.createContextMenu();
+
+    b.addSelectionListener(new SelectionAdapter() {
+      @Override
+      public void widgetSelected(SelectionEvent e) {
+        final ConfigureColumnsDialog dialog = new ConfigureColumnsDialog(shell,
+            table, "Title", "header", "message");
+        dialog.open();
+      }
+    });
 
     viewer.setInput(input);
 
