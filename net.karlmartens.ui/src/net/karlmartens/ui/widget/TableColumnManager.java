@@ -17,15 +17,11 @@
  */
 package net.karlmartens.ui.widget;
 
-import java.util.ResourceBundle;
-
 import net.karlmartens.ui.action.ResizeAllColumnsAction;
 import net.karlmartens.ui.action.ResizeColumnAction;
 import net.karlmartens.ui.widget.Table.KTableImpl;
 
-import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -48,10 +44,12 @@ final class TableColumnManager {
 
   private final Table _container;
   private final KTableImpl _table;
+  
   private final SortColumnsContribution _sortColumnsContribution;
-  private final FilterGroupContribution _filterGroupContribution;
   private final ResizeColumnAction _resizeColumnAction;
   private final ResizeAllColumnsAction _resizeAllColumnsAction;
+  private final VisibleColumnsContribution _visibleColumnsConstribution;
+  private final FilterGroupContribution _filterGroupContribution;
 
   private boolean _columnsSortable = false;
 
@@ -68,23 +66,16 @@ final class TableColumnManager {
     _table = table;
 
     _sortColumnsContribution = new SortColumnsContribution(this, _container);
-    _filterGroupContribution = new FilterGroupContribution(_container);
     _resizeColumnAction = new ResizeColumnAction(_container, -1);
     _resizeAllColumnsAction = new ResizeAllColumnsAction(_container);
-
-    final ResourceBundle bundle = ResourceBundle
-        .getBundle("net.karlmartens.ui.locale.messages");
-    final IMenuManager showHideMenu = new MenuManager(
-        bundle.getString("ShowHideColumns.TEXT"));
-    showHideMenu.add(new GroupMarker(Table.GROUP_VISIBLE_COLUMNS));
-    showHideMenu.add(new VisibleColumnsContribution(_container));
-    showHideMenu.update();
-
+    _visibleColumnsConstribution = new VisibleColumnsContribution(_container);
+    _filterGroupContribution = new FilterGroupContribution(_container);
+    
     final IMenuManager columnMenu = container.getMenuManager();
     columnMenu.appendToGroup(Table.GROUP_COMMAND, _sortColumnsContribution);
     columnMenu.appendToGroup(Table.GROUP_COMMAND, _resizeColumnAction);
     columnMenu.appendToGroup(Table.GROUP_COMMAND, _resizeAllColumnsAction);
-    columnMenu.appendToGroup(Table.GROUP_DATA, showHideMenu);
+    columnMenu.appendToGroup(Table.GROUP_DATA, _visibleColumnsConstribution);
     columnMenu.appendToGroup(Table.GROUP_DATA, _filterGroupContribution);
     columnMenu.update();
 
@@ -346,6 +337,7 @@ final class TableColumnManager {
     @Override
     public void widgetDisposed(DisposeEvent e) {
       releaseControl();
+      _visibleColumnsConstribution.dispose();
       _filterGroupContribution.dispose();
     }
   }
