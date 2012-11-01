@@ -17,8 +17,6 @@
  */
 package net.karlmartens.ui.viewer;
 
-import java.util.Arrays;
-
 import net.karlmartens.ui.widget.Table;
 import net.karlmartens.ui.widget.TableColumn;
 import net.karlmartens.ui.widget.TableItem;
@@ -218,25 +216,6 @@ public class TableViewer extends AbstractTableViewer {
 
   @Override
   protected final void preservingSelection(Runnable updateCode) {
-    final Point[] selection = _control.getCellSelections();
-    try {
-      updateCode.run();
-    } finally {
-
-      final int rowCount = doGetItemCount();
-      final int columnCount = doGetColumnCount();
-
-      final Point[] s = new Point[selection.length];
-      int index = 0;
-      for (int i = 0; i < selection.length; i++) {
-        final Point pt = selection[i];
-        if (pt.x >= 0 && pt.x < columnCount && pt.y >= 0 && pt.y < rowCount) {
-          s[index++] = pt;
-        }
-      }
-
-      final Point[] newSelection = Arrays.copyOf(s, index);
-      _control.setCellSelections(newSelection);
-    }
+    _control.retainSelection(updateCode);
   }
 }

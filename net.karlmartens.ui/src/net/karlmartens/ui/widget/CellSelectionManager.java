@@ -17,6 +17,10 @@
  */
 package net.karlmartens.ui.widget;
 
+import java.util.Arrays;
+
+import net.karlmartens.platform.datatable.util.function._F1;
+import net.karlmartens.platform.util.ArraySupport;
 import net.karlmartens.platform.util.NullSafe;
 
 import org.eclipse.swt.SWT;
@@ -80,14 +84,88 @@ public final class CellSelectionManager {
       _table.showItem(newItem);
       _table.showColumn(_focusCell.x);
     }
+    
+    updateTableSelection();
+  }
 
-    final int insert = _focusCell == null ? 0 : 1;
-    final Point[] newSelections = new Point[_selections.length + insert];
-    System.arraycopy(_selections, 0, newSelections, insert, _selections.length);
-    if (_focusCell != null) {
-      newSelections[0] = _focusCell;
+  public void selectAll() {
+    final int minX = _table.getFixedColumnCount();
+    final int minY = _table.getFixedRowCount();
+    final int cols = _table.getColumnCount();
+    final int rows = _table.getItemCount();
+    if (cols <= minX || rows <= minY)
+      return;
+
+    setFocusCell(new Point(minX, minY), false);
+    expandSelection(new Point(cols - 1, rows - 1), false);
+  }
+
+  public void retainSelection(Runnable r) {
+    final Point originalOrigin = _focusCell;
+    final Point originalExpansion = _expansionCell;
+    final Rectangle originalFocus = computeFocusBounds();
+    final Point[] originalSelections = Arrays.copyOf(_selections,
+        _selections.length);
+
+    try {
+      r.run();
+    } finally {
+      if (originalFocus.width == 0 || originalFocus.height == 0)
+        return;
+
+      final Rectangle tableBounds = new Rectangle(
+          _table.getFixedHeaderColumnCount(), _table.getFixedHeaderRowCount()
+              - _table.getFixedHeaderRowCount(), _table.getColumnCount(),
+          _table.getItemCount() - _table.getFixedHeaderColumnCount());
+      final _F1<Point, Boolean> validCellTest = new _F1<Point, Boolean>() {
+        public Boolean apply(Point pt) {
+          return tableBounds.contains(pt);
+        }
+      };
+
+      final Point topLeft = new Point(originalFocus.x, originalFocus.y);
+      final Point bottomRight = new Point(//
+          originalFocus.x + originalFocus.width - 1, //
+          originalFocus.y + originalFocus.height - 1);
+      if (!validCellTest.apply(topLeft) || !validCellTest.apply(bottomRight)) {
+        _focusCell = null;
+        _expansionCell = null;
+        _selections = ArraySupport.filter(originalSelections,
+            new _F1<Point, Boolean>() {
+              @Override
+              public Boolean apply(Point pt) {
+                return !originalFocus.contains(pt);
+              }
+            });
+      } else {
+        _focusCell = originalOrigin;
+        _expansionCell = originalExpansion;
+        _selections = originalSelections;
+      }
+
+      _selections = ArraySupport.filter(_selections, validCellTest);
+
+      updateTableSelection();
     }
-    _table.setCellSelections(newSelections);
+  }
+
+  private Rectangle computeFocusBounds() {
+    if (_focusCell != null) {
+      if (_expansionCell != null) {
+        final Point origin = new Point(//
+            Math.min(_focusCell.x, _expansionCell.x), //
+            Math.min(_focusCell.y, _expansionCell.y));
+        return new Rectangle(//
+            origin.x, //
+            origin.y, //
+            Math.max(_focusCell.x, _expansionCell.x) - origin.x + 1, //
+            Math.max(_focusCell.y, _expansionCell.y) - origin.y + 1);
+      }
+
+      return new Rectangle(_focusCell.x, _focusCell.y, 1, 1);
+    }
+
+    return new Rectangle(0, 0, 0, 0);
   }
 
   private void expandSelection(Point cell, boolean multi) {
@@ -158,18 +236,6 @@ public final class CellSelectionManager {
     _table.showItem(_table.getItem(vCell.y));
   }
 
-  public void selectAll() {
-    final int minX = _table.getFixedColumnCount();
-    final int minY = _table.getFixedRowCount();
-    final int cols = _table.getColumnCount();
-    final int rows = _table.getItemCount();
-    if (cols <= minX || rows <= minY)
-      return;
-
-    setFocusCell(new Point(minX, minY), false);
-    expandSelection(new Point(cols - 1, rows - 1), false);
-  }
-
   private TableItem getItemAtIndex(Point pt) {
     if (pt == null)
       return null;
@@ -178,6 +244,16 @@ public final class CellSelectionManager {
       return null;
 
     return _table.getItem(pt.y);
+  }
+
+  private void updateTableSelection() {
+    final int insert = _focusCell == null ? 0 : 1;
+    final Point[] newSelections = new Point[_selections.length + insert];
+    System.arraycopy(_selections, 0, newSelections, insert, _selections.length);
+    if (_focusCell != null) {
+      newSelections[0] = _focusCell;
+    }
+    _table.setCellSelections(newSelections);
   }
 
   private void hookListener() {

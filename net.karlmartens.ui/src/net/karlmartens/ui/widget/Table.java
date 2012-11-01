@@ -871,6 +871,10 @@ public final class Table extends Composite {
   public void addColumnSortSupport() {
     _columnManager.enableColumnSort();
   }
+  
+  public void retainSelection(Runnable r) {
+    _cellSelectionManager.retainSelection(r);
+  }
 
   void updateFilteredItems() {
     Filter<TableItem> filter = Filter.all();

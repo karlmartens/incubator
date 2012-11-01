@@ -4,7 +4,8 @@ Bundle-Name: Platform
 Bundle-SymbolicName: net.karlmartens.platform
 Bundle-Version: 1.0.1.vqualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Export-Package: net.karlmartens.platform.text,
+Export-Package: net.karlmartens.platform.datatable.util.function,
+ net.karlmartens.platform.text,
  net.karlmartens.platform.util
 Bundle-ClassPath: .
 Import-Package: com.google.gson,
