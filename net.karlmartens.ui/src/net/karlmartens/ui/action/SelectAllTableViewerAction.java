@@ -17,6 +17,8 @@
  */
 package net.karlmartens.ui.action;
 
+import net.karlmartens.ui.Images;
+import net.karlmartens.ui.Messages;
 import net.karlmartens.ui.viewer.TableViewerClipboardManager;
 
 /**
@@ -26,7 +28,8 @@ import net.karlmartens.ui.viewer.TableViewerClipboardManager;
 public final class SelectAllTableViewerAction extends TableViewerEditAction {
 
   public SelectAllTableViewerAction() {
-    setText("Select All");
+    setText(Messages.SELECT_ALL.string());
+    setImageDescriptor(Images.SELECT_TABLE);
   }
 
   @Override

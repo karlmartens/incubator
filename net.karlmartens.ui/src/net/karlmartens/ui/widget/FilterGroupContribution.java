@@ -23,11 +23,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.Set;
 
 import net.karlmartens.platform.util.Filter;
 import net.karlmartens.platform.util.NumberStringComparator;
+import net.karlmartens.ui.Images;
+import net.karlmartens.ui.Messages;
 import net.karlmartens.ui.action.FilterColumnAction;
 import net.karlmartens.ui.action.FilterColumnValueAction;
 
@@ -57,11 +58,9 @@ final class FilterGroupContribution extends CompoundContributionItem {
   public FilterGroupContribution(Table table) {
     _table = table;
 
-    final ResourceBundle bundle = ResourceBundle
-        .getBundle("net.karlmartens.ui.locale.messages");
-    _menuText = bundle.getString("FilterColumns.TEXT");
-    _allText = bundle.getString("Filter.All.TEXT");
-    _topTextText = bundle.getString("Filter.TopTen.TEXT");
+    _menuText = Messages.FILTER.string();
+    _allText = Messages.FILTER_ALL.string();
+    _topTextText = Messages.FILTER_TOPTEN.string();
   }
 
   public void setColumnIndex(int columnIndex) {
@@ -141,7 +140,7 @@ final class FilterGroupContribution extends CompoundContributionItem {
 
   private MenuManager getMenuManager() {
     if (_menuManager == null) {
-      _menuManager = new MenuManager(_menuText);
+      _menuManager = new MenuManager(_menuText, Images.FILTER, null);
     }
 
     return _menuManager;

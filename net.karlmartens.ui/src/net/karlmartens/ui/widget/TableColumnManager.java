@@ -17,8 +17,8 @@
  */
 package net.karlmartens.ui.widget;
 
-import java.util.ResourceBundle;
-
+import net.karlmartens.ui.Images;
+import net.karlmartens.ui.Messages;
 import net.karlmartens.ui.action.ResizeAllColumnsAction;
 import net.karlmartens.ui.action.ResizeColumnAction;
 import net.karlmartens.ui.widget.Table.KTableImpl;
@@ -72,10 +72,8 @@ final class TableColumnManager {
     _resizeColumnAction = new ResizeColumnAction(_container, -1);
     _resizeAllColumnsAction = new ResizeAllColumnsAction(_container);
 
-    final ResourceBundle bundle = ResourceBundle
-        .getBundle("net.karlmartens.ui.locale.messages");
     final IMenuManager showHideMenu = new MenuManager(
-        bundle.getString("ShowHideColumns.TEXT"));
+        Messages.SHOW_HIDE_COLUMN.string(), Images.SHOW_HIDE_COLUMN, null);
     showHideMenu.add(new GroupMarker(Table.GROUP_VISIBLE_COLUMNS));
     showHideMenu.add(new VisibleColumnsContribution(_container));
     showHideMenu.update();

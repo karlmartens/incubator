@@ -17,8 +17,8 @@
  */
 package net.karlmartens.ui.action;
 
-import java.util.ResourceBundle;
-
+import net.karlmartens.ui.Images;
+import net.karlmartens.ui.Messages;
 import net.karlmartens.ui.widget.Table;
 
 import org.eclipse.jface.action.Action;
@@ -31,9 +31,8 @@ public final class ResizeAllColumnsAction extends Action {
   public ResizeAllColumnsAction(Table table) {
     _table = table;
     _delegateAction = new ResizeColumnAction(_table, -1);
-
-    final ResourceBundle bundle = ResourceBundle.getBundle("net.karlmartens.ui.locale.messages");
-    setText(bundle.getString("ResizeAllColumnsAction.TEXT"));
+    setText(Messages.RESIZE_COLUMN_ALL.string());
+    setImageDescriptor(Images.RESIZE_ALL);
   }
 
   @Override

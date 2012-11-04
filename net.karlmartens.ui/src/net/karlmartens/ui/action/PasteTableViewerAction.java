@@ -17,6 +17,8 @@
  */
 package net.karlmartens.ui.action;
 
+import net.karlmartens.ui.Images;
+import net.karlmartens.ui.Messages;
 import net.karlmartens.ui.viewer.TableViewerClipboardManager;
 
 /**
@@ -26,7 +28,8 @@ import net.karlmartens.ui.viewer.TableViewerClipboardManager;
 public final class PasteTableViewerAction extends TableViewerEditAction {
 
   public PasteTableViewerAction() {
-    setText("Paste");
+    setText(Messages.PASTE.string());
+    setImageDescriptor(Images.PASTE);
   }
 
   @Override

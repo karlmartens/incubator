@@ -20,8 +20,9 @@ package net.karlmartens.ui.action;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.ResourceBundle;
 
+import net.karlmartens.ui.Images;
+import net.karlmartens.ui.Messages;
 import net.karlmartens.ui.widget.Table;
 import net.karlmartens.ui.widget.TableColumn;
 import net.karlmartens.ui.widget.TableItem;
@@ -48,8 +49,8 @@ public class ResizeColumnAction extends Action {
     _table = table;
     setColumnIndex(columnIndex);
 
-    final ResourceBundle bundle = ResourceBundle.getBundle("net.karlmartens.ui.locale.messages");
-    setText(bundle.getString("ResizeColumnAction.TEXT"));
+    setText(Messages.RESIZE_COLUMN.string());
+    setImageDescriptor(Images.RESIZE);
   }
 
   public void setColumnIndex(int index) {
@@ -75,7 +76,9 @@ public class ResizeColumnAction extends Action {
     }
 
     if ((column.getStyle() & SWT.CHECK) > 0) {
-      width = Math.max(width, CheckableCellRenderer.IMAGE_CHECKED.getImageData().width + IMAGE_SPACER);
+      width = Math.max(width,
+          CheckableCellRenderer.IMAGE_CHECKED.getImageData().width
+              + IMAGE_SPACER);
     } else {
       final Map<Font, String> messages = new HashMap<Font, String>();
 
@@ -100,7 +103,8 @@ public class ResizeColumnAction extends Action {
       }
 
       for (Entry<Font, String> entry : messages.entrySet()) {
-        width = Math.max(width, gc.textExtent(entry.getValue()).x + TEXT_SPACER);
+        width = Math
+            .max(width, gc.textExtent(entry.getValue()).x + TEXT_SPACER);
       }
     }
 

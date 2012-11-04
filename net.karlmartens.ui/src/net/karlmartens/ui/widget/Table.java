@@ -111,8 +111,8 @@ public final class Table extends Composite {
     _listener = new TableListener();
     updateFontData();
 
-    _imageAscending = Images.SORT_ASCENDING.createImage();
-    _imageDecending = Images.SORT_DECENDING.createImage();
+    _imageAscending = Images.ASCENDING.createImage();
+    _imageDecending = Images.DECENDING.createImage();
 
     _table = new KTableImpl(this, style | SWTX.MARK_FOCUS_HEADERS);
     _table.setBackground(getBackground());

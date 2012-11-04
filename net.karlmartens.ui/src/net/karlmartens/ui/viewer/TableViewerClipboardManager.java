@@ -32,10 +32,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.ResourceBundle;
 
 import net.karlmartens.platform.util.Pair;
 import net.karlmartens.ui.Activator;
+import net.karlmartens.ui.Messages;
 import net.karlmartens.ui.UiUtil;
 import net.karlmartens.ui.action.CopyTableViewerAction;
 import net.karlmartens.ui.action.CutTableViewerAction;
@@ -668,12 +668,8 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
   }
 
   private static void showUnsupportedDialog(Shell shell) {
-    final ResourceBundle bundle = ResourceBundle
-        .getBundle("net.karlmartens.ui.locale.messages");
-    final String title = bundle
-        .getString("ViewerClipboardManager.Error.Unsupported.Title");
-    final String message = bundle
-        .getString("ViewerClipboardManager.Error.MultiSelection.Message");
+    final String title = Messages.ERROR_UNSUPPORTED_TITLE.string();
+    final String message = Messages.ERROR_MULTI_SELECTION_MESSAGE.string();
     final IStatus status = new Status(IStatus.INFO, Activator.PLUGIN_ID,
         message);
     ErrorDialog.openError(shell, title, null, status);

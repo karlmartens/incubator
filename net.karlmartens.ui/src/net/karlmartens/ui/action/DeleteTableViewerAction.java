@@ -17,6 +17,8 @@
  */
 package net.karlmartens.ui.action;
 
+import net.karlmartens.ui.Images;
+import net.karlmartens.ui.Messages;
 import net.karlmartens.ui.viewer.TableViewerClipboardManager;
 
 /**
@@ -26,7 +28,8 @@ import net.karlmartens.ui.viewer.TableViewerClipboardManager;
 public final class DeleteTableViewerAction extends TableViewerEditAction {
 
   public DeleteTableViewerAction() {
-    setText("Delete");
+    setText(Messages.DELETE.string());
+    setImageDescriptor(Images.DELETE);
   }
 
   @Override

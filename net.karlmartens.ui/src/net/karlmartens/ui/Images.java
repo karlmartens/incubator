@@ -21,18 +21,29 @@ import org.eclipse.jface.resource.ImageDescriptor;
 
 public final class Images {
 
-  public static final ImageDescriptor ARROW_BOTTOM = ResourceSupport.imageDescriptorFromPlugin(Activator.PLUGIN_ID, Activator.class,
-      "/icons/navigate_bottom.png");
-  public static final ImageDescriptor ARROW_DOWN = ResourceSupport.imageDescriptorFromPlugin(Activator.PLUGIN_ID, Activator.class, "/icons/navigate_down.png");
-  public static final ImageDescriptor ARROW_LEFT = ResourceSupport.imageDescriptorFromPlugin(Activator.PLUGIN_ID, Activator.class, "/icons/navigate_left.png");
-  public static final ImageDescriptor ARROW_RIGHT = ResourceSupport
-      .imageDescriptorFromPlugin(Activator.PLUGIN_ID, Activator.class, "/icons/navigate_right.png");
-  public static final ImageDescriptor ARROW_TOP = ResourceSupport.imageDescriptorFromPlugin(Activator.PLUGIN_ID, Activator.class, "/icons/navigate_top.png");
-  public static final ImageDescriptor ARROW_UP = ResourceSupport.imageDescriptorFromPlugin(Activator.PLUGIN_ID, Activator.class, "/icons/navigate_up.png");
+  public static final ImageDescriptor ARROW_BOTTOM = descriptor("/icons/navigate_bottom.png");
+  public static final ImageDescriptor ARROW_DOWN = descriptor("/icons/navigate_down.png");
+  public static final ImageDescriptor ARROW_LEFT = descriptor("/icons/navigate_left.png");
+  public static final ImageDescriptor ARROW_RIGHT = descriptor("/icons/navigate_right.png");
+  public static final ImageDescriptor ARROW_TOP = descriptor("/icons/navigate_top.png");
+  public static final ImageDescriptor ARROW_UP = descriptor("/icons/navigate_up.png");
+  public static final ImageDescriptor ASCENDING = descriptor("/icons/arrow_down.gif");
+  public static final ImageDescriptor COPY = descriptor("/icons/copy.png");
+  public static final ImageDescriptor CUT = descriptor("/icons/cut.png");
+  public static final ImageDescriptor DECENDING = descriptor("/icons/arrow_up.gif");
+  public static final ImageDescriptor DELETE = descriptor("/icons/delete.png");
+  public static final ImageDescriptor FILTER = descriptor("/icons/filter.png");
+  public static final ImageDescriptor PASTE = descriptor("/icons/paste.png");
+  public static final ImageDescriptor RESIZE = descriptor("/icons/resize_column.png");
+  public static final ImageDescriptor RESIZE_ALL = descriptor("/icons/resize_column_all.png");
+  public static final ImageDescriptor SELECT_TABLE_COLUMN = descriptor("/icons/select_table_column.png");
+  public static final ImageDescriptor SELECT_TABLE = descriptor("/icons/select_table.png");
+  public static final ImageDescriptor SHOW_HIDE_COLUMN = descriptor("/icons/select_table_column.png");
+  public static final ImageDescriptor SORT_ASCEND = descriptor("/icons/sort_ascend.png");
+  public static final ImageDescriptor SORT_DESCEND = descriptor("/icons/sort_descend.png");
 
-  public static final ImageDescriptor SORT_ASCENDING = ResourceSupport.imageDescriptorFromPlugin(Activator.PLUGIN_ID, Activator.class,
-      "/icons/arrow_down.gif");
-  public static final ImageDescriptor SORT_DECENDING = ResourceSupport
-      .imageDescriptorFromPlugin(Activator.PLUGIN_ID, Activator.class, "/icons/arrow_up.gif");
-
+  private static ImageDescriptor descriptor(String path) {
+    return ResourceSupport.imageDescriptorFromPlugin(Activator.PLUGIN_ID,
+        Activator.class, path);
+  }
 }

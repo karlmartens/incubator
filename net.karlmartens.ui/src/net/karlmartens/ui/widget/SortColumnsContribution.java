@@ -17,8 +17,8 @@
  */
 package net.karlmartens.ui.widget;
 
-import java.util.ResourceBundle;
-
+import net.karlmartens.ui.Images;
+import net.karlmartens.ui.Messages;
 import net.karlmartens.ui.action.SortColumnAction;
 
 import org.eclipse.jface.action.ActionContributionItem;
@@ -30,14 +30,12 @@ final class SortColumnsContribution extends CompoundContributionItem {
 
   private final TableColumnManager _manager;
   private final Table _table;
-  private final ResourceBundle _bundle;
 
   private int _columnIndex = -1;
 
   public SortColumnsContribution(TableColumnManager manager, Table table) {
     _manager = manager;
     _table = table;
-    _bundle = ResourceBundle.getBundle("net.karlmartens.ui.locale.messages");
   }
 
   public void setColumnIndex(int columnIndex) {
@@ -52,14 +50,13 @@ final class SortColumnsContribution extends CompoundContributionItem {
 
     final IContributionItem[] items = new IContributionItem[3];
     items[0] = new ActionContributionItem(new SortColumnAction(_table,
-        _columnIndex, Table.SORT_ASCENDING,
-        _bundle.getString("SortColumnAction.Ascending.TEXT")));
+        _columnIndex, Table.SORT_ASCENDING, Messages.SORT_ASCENDING.string(),
+        Images.SORT_ASCEND));
     items[1] = new ActionContributionItem(new SortColumnAction(_table,
-        _columnIndex, Table.SORT_DESCENDING,
-        _bundle.getString("SortColumnAction.Descending.TEXT")));
+        _columnIndex, Table.SORT_DESCENDING, Messages.SORT_DESCENDING.string(),
+        Images.SORT_DESCEND));
     items[2] = new Separator();
 
     return items;
   }
-
 }

@@ -29,7 +29,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.ResourceBundle;
+
+import net.karlmartens.ui.Messages;
 
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -94,7 +95,6 @@ public final class GridChooser extends Composite {
 
   public GridChooser(Composite parent) {
     super(parent, SWT.NONE);
-    final ResourceBundle bundle = ResourceBundle.getBundle("net.karlmartens.ui.locale.messages");
 
     _columnCount = 0;
     _columns = new GridChooserColumn[0];
@@ -115,7 +115,7 @@ public final class GridChooser extends Composite {
     _passthroughListener = new PassthoughEventListener(this);
 
     final Label availableLabel = new Label(this, SWT.NONE);
-    availableLabel.setText(bundle.getString("GridChooser.Available"));
+    availableLabel.setText(Messages.AVAILABLE.string());
 
     final int style = SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER;
     _available = new TableViewer(this, style);
@@ -138,7 +138,7 @@ public final class GridChooser extends Composite {
     _bottom = createButton(centerPart, _images[5], _changeSelectionListener);
 
     final Label selectedLabel = new Label(this, SWT.NONE);
-    selectedLabel.setText(bundle.getString("GridChooser.Selected"));
+    selectedLabel.setText(Messages.SELECTED.string());
 
     _selected = new TableViewer(this, style);
     _selected.setContentProvider(ArrayContentProvider.getInstance());
@@ -161,16 +161,20 @@ public final class GridChooser extends Composite {
     availableFormData.right = new FormAttachment(centerPart, -10, SWT.LEFT);
 
     final FormData centerFormData = new FormData();
-    centerFormData.top = new FormAttachment(_available.getControl(), 0, SWT.CENTER);
+    centerFormData.top = new FormAttachment(_available.getControl(), 0,
+        SWT.CENTER);
     centerFormData.left = new FormAttachment(50, 100, -10);
 
     final FormData selectedLabelFormData = new FormData();
     selectedLabelFormData.top = new FormAttachment(availableLabel, 0, SWT.TOP);
-    selectedLabelFormData.left = new FormAttachment(_selected.getControl(), 0, SWT.LEFT);
+    selectedLabelFormData.left = new FormAttachment(_selected.getControl(), 0,
+        SWT.LEFT);
 
     final FormData selectedFormData = new FormData();
-    selectedFormData.top = new FormAttachment(_available.getControl(), 0, SWT.TOP);
-    selectedFormData.bottom = new FormAttachment(_available.getControl(), 0, SWT.BOTTOM);
+    selectedFormData.top = new FormAttachment(_available.getControl(), 0,
+        SWT.TOP);
+    selectedFormData.bottom = new FormAttachment(_available.getControl(), 0,
+        SWT.BOTTOM);
     selectedFormData.left = new FormAttachment(centerPart, 10);
     selectedFormData.right = new FormAttachment(100, 100, -10);
 
@@ -536,7 +540,8 @@ public final class GridChooser extends Composite {
     };
     item.registerWidgets(columns);
 
-    System.arraycopy(_columns, index, _columns, index + 1, _columnCount++ - index);
+    System.arraycopy(_columns, index, _columns, index + 1, _columnCount++
+        - index);
     _columns[index] = item;
   }
 
@@ -601,7 +606,8 @@ public final class GridChooser extends Composite {
     return _available.getTable();
   }
 
-  private Button createButton(Composite parent, Image image, SelectionListener listener) {
+  private Button createButton(Composite parent, Image image,
+      SelectionListener listener) {
     final Button button = new Button(parent, SWT.PUSH | SWT.CENTER);
     button.setImage(image);
     button.setEnabled(false);
@@ -634,7 +640,8 @@ public final class GridChooser extends Composite {
     final int[] originalIndicies = table.getSelectionIndices();
 
     @SuppressWarnings("unchecked")
-    final List<GridChooserItem> selection = ((StructuredSelection) viewer.getSelection()).toList();
+    final List<GridChooserItem> selection = ((StructuredSelection) viewer
+        .getSelection()).toList();
     boolean selectionChanged = false;
     for (GridChooserItem item : selection) {
       selectionChanged |= item.setSelected(selected);
@@ -666,7 +673,8 @@ public final class GridChooser extends Composite {
 
   private void updateSelection(TableViewer viewer, int movement) {
     @SuppressWarnings("unchecked")
-    final List<GridChooserItem> selection = ((StructuredSelection) viewer.getSelection()).toList();
+    final List<GridChooserItem> selection = ((StructuredSelection) viewer
+        .getSelection()).toList();
     if (selection.size() <= 0)
       return;
 
@@ -676,7 +684,8 @@ public final class GridChooser extends Composite {
 
     boolean selectionChanged = false;
     for (GridChooserItem item : selection) {
-      selectionChanged |= item.setSelectionOrder(item.getSelectionOrder() + movement, false);
+      selectionChanged |= item.setSelectionOrder(item.getSelectionOrder()
+          + movement, false);
     }
 
     if (selectionChanged) {
@@ -712,31 +721,36 @@ public final class GridChooser extends Composite {
       if (tableItem.getData() == item) {
         final Rectangle parentBounds = viewer.getTable().getBounds();
         final Rectangle childBounds = tableItem.getBounds();
-        return new Rectangle(parentBounds.x + childBounds.x, parentBounds.y + childBounds.y, childBounds.width, childBounds.height);
+        return new Rectangle(parentBounds.x + childBounds.x, parentBounds.y
+            + childBounds.y, childBounds.width, childBounds.height);
       }
     }
 
     throw new IllegalArgumentException();
   }
 
-  private static Rectangle getBounds(TableViewer viewer, GridChooserItem item, int index) {
+  private static Rectangle getBounds(TableViewer viewer, GridChooserItem item,
+      int index) {
     for (TableItem tableItem : viewer.getTable().getItems()) {
       if (tableItem.getData() == item) {
         final Rectangle parentBounds = viewer.getTable().getBounds();
         final Rectangle childBounds = tableItem.getBounds(index);
-        return new Rectangle(parentBounds.x + childBounds.x, parentBounds.y + childBounds.y, childBounds.width, childBounds.height);
+        return new Rectangle(parentBounds.x + childBounds.x, parentBounds.y
+            + childBounds.y, childBounds.width, childBounds.height);
       }
     }
 
     throw new IllegalArgumentException();
   }
 
-  private static Rectangle getImageBounds(TableViewer viewer, GridChooserItem item, int index) {
+  private static Rectangle getImageBounds(TableViewer viewer,
+      GridChooserItem item, int index) {
     for (TableItem tableItem : viewer.getTable().getItems()) {
       if (tableItem.getData() == item) {
         final Rectangle parentBounds = viewer.getTable().getBounds();
         final Rectangle childBounds = tableItem.getImageBounds(index);
-        return new Rectangle(parentBounds.x + childBounds.x, parentBounds.y + childBounds.y, childBounds.width, childBounds.height);
+        return new Rectangle(parentBounds.x + childBounds.x, parentBounds.y
+            + childBounds.y, childBounds.width, childBounds.height);
       }
     }
 
@@ -744,7 +758,8 @@ public final class GridChooser extends Composite {
   }
 
   private static int minSelectionOrder(TableViewer viewer) {
-    final StructuredSelection selection = (StructuredSelection) viewer.getSelection();
+    final StructuredSelection selection = (StructuredSelection) viewer
+        .getSelection();
     if (selection.isEmpty())
       return -1;
 
@@ -762,7 +777,8 @@ public final class GridChooser extends Composite {
   }
 
   private static int maxSelectionOrder(TableViewer viewer) {
-    final StructuredSelection selection = (StructuredSelection) viewer.getSelection();
+    final StructuredSelection selection = (StructuredSelection) viewer
+        .getSelection();
     if (selection.isEmpty())
       return -1;
 
@@ -855,7 +871,8 @@ public final class GridChooser extends Composite {
       }
 
       if (_bottom.equals(e.widget)) {
-        updateSelection(_selected, getSelectionCount() - maxSelectionOrder(_selected) - 1);
+        updateSelection(_selected, getSelectionCount()
+            - maxSelectionOrder(_selected) - 1);
         return;
       }
     }
@@ -881,7 +898,8 @@ public final class GridChooser extends Composite {
     }
   };
 
-  private static class TableLabelProviderImpl extends LabelProvider implements ITableLabelProvider, ITableColorProvider, ITableFontProvider {
+  private static class TableLabelProviderImpl extends LabelProvider implements
+      ITableLabelProvider, ITableColorProvider, ITableFontProvider {
 
     @Override
     public Image getColumnImage(Object element, int columnIndex) {
@@ -969,7 +987,8 @@ public final class GridChooser extends Composite {
     public DragSourceListenerImpl(TableViewer viewer) {
       super(viewer.getTable());
       _viewer = viewer;
-      _viewer.addDragSupport(DND.DROP_MOVE, new Transfer[] { LocalSelectionTransfer.getTransfer() }, this);
+      _viewer.addDragSupport(DND.DROP_MOVE,
+          new Transfer[] { LocalSelectionTransfer.getTransfer() }, this);
     }
 
     @Override
@@ -982,7 +1001,8 @@ public final class GridChooser extends Composite {
 
     @Override
     public void dragSetData(DragSourceEvent event) {
-      final LocalSelectionTransfer transfer = LocalSelectionTransfer.getTransfer();
+      final LocalSelectionTransfer transfer = LocalSelectionTransfer
+          .getTransfer();
       if (transfer.isSupportedType(event.dataType)) {
         transfer.setSelection(_viewer.getSelection());
       }
@@ -995,7 +1015,8 @@ public final class GridChooser extends Composite {
 
     public SelectedDropTargetListener(TableViewer viewer, boolean selected) {
       super(viewer.getTable());
-      viewer.addDropSupport(DND.DROP_MOVE, new Transfer[] { LocalSelectionTransfer.getTransfer() }, this);
+      viewer.addDropSupport(DND.DROP_MOVE,
+          new Transfer[] { LocalSelectionTransfer.getTransfer() }, this);
       _viewer = viewer;
       _selected = selected;
     }
@@ -1024,10 +1045,12 @@ public final class GridChooser extends Composite {
 
     @Override
     public void drop(DropTargetEvent event) {
-      final LocalSelectionTransfer transfer = LocalSelectionTransfer.getTransfer();
+      final LocalSelectionTransfer transfer = LocalSelectionTransfer
+          .getTransfer();
       if (transfer.isSupportedType(event.currentDataType)) {
         @SuppressWarnings("unchecked")
-        final List<GridChooserItem> selected = new ArrayList<GridChooserItem>(((StructuredSelection) transfer.getSelection()).toList());
+        final List<GridChooserItem> selected = new ArrayList<GridChooserItem>(
+            ((StructuredSelection) transfer.getSelection()).toList());
         if (!_selected) {
           boolean selectionChanged = false;
           for (GridChooserItem item : selected) {
@@ -1044,7 +1067,8 @@ public final class GridChooser extends Composite {
 
         int targetIndex;
         if (event.item != null) {
-          final GridChooserItem targetItem = (GridChooserItem) ((TableItem) event.item).getData();
+          final GridChooserItem targetItem = (GridChooserItem) ((TableItem) event.item)
+              .getData();
           targetIndex = targetItem.getSelectionOrder();
         } else {
           targetIndex = getSelectionCount();
@@ -1053,7 +1077,8 @@ public final class GridChooser extends Composite {
         boolean selectionChanged = false;
         boolean inserted = false;
         for (GridChooserItem item : selected) {
-          if (item.getSelectionOrder() < targetIndex && item.getSelectionOrder() >= 0) {
+          if (item.getSelectionOrder() < targetIndex
+              && item.getSelectionOrder() >= 0) {
             inserted = true;
             selectionChanged |= item.setSelectionOrder(targetIndex, false);
           } else {

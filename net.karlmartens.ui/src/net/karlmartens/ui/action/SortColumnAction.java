@@ -20,6 +20,7 @@ package net.karlmartens.ui.action;
 import net.karlmartens.ui.widget.Table;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.resource.ImageDescriptor;
 
 /**
  * @author karl
@@ -32,11 +33,12 @@ public final class SortColumnAction extends Action {
   private final int _sortDirection;
 
   public SortColumnAction(Table table, int columnIndex, int sortDirection,
-      String text) {
+      String text, ImageDescriptor icon) {
     _table = table;
     _columnIndex = columnIndex;
     _sortDirection = sortDirection;
     setText(text);
+    setImageDescriptor(icon);
   }
 
   @Override
