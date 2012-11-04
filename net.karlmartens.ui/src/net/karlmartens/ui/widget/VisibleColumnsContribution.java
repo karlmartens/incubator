@@ -17,12 +17,14 @@
  */
 package net.karlmartens.ui.widget;
 
-import java.util.Arrays;
-
+import net.karlmartens.ui.Images;
+import net.karlmartens.ui.Messages;
 import net.karlmartens.ui.action.ToggleColumnVisibiltyAction;
 
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.ui.actions.CompoundContributionItem;
 
 final class VisibleColumnsContribution extends CompoundContributionItem {
@@ -33,19 +35,47 @@ final class VisibleColumnsContribution extends CompoundContributionItem {
     _table = table;
   }
 
+  public void dispose() {
+    if (_menuManager == null)
+      return;
+
+    _menuManager.dispose();
+    _menuManager = null;
+  }
+
   @Override
   protected IContributionItem[] getContributionItems() {
-    final IContributionItem[] items = new IContributionItem[_table.getColumnCount()];
-    int index = 0;
+    final IMenuManager menu = getMenuManager();
+    menu.removeAll();
+
+    final IContributionItem[] items = new IContributionItem[_table
+        .getColumnCount()];
     for (int i = 0; i < items.length; i++) {
       final TableColumn column = _table.getColumn(i);
       if (!column.isHideable())
         continue;
-      
-      items[index++] = new ActionContributionItem(new ToggleColumnVisibiltyAction(column));
+
+      menu.add(new ActionContributionItem(new ToggleColumnVisibiltyAction(
+          column)));
     }
-    
-    return Arrays.copyOf(items, index);
+
+    menu.update();
+
+    if (menu.isEmpty())
+      return new IContributionItem[0];
+
+    return new IContributionItem[] { menu };
+  }
+
+  private MenuManager _menuManager;
+
+  private MenuManager getMenuManager() {
+    if (_menuManager == null) {
+      _menuManager = new MenuManager(Messages.SHOW_HIDE_COLUMN.string(),
+          Images.SHOW_HIDE_COLUMN, null);
+    }
+
+    return _menuManager;
   }
 
 }

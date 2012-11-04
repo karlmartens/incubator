@@ -53,6 +53,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.TypedListener;
 
@@ -843,6 +844,11 @@ public final class Table extends Composite {
     }
     return _menuManager;
   }
+  
+  public void setMenu(Menu menu) {
+    checkWidget();
+    _table.setMenu(menu);
+  }
 
   public void addSelectionListener(SelectionListener listener) {
     checkWidget();
@@ -864,6 +870,10 @@ public final class Table extends Composite {
 
   public void addColumnSortSupport() {
     _columnManager.enableColumnSort();
+  }
+  
+  public void retainSelection(Runnable r) {
+    _cellSelectionManager.retainSelection(r);
   }
 
   void updateFilteredItems() {

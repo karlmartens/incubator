@@ -17,9 +17,13 @@
  */
 package net.karlmartens.platform.util;
 
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Comparator;
 import java.util.Random;
+
+import net.karlmartens.platform.datatable.util.function._F1;
 
 public final class ArraySupport {
 
@@ -215,5 +219,138 @@ public final class ArraySupport {
       a[index++] = i;
     }
     return a;
+  }
+
+  public static long[] filter(long[] arr, _F1<Long, Boolean> p) {
+    final long[] newArr = new long[arr.length];
+      
+    int index = 0;
+    for (long candidate : arr) {
+      if (!p.apply(candidate))
+        continue;
+      
+      newArr[index++] = candidate;
+    }
+    
+    return Arrays.copyOf(newArr, index);
+  }
+
+  public static int[] filter(int[] arr, _F1<Integer, Boolean> p) {
+    final int[] newArr = new int[arr.length];
+      
+    int index = 0;
+    for (int candidate : arr) {
+      if (!p.apply(candidate))
+        continue;
+      
+      newArr[index++] = candidate;
+    }
+    
+    return Arrays.copyOf(newArr, index);
+  }
+
+  public static short[] filter(short[] arr, _F1<Short, Boolean> p) {
+    final short[] newArr = new short[arr.length];
+      
+    int index = 0;
+    for (short candidate : arr) {
+      if (!p.apply(candidate))
+        continue;
+      
+      newArr[index++] = candidate;
+    }
+    
+    return Arrays.copyOf(newArr, index);
+  }
+
+  public static char[] filter(char[] arr, _F1<Character, Boolean> p) {
+    final char[] newArr = new char[arr.length];
+      
+    int index = 0;
+    for (char candidate : arr) {
+      if (!p.apply(candidate))
+        continue;
+      
+      newArr[index++] = candidate;
+    }
+    
+    return Arrays.copyOf(newArr, index);
+  }
+
+  public static byte[] filter(byte[] arr, _F1<Byte, Boolean> p) {
+    final byte[] newArr = new byte[arr.length];
+      
+    int index = 0;
+    for (byte candidate : arr) {
+      if (!p.apply(candidate))
+        continue;
+      
+      newArr[index++] = candidate;
+    }
+    
+    return Arrays.copyOf(newArr, index);
+  }
+
+  public static double[] filter(double[] arr, _F1<Double, Boolean> p) {
+    final double[] newArr = new double[arr.length];
+      
+    int index = 0;
+    for (double candidate : arr) {
+      if (!p.apply(candidate))
+        continue;
+      
+      newArr[index++] = candidate;
+    }
+    
+    return Arrays.copyOf(newArr, index);
+  }
+
+  public static float[] filter(float[] arr, _F1<Float, Boolean> p) {
+    final float[] newArr = new float[arr.length];
+      
+    int index = 0;
+    for (float candidate : arr) {
+      if (!p.apply(candidate))
+        continue;
+      
+      newArr[index++] = candidate;
+    }
+    
+    return Arrays.copyOf(newArr, index);
+  }
+
+  public static boolean[] filter(boolean[] arr, _F1<Boolean, Boolean> p) {
+    final boolean[] newArr = new boolean[arr.length];
+      
+    int index = 0;
+    for (boolean candidate : arr) {
+      if (!p.apply(candidate))
+        continue;
+      
+      newArr[index++] = candidate;
+    }
+    
+    return Arrays.copyOf(newArr, index);
+  }
+
+  public static <T> T[] filter(T[] arr, _F1<T, Boolean> p) {
+    final T[] newArr = createArray(arr.getClass(), arr.length);
+      
+    int index = 0;
+    for (T candidate : arr) {
+      if (!p.apply(candidate))
+        continue;
+      
+      newArr[index++] = candidate;
+    }
+    
+    return Arrays.copyOf(newArr, index);
+  }
+
+  @SuppressWarnings("unchecked")
+  private static <T> T[] createArray(Class<? extends Object[]> newType,
+      int newLength) {
+    return ((Object) newType == (Object) Object[].class) ? (T[]) new Object[newLength]
+        : (T[]) Array.newInstance(newType.getComponentType(), newLength);
   }
 }
