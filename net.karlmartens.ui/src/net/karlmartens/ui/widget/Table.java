@@ -1554,5 +1554,39 @@ public final class Table extends Composite {
       super.redraw();
     }
     
+    protected void drawBottomSpace(GC gc) {
+      Rectangle r = getClientArea();
+      if (m_Model.getRowCount() > 0) {
+          r.y += 1;
+          
+          for (int i=0; i<getFixedRowCount(); i++)
+            r.y += m_Model.getRowHeight(i);
+          
+          for (int i=0; i<m_RowsVisible; i++)
+              r.y+= m_Model.getRowHeight(i+m_TopRow);
+      }
+      
+      int lastColRight = getColumnRight(
+              Math.min(m_LeftColumn+m_ColumnsVisible, m_Model.getColumnCount()-1));
+    
+      // draw simple background colored areas
+      gc.setBackground(getBackground());
+      gc.fillRectangle(r);
+      gc.fillRectangle(lastColRight + 2, 0, r.width, r.height); 
+      
+      gc.setForeground(m_Display.getSystemColor(SWT.COLOR_WHITE));
+      gc.drawLine(1, r.y , lastColRight + 1, r.y);
+      gc.drawLine(lastColRight + 1, 0, lastColRight + 1, r.y-1);
+      
+      // draw left and top border line:
+      if (m_Model.getRowCount() > 0) {
+          if ((getStyle() & SWT.FLAT) == 0)
+              gc.setForeground(m_Display.getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
+          else
+              gc.setForeground(m_Display.getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+          gc.drawLine(0, 0, 0, r.y - 1);
+          gc.drawLine(0, 0, lastColRight, 0);
+      }
+    }
   }
 }
