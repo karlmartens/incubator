@@ -115,7 +115,7 @@ public final class Table extends Composite {
     _imageAscending = Images.ASCENDING.createImage();
     _imageDecending = Images.DECENDING.createImage();
 
-    _table = new KTableImpl(this, style | SWTX.MARK_FOCUS_HEADERS);
+    _table = new KTableImpl(this, style | SWTX.AUTO_SCROLL | SWTX.MARK_FOCUS_HEADERS);
     _table.setBackground(getBackground());
     _table.setForeground(getForeground());
     _table.setModel(_model);
@@ -1548,5 +1548,11 @@ public final class Table extends Composite {
 
       return new Point(width, height);
     }
+    
+    public void redraw() {
+      updateScrollbarVisibility();
+      super.redraw();
+    }
+    
   }
 }
