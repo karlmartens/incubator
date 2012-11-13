@@ -492,7 +492,7 @@ public final class TableViewerClipboardManager extends CellSelectionModifier {
   }
 
   public boolean isDeleteEnabled() {
-    if (!isOperationEnabled(OPERATION_DELETE))
+    if (!isOperationEnabled(OPERATION_DELETE) || _viewer.isCellEditorActive())
       return false;
 
     final Point[] cells = _viewer.doGetCellSelections();
