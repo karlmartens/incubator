@@ -27,7 +27,7 @@ import net.karlmartens.platform.datatable.util.function._F1;
 
 public final class ArraySupport {
 
-  public static long max(long[] arr) {
+  public static long max(long... arr) {
     return max(arr, 0, arr.length);
   }
 
@@ -40,7 +40,7 @@ public final class ArraySupport {
     return max;
   }
 
-  public static int max(int[] arr) {
+  public static int max(int... arr) {
     return max(arr, 0, arr.length);
   }
 
@@ -53,7 +53,7 @@ public final class ArraySupport {
     return max;
   }
 
-  public static double max(double[] arr) {
+  public static double max(double... arr) {
     return max(arr, 0, arr.length);
   }
 
@@ -66,7 +66,7 @@ public final class ArraySupport {
     return max;
   }
 
-  public static float max(float[] arr) {
+  public static float max(float... arr) {
     return max(arr, 0, arr.length);
   }
 
@@ -79,7 +79,7 @@ public final class ArraySupport {
     return max;
   }
 
-  public static long min(long[] arr) {
+  public static long min(long... arr) {
     return min(arr, 0, arr.length);
   }
 
@@ -92,7 +92,7 @@ public final class ArraySupport {
     return min;
   }
 
-  public static int min(int[] arr) {
+  public static int min(int... arr) {
     return min(arr, 0, arr.length);
   }
 
@@ -105,7 +105,7 @@ public final class ArraySupport {
     return min;
   }
 
-  public static double min(double[] arr) {
+  public static double min(double... arr) {
     return min(arr, 0, arr.length);
   }
 
@@ -118,7 +118,7 @@ public final class ArraySupport {
     return min;
   }
 
-  public static float min(float[] arr) {
+  public static float min(float... arr) {
     return min(arr, 0, arr.length);
   }
 
@@ -223,127 +223,127 @@ public final class ArraySupport {
 
   public static long[] filter(long[] arr, _F1<Long, Boolean> p) {
     final long[] newArr = new long[arr.length];
-      
+
     int index = 0;
     for (long candidate : arr) {
       if (!p.apply(candidate))
         continue;
-      
+
       newArr[index++] = candidate;
     }
-    
+
     return Arrays.copyOf(newArr, index);
   }
 
   public static int[] filter(int[] arr, _F1<Integer, Boolean> p) {
     final int[] newArr = new int[arr.length];
-      
+
     int index = 0;
     for (int candidate : arr) {
       if (!p.apply(candidate))
         continue;
-      
+
       newArr[index++] = candidate;
     }
-    
+
     return Arrays.copyOf(newArr, index);
   }
 
   public static short[] filter(short[] arr, _F1<Short, Boolean> p) {
     final short[] newArr = new short[arr.length];
-      
+
     int index = 0;
     for (short candidate : arr) {
       if (!p.apply(candidate))
         continue;
-      
+
       newArr[index++] = candidate;
     }
-    
+
     return Arrays.copyOf(newArr, index);
   }
 
   public static char[] filter(char[] arr, _F1<Character, Boolean> p) {
     final char[] newArr = new char[arr.length];
-      
+
     int index = 0;
     for (char candidate : arr) {
       if (!p.apply(candidate))
         continue;
-      
+
       newArr[index++] = candidate;
     }
-    
+
     return Arrays.copyOf(newArr, index);
   }
 
   public static byte[] filter(byte[] arr, _F1<Byte, Boolean> p) {
     final byte[] newArr = new byte[arr.length];
-      
+
     int index = 0;
     for (byte candidate : arr) {
       if (!p.apply(candidate))
         continue;
-      
+
       newArr[index++] = candidate;
     }
-    
+
     return Arrays.copyOf(newArr, index);
   }
 
   public static double[] filter(double[] arr, _F1<Double, Boolean> p) {
     final double[] newArr = new double[arr.length];
-      
+
     int index = 0;
     for (double candidate : arr) {
       if (!p.apply(candidate))
         continue;
-      
+
       newArr[index++] = candidate;
     }
-    
+
     return Arrays.copyOf(newArr, index);
   }
 
   public static float[] filter(float[] arr, _F1<Float, Boolean> p) {
     final float[] newArr = new float[arr.length];
-      
+
     int index = 0;
     for (float candidate : arr) {
       if (!p.apply(candidate))
         continue;
-      
+
       newArr[index++] = candidate;
     }
-    
+
     return Arrays.copyOf(newArr, index);
   }
 
   public static boolean[] filter(boolean[] arr, _F1<Boolean, Boolean> p) {
     final boolean[] newArr = new boolean[arr.length];
-      
+
     int index = 0;
     for (boolean candidate : arr) {
       if (!p.apply(candidate))
         continue;
-      
+
       newArr[index++] = candidate;
     }
-    
+
     return Arrays.copyOf(newArr, index);
   }
 
   public static <T> T[] filter(T[] arr, _F1<T, Boolean> p) {
     final T[] newArr = createArray(arr.getClass(), arr.length);
-      
+
     int index = 0;
     for (T candidate : arr) {
       if (!p.apply(candidate))
         continue;
-      
+
       newArr[index++] = candidate;
     }
-    
+
     return Arrays.copyOf(newArr, index);
   }
 

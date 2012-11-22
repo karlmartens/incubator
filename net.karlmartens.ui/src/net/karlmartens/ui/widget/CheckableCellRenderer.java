@@ -19,63 +19,75 @@ package net.karlmartens.ui.widget;
 
 import net.karlmartens.ui.util.Colors;
 
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
 
 import de.kupzog.ktable.KTableModel;
 
-class CheckableCellRenderer extends de.kupzog.ktable.renderers.CheckableCellRenderer {
-  
+class CheckableCellRenderer extends
+    de.kupzog.ktable.renderers.CheckableCellRenderer {
+
   private boolean _active = true;
 
   /**
-   * Creates a cellrenderer that shows boolean values with the given style.<p>
-   * @param style 
-   * Honored style bits are:<br>
-   * - INDICATION_CLICKED<br>
-   * - INDICATION_FOCUS<br>
-   * - INDICATION_FOCUS_ROW<br>
-   * - INDICATION_COMMENT<p>
-   * Styles that influence the sign painted when cell value is true:<br>
-   * - SIGN_IMAGE<br>
-   * - SIGN_X<br>
-   * - SIGN_CHECK (default)<br>
+   * Creates a cellrenderer that shows boolean values with the given style.
+   * <p>
+   * 
+   * @param style
+   *          Honored style bits are:<br>
+   *          - INDICATION_CLICKED<br>
+   *          - INDICATION_FOCUS<br>
+   *          - INDICATION_FOCUS_ROW<br>
+   *          - INDICATION_COMMENT
+   *          <p>
+   *          Styles that influence the sign painted when cell value is true:<br>
+   *          - SIGN_IMAGE<br>
+   *          - SIGN_X<br>
+   *          - SIGN_CHECK (default)<br>
    */
   public CheckableCellRenderer(int style) {
-      super(style);
+    super(style);
   }
 
   public void setActive(boolean active) {
-    _active  = active;
+    _active = active;
   }
-  
-  /** 
+
+  /**
    * Paint a box with or without a checked symbol.
    * 
-   * @see de.kupzog.ktable.KTableCellRenderer#drawCell(GC, Rectangle, int, int, Object, boolean, boolean, boolean, KTableModel)
+   * @see de.kupzog.ktable.KTableCellRenderer#drawCell(GC, Rectangle, int, int,
+   *      Object, boolean, boolean, boolean, KTableModel)
    */
-  public void drawCell(GC gc, Rectangle rect, int col, int row, Object content, 
-          boolean focus, boolean fixed, boolean clicked, KTableModel model) {
-      
-      // draw focus sign:
-      if (focus && (m_Style & INDICATION_FOCUS)!=0) {
-          rect = drawDefaultSolidCellLine(gc, rect, COLOR_LINE_LIGHTGRAY, COLOR_LINE_LIGHTGRAY);
-          drawCheckableImage(gc, rect, content, Colors.blend(getBackground(), COLOR_BGFOCUS, 0.75), clicked);
-          if (_active)
-            gc.drawFocus(rect.x, rect.y, rect.width, rect.height);
-          
-      } else if (focus && (m_Style & INDICATION_FOCUS_ROW)!=0) {
-      
-          rect = drawDefaultSolidCellLine(gc, rect, COLOR_BGROWFOCUS, COLOR_BGROWFOCUS);
-          drawCheckableImage(gc, rect, content, COLOR_BGROWFOCUS, clicked);
-          
-      } else {
-          rect = drawDefaultSolidCellLine(gc, rect, COLOR_LINE_LIGHTGRAY, COLOR_LINE_LIGHTGRAY);
-          drawCheckableImage(gc, rect, content, getBackground(), clicked);
-      }
-      
-      if ((m_Style & INDICATION_COMMENT)!=0)
-          drawCommentSign(gc, rect);
+  public void drawCell(GC gc, Rectangle rect, int col, int row, Object content,
+      boolean focus, boolean fixed, boolean clicked, KTableModel model) {
+
+    // draw focus sign:
+    if (focus && (m_Style & INDICATION_FOCUS) != 0) {
+      rect = drawDefaultSolidCellLine(gc, rect, COLOR_LINE_LIGHTGRAY,
+          COLOR_LINE_LIGHTGRAY);
+      final RGB blended = Colors.blend(getBackground().getRGB(),
+          COLOR_BGFOCUS.getRGB(), 0.75);
+      drawCheckableImage(gc, rect, content, new Color(null, blended), clicked);
+      if (_active)
+        gc.drawFocus(rect.x, rect.y, rect.width, rect.height);
+
+    } else if (focus && (m_Style & INDICATION_FOCUS_ROW) != 0) {
+
+      rect = drawDefaultSolidCellLine(gc, rect, COLOR_BGROWFOCUS,
+          COLOR_BGROWFOCUS);
+      drawCheckableImage(gc, rect, content, COLOR_BGROWFOCUS, clicked);
+
+    } else {
+      rect = drawDefaultSolidCellLine(gc, rect, COLOR_LINE_LIGHTGRAY,
+          COLOR_LINE_LIGHTGRAY);
+      drawCheckableImage(gc, rect, content, getBackground(), clicked);
+    }
+
+    if ((m_Style & INDICATION_COMMENT) != 0)
+      drawCommentSign(gc, rect);
   }
 
 }

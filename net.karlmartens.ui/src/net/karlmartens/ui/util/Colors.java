@@ -17,27 +17,36 @@
  */
 package net.karlmartens.ui.util;
 
-import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.RGB;
 
 /**
  * @author kmartens
- *
+ * 
  */
 public final class Colors {
-  
+
   private Colors() {
     // Nothing to do
   }
 
-  public static Color blend(Color dst, Color src, double srcAlpha) {
-    final int red = blend(dst.getRed(), src.getRed(), srcAlpha);
-    final int green = blend(dst.getGreen(), src.getGreen(), srcAlpha);
-    final int blue = blend(dst.getBlue(), src.getBlue(), srcAlpha);
-    return new Color(null, red, green, blue);
+  public static RGB blend(RGB dst, RGB src, double srcAlpha) {
+    final int red = blend(dst.red, src.red, srcAlpha);
+    final int green = blend(dst.green, src.green, srcAlpha);
+    final int blue = blend(dst.blue, src.blue, srcAlpha);
+    return new RGB(red, green, blue);
   }
-  
-  public static int blend(int dst, int src, double srcAlpha) {
-    final int out = (int)((double)src * srcAlpha + (double)dst * (1.0 - srcAlpha));
+
+  public static RGB gray(RGB dst) {
+    final int red = dst.red & 0xFF;
+    final int green = dst.green & 0xFF;
+    final int blue = dst.blue & 0xFF;
+    final int intensity = ((red + red + green + green + green + green + green + blue) >> 3) & 0xFF;
+    return new RGB(intensity, intensity, intensity);
+  }
+
+  private static int blend(int dst, int src, double srcAlpha) {
+    final int out = (int) ((double) src * srcAlpha + (double) dst
+        * (1.0 - srcAlpha));
     return out;
   }
 
