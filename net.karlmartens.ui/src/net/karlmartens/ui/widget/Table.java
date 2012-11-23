@@ -99,7 +99,6 @@ public final class Table extends Composite {
   private TableItem[] _items = new TableItem[0];
   private int _columnCount = 0;
   private TableColumn[] _columns = new TableColumn[0];
-  private int[] _lastRowSelection = new int[0];
 
   public Table(Composite parent) {
     this(parent, SWT.V_SCROLL | SWT.H_SCROLL | SWT.MULTI);
@@ -115,7 +114,8 @@ public final class Table extends Composite {
     _imageAscending = Images.ASCENDING.createImage();
     _imageDecending = Images.DECENDING.createImage();
 
-    _table = new KTableImpl(this, style | SWTX.AUTO_SCROLL | SWTX.MARK_FOCUS_HEADERS);
+    _table = new KTableImpl(this, style | SWTX.AUTO_SCROLL
+        | SWTX.MARK_FOCUS_HEADERS);
     _table.setBackground(getBackground());
     _table.setForeground(getForeground());
     _table.setModel(_model);
@@ -207,36 +207,6 @@ public final class Table extends Composite {
   public void redraw() {
     checkWidget();
     _table.redraw();
-  }
-
-  private final int[] _partialRedrawId = new int[1];
-  private Rectangle _partialRedraw = null;
-
-  private void redraw(int col, int row, int cols, int rows) {
-    if (_partialRedraw == null) {
-      _partialRedraw = new Rectangle(col, row, cols, rows);
-    } else {
-      final Rectangle r = new Rectangle(0, 0, 0, 0);
-      r.x = Math.min(col, _partialRedraw.x);
-      r.y = Math.min(row, _partialRedraw.y);
-      r.width = Math.max(_partialRedraw.x + _partialRedraw.width, col + cols)
-          - r.x;
-      r.height = Math.max(_partialRedraw.y + _partialRedraw.height, row + rows)
-          - r.y;
-      _partialRedraw = r;
-    }
-
-    final int id = ++_partialRedrawId[0];
-    getDisplay().timerExec(100, new Runnable() {
-      @Override
-      public void run() {
-        if (id != _partialRedrawId[0] || _partialRedraw == null)
-          return;
-
-        _table.redraw(_partialRedraw);
-        _partialRedraw = null;
-      }
-    });
   }
 
   public void setHeaderVisible(boolean show) {
@@ -491,20 +461,11 @@ public final class Table extends Composite {
     final Point[] selections = new Point[indices.length * width];
     for (int i = 0; i < indices.length; i++) {
       for (int j = 0; j < width; j++) {
-        selections[i * width + j] = new Point(j, computeKTableRow(indices[i]));
+        selections[i * width + j] = new Point(j, indices[i]);
       }
     }
 
-    _table.clearSelection();
-    _table.setSelection(selections, false);
-
-    final int[] newRowSelection = Arrays.copyOf(indices, indices.length);
-    Arrays.sort(newRowSelection);
-    _lastRowSelection = newRowSelection;
-
-    final Event e = new Event();
-    e.item = indices.length > 0 ? getItem(indices[0]) : null;
-    notifyListeners(SWT.Selection, e);
+    setCellSelections(selections);
   }
 
   public void select(int[] indices) {
@@ -566,27 +527,31 @@ public final class Table extends Composite {
     checkWidget();
     checkNull(selected);
 
-    final BitSet rSelected = new BitSet();
-    final Point[] tSelected = new Point[selected.length];
-    for (int i = 0; i < tSelected.length; i++) {
-      final Point pt = selected[i];
-      tSelected[i] = new Point(pt.x, computeKTableRow(pt.y));
-      rSelected.set(selected[i].y);
+    final BitSet previousRows = rowSelectionSet(_table.getCellSelection());
+
+    final Point[] ktableCellSelection = new Point[selected.length];
+    int i = 0;
+    for (Point pt : selected) {
+      ktableCellSelection[i++] = new Point(pt.x, computeKTableRow(pt.y));
     }
 
     _table.clearSelection();
-    _table.setSelection(tSelected, false);
+    _table.setSelection(ktableCellSelection, false);
+    _table.redraw();
 
-    final int[] selectedRows = ArraySupport.toArray(rSelected);
-    final int[] update = ArraySupport.minus(selectedRows, _lastRowSelection);
-    if (update.length > 0) {
-      _lastRowSelection = selectedRows;
-      doUpdateRows(update);
+    final BitSet currentRows = rowSelectionSet(ktableCellSelection);
+    final BitSet changedRows = (BitSet) previousRows.clone();
+    changedRows.xor(currentRows);
+    if (!changedRows.isEmpty())
+      notifyListeners(SWT.Selection, new Event());
+  }
 
-      final Event e = new Event();
-      e.item = selected.length > 0 ? getItem(selected[0].y) : null;
-      notifyListeners(SWT.Selection, e);
+  private BitSet rowSelectionSet(Point[] pts) {
+    final BitSet set = new BitSet(_itemCount + 1);
+    for (Point pt : pts) {
+      set.set(pt.y);
     }
+    return set;
   }
 
   public void showSelection() {
@@ -844,7 +809,7 @@ public final class Table extends Composite {
     }
     return _menuManager;
   }
-  
+
   public void setMenu(Menu menu) {
     checkWidget();
     _table.setMenu(menu);
@@ -871,7 +836,7 @@ public final class Table extends Composite {
   public void addColumnSortSupport() {
     _columnManager.enableColumnSort();
   }
-  
+
   public void retainSelection(Runnable r) {
     _cellSelectionManager.retainSelection(r);
   }
@@ -1040,31 +1005,6 @@ public final class Table extends Composite {
     removeControlListener(_listener);
     removePaintListener(_listener);
     removeDisposeListener(_listener);
-  }
-
-  private void doUpdateRows(int[] indices) {
-    if (indices.length <= 0)
-      return;
-
-    final int width = getVisibleScrollableCells().width + _fixedColumnCount + 1;
-    Arrays.sort(indices);
-
-    int previous = computeKTableRow(indices[0]);
-    int height = 1;
-    for (int i = 1; i < indices.length; i++) {
-      final int index = computeKTableRow(indices[i]);
-      final int delta = index - previous;
-      if (delta <= 1) {
-        height += delta;
-        previous = index;
-        continue;
-      }
-
-      redraw(0, previous - height + 1, width, height);
-      previous = index;
-    }
-
-    redraw(0, previous - height + 1, width, height);
   }
 
   private void doRemove(int index) {
@@ -1548,44 +1488,45 @@ public final class Table extends Composite {
 
       return new Point(width, height);
     }
-    
+
     public void redraw() {
       updateScrollbarVisibility();
       super.redraw();
     }
-    
+
     protected void drawBottomSpace(GC gc) {
       Rectangle r = getClientArea();
       if (m_Model.getRowCount() > 0) {
-          r.y += 1;
-          
-          for (int i=0; i<getFixedRowCount(); i++)
-            r.y += m_Model.getRowHeight(i);
-          
-          for (int i=0; i<m_RowsVisible; i++)
-              r.y+= m_Model.getRowHeight(i+m_TopRow);
+        r.y += 1;
+
+        for (int i = 0; i < getFixedRowCount(); i++)
+          r.y += m_Model.getRowHeight(i);
+
+        for (int i = 0; i < m_RowsVisible; i++)
+          r.y += m_Model.getRowHeight(i + m_TopRow);
       }
-      
-      int lastColRight = getColumnRight(
-              Math.min(m_LeftColumn+m_ColumnsVisible, m_Model.getColumnCount()-1));
-    
+
+      int lastColRight = getColumnRight(Math.min(m_LeftColumn
+          + m_ColumnsVisible, m_Model.getColumnCount() - 1));
+
       // draw simple background colored areas
       gc.setBackground(getBackground());
       gc.fillRectangle(r);
-      gc.fillRectangle(lastColRight + 2, 0, r.width, r.height); 
-      
+      gc.fillRectangle(lastColRight + 2, 0, r.width, r.height);
+
       gc.setForeground(m_Display.getSystemColor(SWT.COLOR_WHITE));
-      gc.drawLine(1, r.y , lastColRight + 1, r.y);
-      gc.drawLine(lastColRight + 1, 0, lastColRight + 1, r.y-1);
-      
+      gc.drawLine(1, r.y, lastColRight + 1, r.y);
+      gc.drawLine(lastColRight + 1, 0, lastColRight + 1, r.y - 1);
+
       // draw left and top border line:
       if (m_Model.getRowCount() > 0) {
-          if ((getStyle() & SWT.FLAT) == 0)
-              gc.setForeground(m_Display.getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
-          else
-              gc.setForeground(m_Display.getSystemColor(SWT.COLOR_LIST_BACKGROUND));
-          gc.drawLine(0, 0, 0, r.y - 1);
-          gc.drawLine(0, 0, lastColRight, 0);
+        if ((getStyle() & SWT.FLAT) == 0)
+          gc.setForeground(m_Display
+              .getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
+        else
+          gc.setForeground(m_Display.getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+        gc.drawLine(0, 0, 0, r.y - 1);
+        gc.drawLine(0, 0, lastColRight, 0);
       }
     }
   }

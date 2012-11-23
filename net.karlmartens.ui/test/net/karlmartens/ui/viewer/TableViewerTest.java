@@ -29,6 +29,8 @@ import net.karlmartens.ui.widget.Table;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -121,6 +123,13 @@ public final class TableViewerTest {
         viewer, OPERATION_COPY | OPERATION_CUT | OPERATION_DELETE
             | OPERATION_PASTE | OPERATION_SELECT_ALL);
     clipboardManager.createContextMenu();
+
+    viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+      @Override
+      public void selectionChanged(SelectionChangedEvent event) {
+        System.out.println("Selection");
+      }
+    });
 
     b.addSelectionListener(new SelectionAdapter() {
       @Override
