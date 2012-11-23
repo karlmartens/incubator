@@ -640,6 +640,9 @@ public final class Table extends Composite {
 
   public void setColumnCount(int count) {
     checkWidget();
+    if (count < _fixedColumnCount)
+      SWT.error(SWT.ERROR_INVALID_RANGE);
+
     final int c = Math.max(0, count);
     if (c == _columnCount)
       return;
