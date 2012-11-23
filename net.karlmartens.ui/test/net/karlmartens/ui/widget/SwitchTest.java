@@ -23,6 +23,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
 public class SwitchTest {
@@ -61,6 +62,20 @@ public class SwitchTest {
     control2.setFont(new Font(display, "Arial", 10, SWT.BOLD));
     control2.setEnabled(false);
     control2.setSelection(false);
+
+    final RoundedComposite c3 = new RoundedComposite(shell, SWT.LEFT);
+    c3.setBackground(new Color(display, 135, 209, 243));
+    c3.setLayoutData(GridDataFactory//
+        .swtDefaults()//
+        .hint(SWT.DEFAULT, SWT.DEFAULT)//
+        .create());
+
+    final Label label = new Label(c3, SWT.NONE);
+    label.setText("Hi");
+    label.setForeground(display.getSystemColor(SWT.COLOR_WHITE));
+    label.setFont(new Font(display, "Arial", 11, SWT.BOLD));
+
+    c3.setClient(label);
 
     shell.open();
     while (!shell.isDisposed()) {
