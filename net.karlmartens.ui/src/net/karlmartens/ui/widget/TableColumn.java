@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.TypedListener;
 public final class TableColumn extends Item {
 
   private Table _parent;
+  private String _id;
   private int _width = 0;
   private boolean _moveable = true;
   private boolean _hideable = true;
@@ -76,6 +77,14 @@ public final class TableColumn extends Item {
 
   public Table table() {
     return _parent;
+  }
+
+  public void setId(String id) {
+    _id = id;
+  }
+
+  public String getId() {
+    return _id;
   }
 
   public void setWidth(int width) {
