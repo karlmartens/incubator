@@ -1140,8 +1140,18 @@ public final class Table extends Composite {
         return 0;
 
       final TableItem item = getItem(rIndex);
-      if (item.isVisible())
-        return _rowHeight;
+      if (item.isVisible()) {
+        int height = _rowHeight;
+        for (int i = 0; i < _columnCount; i++) {
+          final Image image = item.getImage(i);
+          if (image == null)
+            continue;
+
+          height = Math.max(height, image.getImageData().height + 4);
+        }
+
+        return height;
+      }
 
       return 0;
     }
