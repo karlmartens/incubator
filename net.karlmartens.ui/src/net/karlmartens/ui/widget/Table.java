@@ -1229,6 +1229,7 @@ public final class Table extends Composite {
       if (row < getFixedHeaderRowCount() || col < getFixedHeaderColumnCount()) {
         renderer = _altHeaderRenderer;
         _altHeaderRenderer.setActive(_isActive);
+        _altHeaderRenderer.setImage(item.getImage(col));
 
         int alignment = SWTX.ALIGN_VERTICAL_CENTER;
         if (row < getFixedHeaderRowCount()) {
@@ -1245,6 +1246,7 @@ public final class Table extends Composite {
       } else {
         renderer = _renderer;
         _renderer.setActive(_isActive);
+        _renderer.setImage(item.getImage(col));
         renderer.setAlignment(SWTX.ALIGN_HORIZONTAL_LEFT
             | SWTX.ALIGN_VERTICAL_CENTER);
       }

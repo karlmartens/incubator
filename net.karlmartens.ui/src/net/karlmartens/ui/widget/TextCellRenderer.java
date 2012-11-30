@@ -21,6 +21,7 @@ import net.karlmartens.ui.util.Colors;
 
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
 
@@ -28,6 +29,7 @@ import de.kupzog.ktable.KTableModel;
 
 class TextCellRenderer extends de.kupzog.ktable.renderers.TextCellRenderer {
 
+  private Image _image;
   private boolean _active;
 
   /**
@@ -56,6 +58,10 @@ class TextCellRenderer extends de.kupzog.ktable.renderers.TextCellRenderer {
     _active = active;
   }
 
+  public void setImage(Image image) {
+    _image = image;
+  }
+
   /**
    * A default implementation that paints cells in a way that is more or less
    * Excel-like. Only the cell with focus looks very different.
@@ -80,7 +86,7 @@ class TextCellRenderer extends de.kupzog.ktable.renderers.TextCellRenderer {
           COLOR_LINE_LIGHTGRAY);
       final RGB blended = Colors.blend(getBackground().getRGB(),
           COLOR_BGFOCUS.getRGB(), 0.75);
-      drawCellContent(gc, rect, content.toString(), null, getForeground(),
+      drawCellContent(gc, rect, content.toString(), _image, getForeground(),
           new Color(null, blended));
       if (_active)
         gc.drawFocus(rect.x, rect.y, rect.width, rect.height);
@@ -89,14 +95,14 @@ class TextCellRenderer extends de.kupzog.ktable.renderers.TextCellRenderer {
       rect = drawDefaultSolidCellLine(gc, rect, COLOR_BGROWFOCUS,
           COLOR_BGROWFOCUS);
       // draw content:
-      drawCellContent(gc, rect, content.toString(), null, COLOR_FGROWFOCUS,
+      drawCellContent(gc, rect, content.toString(), _image, COLOR_FGROWFOCUS,
           COLOR_BGROWFOCUS);
 
     } else {
       rect = drawDefaultSolidCellLine(gc, rect, COLOR_LINE_LIGHTGRAY,
           COLOR_LINE_LIGHTGRAY);
       // draw content:
-      drawCellContent(gc, rect, content.toString(), null, getForeground(),
+      drawCellContent(gc, rect, content.toString(), _image, getForeground(),
           getBackground());
     }
 

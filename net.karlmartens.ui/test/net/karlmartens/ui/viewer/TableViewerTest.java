@@ -23,12 +23,14 @@ import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_DELETE;
 import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_PASTE;
 import static net.karlmartens.ui.widget.ClipboardStrategy.OPERATION_SELECT_ALL;
 import net.karlmartens.platform.util.NumberStringComparator;
+import net.karlmartens.ui.Images;
 import net.karlmartens.ui.dialog.ConfigureColumnsDialog;
 import net.karlmartens.ui.widget.Table;
 
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.ViewerComparator;
@@ -36,6 +38,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -44,14 +47,22 @@ import org.joda.time.LocalDate;
 public final class TableViewerTest {
 
   public static void main(String[] args) throws Exception {
-    final int fixedColumns = 4;
+    final Image[] images = new Image[] {//
+    Images.FILTER.createImage(), //
+        Images.COPY.createImage(), //
+        Images.CUT.createImage(), //
+        Images.PASTE.createImage(), //
+    };
+
+    final int fixedColumns = 5;
     final Object[][] input = new Object[100][];
     for (int i = 0; i < input.length; i++) {
       input[i] = new Object[20];
-      input[i][0] = "Item " + Integer.toString(i);
-      input[i][1] = Boolean.valueOf(i % 3 == 0);
-      input[i][2] = TestComboEditingSupport.ITEMS[0 + (i % TestComboEditingSupport.ITEMS.length)];
-      input[i][3] = new LocalDate((int) (Math.random() * 50) + 2000,
+      input[i][0] = images[i % 4];
+      input[i][1] = "Item " + Integer.toString(i);
+      input[i][2] = Boolean.valueOf(i % 3 == 0);
+      input[i][3] = TestComboEditingSupport.ITEMS[0 + (i % TestComboEditingSupport.ITEMS.length)];
+      input[i][4] = new LocalDate((int) (Math.random() * 50) + 2000,
           (int) (Math.random() * 11) + 1, (int) (Math.random() * 27) + 1);
 
       for (int j = fixedColumns; j < input[i].length; j++) {
@@ -73,26 +84,41 @@ public final class TableViewerTest {
     viewer.setContentProvider(new ArrayContentProvider());
     viewer.setComparator(new ViewerComparator(new NumberStringComparator()));
 
+    final TableViewerColumn c0 = new TableViewerColumn(viewer, SWT.NONE);
+    c0.setLabelProvider(new ColumnLabelProvider() {
+      @Override
+      public String getText(Object element) {
+        return "";
+      }
+
+      @Override
+      public Image getImage(Object element) {
+        Object[] arr = (Object[]) element;
+        return (Image) arr[0];
+      }
+    });
+    c0.getColumn().setWidth(20);
+
     final TableViewerColumn c1 = new TableViewerColumn(viewer, SWT.NONE);
-    c1.setLabelProvider(new TestColumnLabelProvider(0));
+    c1.setLabelProvider(new TestColumnLabelProvider(1));
     c1.setEditingSupport(new TestTextEditingSupport(viewer, 0, SWT.LEFT));
     c1.getColumn().setText("Name");
     c1.getColumn().setWidth(75);
 
     final TableViewerColumn c2 = new TableViewerColumn(viewer, SWT.CHECK);
-    c2.setLabelProvider(new TestColumnLabelProvider(1));
+    c2.setLabelProvider(new TestColumnLabelProvider(2));
     c2.setEditingSupport(new TestBooleanEditingSupport(viewer, 1));
     c2.getColumn().setText("Active");
     c2.getColumn().setWidth(60);
 
     final TableViewerColumn c3 = new TableViewerColumn(viewer, SWT.LEFT);
-    c3.setLabelProvider(new TestColumnLabelProvider(2));
+    c3.setLabelProvider(new TestColumnLabelProvider(3));
     c3.setEditingSupport(new TestComboEditingSupport(viewer, 2));
     c3.getColumn().setText("Color");
     c3.getColumn().setWidth(60);
 
     final TableViewerColumn c4 = new TableViewerColumn(viewer, SWT.LEFT);
-    c4.setLabelProvider(new TestColumnLabelProvider(3));
+    c4.setLabelProvider(new TestColumnLabelProvider(4));
     c4.setEditingSupport(new TestCalendarComboEditingSupport(viewer, 3));
     c4.getColumn().setText("Date");
     c4.getColumn().setWidth(90);
@@ -117,6 +143,7 @@ public final class TableViewerTest {
     table.setFont(new Font(display, "Arial", 8, SWT.NORMAL));
     table.addColumnSortSupport();
     table.setFixedColumnCount(fixedColumns);
+    table.setFixedHeaderColumnCount(1);
     table.setFixedRowCount(3);
 
     final TableViewerClipboardManager clipboardManager = new TableViewerClipboardManager(

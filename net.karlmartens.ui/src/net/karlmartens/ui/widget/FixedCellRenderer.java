@@ -20,10 +20,13 @@ package net.karlmartens.ui.widget;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
 
 import de.kupzog.ktable.KTableModel;
+import de.kupzog.ktable.KTableSortComparator;
+import de.kupzog.ktable.KTableSortedModel;
 
 /**
  * @author karl
@@ -41,6 +44,7 @@ public class FixedCellRenderer extends
 
   private boolean _active = true;
   private boolean _filtered;
+  private Image _image;
 
   /**
    * A constructor that lets the caller specify the style.
@@ -70,6 +74,10 @@ public class FixedCellRenderer extends
     _active = active;
   }
 
+  public void setImage(Image image) {
+    _image = image;
+  }
+
   public void setFiltered(boolean filtered) {
     _filtered = filtered;
   }
@@ -88,13 +96,13 @@ public class FixedCellRenderer extends
       bottomBorderColor = COLOR_TEXT;
       rightBorderColor = COLOR_TEXT;
     }
-    
+
     boolean flat = (m_Style & STYLE_FLAT) != 0;
     if (focus && (m_Style & INDICATION_FOCUS_ROW) != 0) {
       if (_active) {
         bgColor = COLOR_BGROWFOCUS;
         fgColor = COLOR_FGROWFOCUS;
-        
+
         if (!flat) {
           bottomBorderColor = COLOR_BGROWFOCUS;
           rightBorderColor = COLOR_BGROWFOCUS;
@@ -102,7 +110,7 @@ public class FixedCellRenderer extends
       } else {
         bgColor = COLOR_INACTIVE_BGROWFOCUS;
         fgColor = COLOR_INACTIVE_FGROWFOCUS;
-        
+
         if (!flat) {
           bottomBorderColor = COLOR_INACTIVE_BGROWFOCUS;
           rightBorderColor = COLOR_INACTIVE_BGROWFOCUS;
@@ -149,6 +157,50 @@ public class FixedCellRenderer extends
       }
     }
     resetFont(gc);
+  }
+
+  protected void drawCellContent(GC gc, Rectangle rect, int col, int row,
+      Object content, KTableModel model, Color bgColor, Color fgColor) {
+    int oldWidth = rect.width;
+    Image indicator = null;
+    int x = 0, y = 0;
+
+    if ((m_Style & INDICATION_SORT) != 0 && model instanceof KTableSortedModel
+        && ((KTableSortedModel) model).getSortColumn() == col
+        && model.getFixedHeaderRowCount() > row && row == 0) {
+
+      int sort = ((KTableSortedModel) model).getSortState();
+      if (sort == KTableSortComparator.SORT_UP)
+        indicator = IMAGE_ARROWDOWN;
+      else if (sort == KTableSortComparator.SORT_DOWN)
+        indicator = IMAGE_ARROWUP;
+
+      if (indicator != null) {
+        int contentLength = rect.x + 11 + gc.stringExtent(content.toString()).x;
+        x = rect.x + rect.width - 8;
+        if (contentLength < x)
+          x = contentLength;
+        else
+          rect.width -= indicator.getBounds().width + 8;
+        y = rect.y + rect.height / 2 - indicator.getBounds().height / 2;
+
+        // do not draw if there is not enough space for the image:
+        if (rect.width + 4 < indicator.getBounds().width) {
+          rect.width += indicator.getBounds().width + 8;
+          indicator = null;
+        }
+      }
+    }
+
+    drawCellContent(gc, rect, content.toString(), _image, fgColor, bgColor);
+
+    // draw sort indicator:
+    if (indicator != null) {
+      gc.fillRectangle(rect.x + rect.width, rect.y,
+          Math.min(indicator.getBounds().width + 8, oldWidth - rect.width - 1),
+          rect.height);
+      gc.drawImage(indicator, x, y);
+    }
   }
 
 }
