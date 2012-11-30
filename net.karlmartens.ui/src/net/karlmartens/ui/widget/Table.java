@@ -521,6 +521,7 @@ public final class Table extends Composite {
   public void setFocusCell(Point cell, boolean multi) {
     checkWidget();
     _cellSelectionManager.setFocusCell(cell, multi);
+    setFocus();
   }
 
   public void setCellSelections(Point[] selected) {
@@ -1386,12 +1387,6 @@ public final class Table extends Composite {
     }
 
     public boolean isFocusControl() {
-      for (Control control : getChildren()) {
-        if (control.isFocusControl()) {
-          return true;
-        }
-      }
-
       return super.isFocusControl();
     }
 
@@ -1443,7 +1438,14 @@ public final class Table extends Composite {
     @Override
     protected void doCalculations() {
       super.doCalculations();
+
       _isActive = isFocusControl();
+      for (Control control : getChildren()) {
+        if (_isActive)
+          break;
+
+        _isActive |= control.isFocusControl();
+      }
     }
 
     @Override

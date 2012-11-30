@@ -101,25 +101,25 @@ public final class TableViewerTest {
 
     final TableViewerColumn c1 = new TableViewerColumn(viewer, SWT.NONE);
     c1.setLabelProvider(new TestColumnLabelProvider(1));
-    c1.setEditingSupport(new TestTextEditingSupport(viewer, 0, SWT.LEFT));
+    c1.setEditingSupport(new TestTextEditingSupport(viewer, 1, SWT.LEFT));
     c1.getColumn().setText("Name");
     c1.getColumn().setWidth(75);
 
     final TableViewerColumn c2 = new TableViewerColumn(viewer, SWT.CHECK);
     c2.setLabelProvider(new TestColumnLabelProvider(2));
-    c2.setEditingSupport(new TestBooleanEditingSupport(viewer, 1));
+    c2.setEditingSupport(new TestBooleanEditingSupport(viewer, 2));
     c2.getColumn().setText("Active");
     c2.getColumn().setWidth(60);
 
     final TableViewerColumn c3 = new TableViewerColumn(viewer, SWT.LEFT);
     c3.setLabelProvider(new TestColumnLabelProvider(3));
-    c3.setEditingSupport(new TestComboEditingSupport(viewer, 2));
+    c3.setEditingSupport(new TestComboEditingSupport(viewer, 3));
     c3.getColumn().setText("Color");
     c3.getColumn().setWidth(60);
 
     final TableViewerColumn c4 = new TableViewerColumn(viewer, SWT.LEFT);
     c4.setLabelProvider(new TestColumnLabelProvider(4));
-    c4.setEditingSupport(new TestCalendarComboEditingSupport(viewer, 3));
+    c4.setEditingSupport(new TestCalendarComboEditingSupport(viewer, 4));
     c4.getColumn().setText("Date");
     c4.getColumn().setWidth(90);
 
