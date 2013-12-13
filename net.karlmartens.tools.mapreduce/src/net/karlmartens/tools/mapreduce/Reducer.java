@@ -19,7 +19,7 @@
  */
 package net.karlmartens.tools.mapreduce;
 
-import net.karlmartens.platform.util.Pair;
+import net.karlmartens.platform.function.Pair;
 
 public interface Reducer<InKey, InValue, OutValue> {
 

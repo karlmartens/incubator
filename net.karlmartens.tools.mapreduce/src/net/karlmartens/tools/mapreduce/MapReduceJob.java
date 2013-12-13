@@ -22,7 +22,7 @@ package net.karlmartens.tools.mapreduce;
 import java.util.Comparator;
 import java.util.Iterator;
 
-import net.karlmartens.platform.util.Pair;
+import net.karlmartens.platform.function.Pair;
 import net.karlmartens.platform.util.ReflectSupport;
 
 public final class MapReduceJob<K, V, K1, V1, V2> {

@@ -31,7 +31,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import net.karlmartens.platform.util.Pair;
+import net.karlmartens.platform.function.Pair;
 import net.karlmartens.platform.util.PairKeyComparator;
 
 public final class MapReduceExecutor<K, V, K1, V1, V2> implements

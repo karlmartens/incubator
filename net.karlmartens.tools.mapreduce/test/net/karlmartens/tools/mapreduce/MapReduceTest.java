@@ -12,8 +12,8 @@ import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.TreeSet;
 
+import net.karlmartens.platform.function.Pair;
 import net.karlmartens.platform.util.ArraySupport;
-import net.karlmartens.platform.util.Pair;
 import net.karlmartens.platform.util.PairKeyComparator;
 import net.karlmartens.platform.util.StringComparator;
 import net.karlmartens.tools.testing.TestSummarizer;
